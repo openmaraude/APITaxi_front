@@ -43,7 +43,7 @@ def create_app(sqlalchemy_uri=None):
     request_finished.connect(add_version_header, app)
 
     from flask.ext.uploads import configure_uploads
-    from .extensions import images
+    from .backoffice.extensions import images
     configure_uploads(app, (images))
     from APITaxi_utils.login_manager import init_app as init_login_manager
     from .backoffice.forms.login import LoginForm
