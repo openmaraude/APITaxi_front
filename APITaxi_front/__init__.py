@@ -9,6 +9,7 @@ __doc__ = "Frontend of api.taxi"
 def create_app(sqlalchemy_uri=None):
     from flask import Flask, request_started, request, request_finished, g
     from flask_bootstrap import Bootstrap
+    from flask.ext.dogpile_cache import DogpileCache
     import os
 
     app = Flask(__name__)
@@ -56,5 +57,8 @@ def create_app(sqlalchemy_uri=None):
     from APITaxi_models import security
     user_datastore.init_app(db, security.User, security.CachedUser,
             security.Role)
+
+    cache = DogpileCache()
+    cache.init_app(app)
 
     return app
