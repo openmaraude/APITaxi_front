@@ -5,7 +5,7 @@ from APITaxi_utils import request_wants_json
 
 mod = Blueprint('home_bo', __name__)
 
-@mod.route('/index')
+@mod.route('/')
 @login_required
 def home():
     if not request_wants_json.request_wants_json():
