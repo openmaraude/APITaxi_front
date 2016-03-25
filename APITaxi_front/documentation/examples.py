@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Blueprint, render_template, url_for as base_url_for
+from flask import Blueprint, render_template, current_app
 from flask.ext.security import current_user
 from ..extensions import user_datastore
 from APITaxi_models.taxis import Taxi
@@ -7,6 +7,17 @@ from functools import partial
 
 mod = Blueprint('examples', __name__)
 
+
+def make_url(p, *params, **kparams):
+    path = current_app.config['SERVER_NAME'] or 'localhost'
+    path += p
+    if params:
+        path += '?'
+        path += '&'.join(params)
+    elif kparams:
+        path += '?'
+        path += '&'.join([str(k)+'='+str(v) for k, v in kparams.iteritems()])
+    return path
 
 @mod.route('/documentation/examples')
 def doc_index():
@@ -26,9 +37,8 @@ def doc_index():
         apikeys_moteur = [('anonymous', 'token')]
         taxis = []
 
-    url_for = partial(base_url_for, _external=True)
     return render_template('documentation/examples.html',
                  apikeys_operator=apikeys_operator,
                  apikeys_moteur=apikeys_moteur,
                  taxis=taxis,
-                 url_for=url_for)
+                 make_url=make_url)
