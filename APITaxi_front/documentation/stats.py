@@ -98,10 +98,10 @@ def stats_taxis(dep):
                           .filter(ADS.insee.like(depattern)) \
                           .filter(Taxi.last_update_at >= last_day)
 
-        for ta in nb_taxis:
-            tab_nb_taxis['Total']['ntaxis'] = ta.ntaxis
-        for ta in nb_active_taxis:
-            tab_nb_taxis['Total']['nactivetaxis'] = ta.nactivetaxis
+    for ta in nb_taxis:
+        tab_nb_taxis['Total']['ntaxis'] = ta.ntaxis
+    for ta in nb_active_taxis:
+        tab_nb_taxis['Total']['nactivetaxis'] = ta.nactivetaxis
 
     return tab_nb_taxis
 
