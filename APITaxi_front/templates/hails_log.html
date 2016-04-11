@@ -6,13 +6,9 @@
       href="{{url_for('static', filename='css/pure-tables.css')}}">
 <script src="https://cdn.rawgit.com/github/fetch/master/fetch.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/riot/2.3.17/riot+compiler.min.js"></script>
-<script src="/static/js/hails.js" type="riot/tag"></script>
-<form action="/hails/_explore">
-    <label>Get log of this id:</label> <input type="text" size=10 name="id"/>
-    <input type="submit" value="Get Log!">
-</form>
-<hails></hails>
+<script src="/static/js/hails_log.js" type="riot/tag"></script>
+<hailslog></hailslog>
 <script>
-riot.mount('hails', {apikey:"{{apikey}}"});
+riot.mount('hailslog', {apikey:"{{apikey}}", hail_id:"{{hail_id}}"});
 </script>
 {% endblock %}
