@@ -98,10 +98,12 @@ def stats_taxis(dep):
                           .filter(ADS.insee.like(depattern)) \
                           .filter(Taxi.last_update_at >= last_day)
 
+    tab_nb_taxis['Total']['ntaxis'] = 0
+    tab_nb_taxis['Total']['nactivetaxis'] = 0
     for ta in nb_taxis:
-        tab_nb_taxis['Total']['ntaxis'] = ta.ntaxis
+        tab_nb_taxis['Total']['ntaxis'] += ta.ntaxis
     for ta in nb_active_taxis:
-        tab_nb_taxis['Total']['nactivetaxis'] = ta.nactivetaxis
+        tab_nb_taxis['Total']['nactivetaxis'] += ta.nactivetaxis
 
     return tab_nb_taxis
 
@@ -338,14 +340,20 @@ def stats_hails(dep):
                         .filter(Hail.creation_datetime >= last_year) \
                         .filter(Hail._status == 'accepted_by_customer') \
 
-        for ha in nb_hails_d:
-            tab_nb_hails['Total']['nhails_d'] = ha.nhails
-        for ha in nb_hails_ok_d:
-            tab_nb_hails['Total']['nhails_ok_d'] = ha.nhails
-        for ha in nb_hails_y:
-            tab_nb_hails['Total']['nhails_y'] = ha.nhails
-        for ha in nb_hails_ok_y:
-            tab_nb_hails['Total']['nhails_ok_y'] = ha.nhails
+
+    tab_nb_hails['Total']['nhails_d'] = 0
+    tab_nb_hails['Total']['nhails_ok_d'] = 0
+    tab_nb_hails['Total']['nhails_y'] = 0
+    tab_nb_hails['Total']['nhails_ok_y'] = 0
+
+    for ha in nb_hails_d:
+        tab_nb_hails['Total']['nhails_d'] += ha.nhails
+    for ha in nb_hails_ok_d:
+        tab_nb_hails['Total']['nhails_ok_d'] += ha.nhails
+    for ha in nb_hails_y:
+        tab_nb_hails['Total']['nhails_y'] += ha.nhails
+    for ha in nb_hails_ok_y:
+        tab_nb_hails['Total']['nhails_ok_y'] += ha.nhails
 
     return tab_nb_hails
 
