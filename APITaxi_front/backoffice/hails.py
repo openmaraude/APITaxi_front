@@ -7,7 +7,6 @@ mod = Blueprint('hail', __name__)
 @login_required
 @roles_accepted('admin', 'operateur', 'moteur')
 def hails_explore():
-    print request.args
     if 'id' in request.args:
         return hails_log(request.args['id'])
     return render_template('hails.html', apikey=current_user.apikey)
