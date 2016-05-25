@@ -6,8 +6,6 @@ from flask.ext.security import login_required, roles_accepted, current_user
 from flask.ext.restplus import reqparse, marshal
 from flask import (Blueprint, request, render_template, redirect, jsonify,
                    url_for, current_app)
-from werkzeug.exceptions import BadRequest
-import json
 from psycopg2.extras import RealDictCursor
 
 
@@ -81,4 +79,17 @@ def zupc_autocomplete():
             administrative_models.ZUPC.nom.ilike(like)).all()
     return jsonify(suggestions=map(lambda zupc:{'name': zupc.nom, 'id': int(zupc.id)},
                                         response))
+
+@mod.route('/zupc/_show_temp')
+def zupc_show_temp():
+    cur = current_app.extensions['sqlalchemy'].db.session.connection().\
+            connection.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""SELECT id, nom, insee FROM zupc_temp 
+                   WHERE multiple=true AND parent_id = id;""")
+
+    return render_template("zupc_show_temp.html",
+                          list_zupc=cur.fetchall(),
+                          apikey=current_user.apikey,
+                          mapbox_token=current_app.config['MAPBOX_TOKEN'])
+
 
