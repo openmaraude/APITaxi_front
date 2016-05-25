@@ -1,6 +1,10 @@
 <json>
 <code></code>
-this.root.innerHTML = library.json.prettyPrint(opts.content)
+try {
+    this.root.innerHTML = library.json.prettyPrint(opts.content)
+} catch(e) {
+    this.root.innerHTML = opts.content;
+}
 </json>
 <hailslog>
     <h1>Hails POST and PUT</h1>
