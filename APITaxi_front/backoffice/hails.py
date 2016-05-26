@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request
 from flask.ext.security import login_required, roles_accepted, current_user
+from APITaxi_models.hail import status_enum_list
+from APITaxi_models.security import User
 
 mod = Blueprint('hail', __name__)
 
@@ -9,7 +11,16 @@ mod = Blueprint('hail', __name__)
 def hails_explore():
     if 'id' in request.args:
         return hails_log(request.args['id'])
-    return render_template('hails.html', apikey=current_user.apikey)
+    operateurs = []
+    moteurs = []
+    for u in User.query.all():
+        if u.has_role('operateur') and current_user.has_role('admin'):
+            operateurs.append(str(u.email))
+        if u.has_role('moteur') and current_user.has_role('admin'):
+            moteurs.append(str(u.email))
+    return render_template('hails.html', apikey=current_user.apikey,
+                          statuses=status_enum_list, operateurs=operateurs,
+                          moteurs=moteurs)
 
 
 @mod.route('/hails/<string:hail_id>/_explore')
