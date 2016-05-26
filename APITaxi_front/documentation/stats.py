@@ -359,10 +359,10 @@ def stats_hails(dep):
     ).first()
 
     if hidden_operator:
-        nb_hails_d = nb_hails_d.filter(Hail.operator_id != hidden_operator.id)
-        nb_hails_ok_d = nb_hails_ok_d.filter(Hail.operator_id != hidden_operator.id)
-        nb_hails_y = nb_hails_y.filter(Hail.operator_id != hidden_operator.id)
-        nb_hails_ok_y = nb_hails_ok_y.filter(Hail.operator_id != hidden_operator.id)
+        nb_hails_d = nb_hails_d.filter(Hail.operateur_id != hidden_operator.id)
+        nb_hails_ok_d = nb_hails_ok_d.filter(Hail.operateur_id != hidden_operator.id)
+        nb_hails_y = nb_hails_y.filter(Hail.operateur_id != hidden_operator.id)
+        nb_hails_ok_y = nb_hails_ok_y.filter(Hail.operateur_id != hidden_operator.id)
     if hidden_moteur:
         nb_hails_d = nb_hails_d.filter(Hail.added_by != hidden_moteur.id)
         nb_hails_ok_d = nb_hails_ok_d.filter(Hail.added_by != hidden_moteur.id)
@@ -411,7 +411,7 @@ def list_hails(dep):
     ).first()
 
     if hidden_operator:
-        hails = hails.filter(Hail.operator_id != hidden_operator.id)
+        hails = hails.filter(Hail.operateur_id != hidden_operator.id)
     if hidden_moteur:
         hails = hails.filter(Hail.added_by != hidden_moteur.id)
     hails = hails.order_by(Hail.creation_datetime.desc()).limit(100).all()
