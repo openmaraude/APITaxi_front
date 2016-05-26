@@ -42,6 +42,7 @@
 
 {% endblock %}
 {% block content %}
+{{ super() }}
 {{util.flashed_messages()}}
 {% endblock %}
 
