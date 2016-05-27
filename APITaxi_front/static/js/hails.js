@@ -20,9 +20,15 @@
     <tr>
         <td>Id</td>
         <td>Creation:
-<div id="datetimepicker-container">
-    <input type="text" class="form-control">
-</div></td>
+        <div class="form-group">
+                <div class='input-group date' id='datetimepicker1'>
+                    <input type='text' class="form-control" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </td>
         <td><select class="selectpicker" multiple title="Added by"
                 name="moteur" data-live-search="true" id="moteurselect">
                 <option each={mo, m in moteurs}>{mo}</option>
@@ -64,7 +70,7 @@
                         selection[o.parentElement.name].push(o.value);
                         return o.parentElement.name+'='+o.value
                     });
-            params.push('date='+$('#datetimepicker-container input').val());
+            params.push('date='+$('#datetimepicker1 input').val());
             fetch('/hails/?p='+page+'&'+params.join('&'), {headers:headers})
                 .then(function(response) {
                     return response.json();
@@ -84,9 +90,9 @@
                     $('.selectpicker').on('change', function(){
                         getHails(1);
                     });
-                    $('#datetimepicker-container input').datepicker({
-                        format: "yyyy/mm/dd"
-                    }).on('change.dp', function (e) {
+                    $('#datetimepicker1').datetimepicker({
+                        format: "YYYY/MM/DD hh:mm:00"
+                    }).on('dp.change', function (e) {
                         getHails(1);
                     });
                     if(r.meta.prev_page != null) {
