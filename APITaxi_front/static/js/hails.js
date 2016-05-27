@@ -19,7 +19,10 @@
     <thead>
     <tr>
         <td>Id</td>
-        <td>Creation</td>
+        <td>Creation:
+<div id="datetimepicker-container">
+    <input type="text" class="form-control">
+</div></td>
         <td><select class="selectpicker" multiple title="Added by"
                 name="moteur" data-live-search="true" id="moteurselect">
                 <option each={mo, m in moteurs}>{mo}</option>
@@ -60,9 +63,9 @@
                     function(o){
                         selection[o.parentElement.name].push(o.value);
                         return o.parentElement.name+'='+o.value
-                    })
-                .join('&');
-            fetch('/hails/?p='+page+'&'+params, {headers:headers})
+                    });
+            params.push('date='+$('#datetimepicker-container input').val());
+            fetch('/hails/?p='+page+'&'+params.join('&'), {headers:headers})
                 .then(function(response) {
                     return response.json();
                 })
@@ -79,6 +82,11 @@
                     }
                     $('.selectpicker').selectpicker('refresh');
                     $('.selectpicker').on('change', function(){
+                        getHails(1);
+                    });
+                    $('#datetimepicker-container input').datepicker({
+                        format: "yyyy/mm/dd"
+                    }).on('change.dp', function (e) {
                         getHails(1);
                     });
                     if(r.meta.prev_page != null) {
