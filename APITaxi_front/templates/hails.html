@@ -3,9 +3,9 @@
 
 {% block styles %}
 {{super()}}
-<link rel="stylesheet"
-      href="{{url_for('static', filename='css/pure-tables.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='css/pure-tables.css')}}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css">
+        <link href="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
 {% endblock %}
 
 {% block scripts %}
@@ -14,7 +14,9 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/riot/2.3.17/riot+compiler.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
 
-<script src="/static/js/hails.js" type="riot/tag"></script>
+<script src="{{url_for('static', filename='js/hails.js')}}" type="riot/tag"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js"></script>
+<script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
 <script>
 var m = {{moteurs|safe}};
 var o = {{operateurs|safe}};
@@ -26,6 +28,7 @@ riot.mount('hails', {apikey:"{{apikey}}", moteurs:m,
 
 {% block content %}
 {{super()}}
+
 
 <form action="/hails/_explore">
     <label>Get log of this id:</label> <input type="text" size=10 name="id"/>
