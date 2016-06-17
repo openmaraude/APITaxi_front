@@ -78,7 +78,7 @@
                 .then(function(r) {
                     this.hails = r.data;
                     this.moteurs = opts.moteurs;
-                    this.operators = opts.moteurs;
+                    this.operators = opts.operateurs;
                     this.statuses = opts.statuses;
                     this.iter_pages = r.meta.iter_pages;
                     this.update();
