@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request
-from flask.ext.security import login_required, roles_accepted, current_user
+from flask_security import login_required, roles_accepted, current_user
 from APITaxi_models.hail import status_enum_list
 from APITaxi_models.security import User
 

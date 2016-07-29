@@ -2,11 +2,11 @@
 from APITaxi_models import security as security_models
 from .forms.user import UserForm
 
-from flask.ext.security import login_required, roles_accepted, current_user
+from flask_security import login_required, roles_accepted, current_user
 from flask import (Blueprint, request, render_template, redirect, jsonify,
                    url_for, abort, current_app, send_file)
 from APITaxi_utils import fields
-from flask.ext.restplus import fields as basefields, marshal_with, Resource
+from flask_restplus import fields as basefields, marshal_with, Resource
 import os, uuid
 from PIL import Image
 

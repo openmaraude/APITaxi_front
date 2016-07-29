@@ -4,9 +4,9 @@ from APITaxi_models import taxis as taxis_models, administrative as administrati
 from APITaxi_utils.populate_obj import create_obj_from_json
 from APITaxi_utils.request_wants_json import request_wants_json
 from flask import Blueprint, render_template, request, redirect, url_for, current_app
-from flask.ext.security import login_required, current_user, roles_accepted
+from flask_security import login_required, current_user, roles_accepted
 from datetime import datetime
-from flask.ext.restplus import fields, Resource, reqparse, abort, marshal
+from flask_restplus import fields, Resource, reqparse, abort, marshal
 from APITaxi_utils.slack import slack as slacker
 from APITaxi_utils.resource_metadata import ResourceMetadata
 

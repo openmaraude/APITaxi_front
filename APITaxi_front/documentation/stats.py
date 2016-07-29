@@ -4,8 +4,8 @@ from collections import defaultdict
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func
 from flask import Blueprint, render_template, current_app
-from flask.ext.security import current_user
-from flask.ext.restful import request
+from flask_security import current_user
+from flask_restful import request
 from ..extensions import user_datastore
 from APITaxi_models import db
 from APITaxi_models.taxis import Taxi, ADS
