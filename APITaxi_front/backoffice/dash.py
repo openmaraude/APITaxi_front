@@ -1,6 +1,6 @@
 #coding: utf-8
 from flask import Blueprint, render_template, current_app
-from flask.ext.login import login_required, current_user
+from flask_login import login_required, current_user
 from APITaxi_models.administrative import ZUPC
 from APITaxi_models.taxis import ADS
 

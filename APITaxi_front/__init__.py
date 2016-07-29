@@ -9,7 +9,7 @@ __doc__ = "Frontend of api.taxi"
 def create_app(sqlalchemy_uri=None):
     from flask import Flask, request_started, request, request_finished, g
     from flask_bootstrap import Bootstrap
-    from flask.ext.dogpile_cache import DogpileCache
+    from flask_dogpile_cache import DogpileCache
     import os
 
     app = Flask(__name__)
@@ -43,7 +43,7 @@ def create_app(sqlalchemy_uri=None):
     request_started.connect(check_version, app)
     request_finished.connect(add_version_header, app)
 
-    from flask.ext.uploads import configure_uploads
+    from flask_uploads import configure_uploads
     from .backoffice.extensions import images
     configure_uploads(app, (images))
     from APITaxi_utils.login_manager import init_app as init_login_manager

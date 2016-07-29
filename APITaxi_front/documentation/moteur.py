@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Blueprint, render_template
-from flask.ext.security import current_user
+from flask_security import current_user
 
 mod = Blueprint('documentation_moteur', __name__)
 

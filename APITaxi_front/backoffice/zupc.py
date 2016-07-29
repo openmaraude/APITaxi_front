@@ -2,8 +2,8 @@
 from APITaxi_models import administrative as administrative_models
 from .forms.administrative import ZUPCreateForm, ZUPCUpdateForm
 from APITaxi_utils.request_wants_json import request_wants_json
-from flask.ext.security import login_required, roles_accepted, current_user
-from flask.ext.restplus import reqparse, marshal
+from flask_security import login_required, roles_accepted, current_user
+from flask_restplus import reqparse, marshal
 from flask import (Blueprint, request, render_template, redirect, jsonify,
                    url_for, current_app)
 from psycopg2.extras import RealDictCursor

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Blueprint, render_template, current_app
-from flask.ext.security import current_user
+from flask_security import current_user
 from ..extensions import user_datastore
 from APITaxi_models.taxis import Taxi
 from functools import partial
