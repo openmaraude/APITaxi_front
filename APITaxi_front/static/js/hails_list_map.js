@@ -45,7 +45,7 @@
     </thead>
     <tbody>
         <tr each={hails}>
-            <td><a href="/hails/{id}/_explore">{id}</a></td>
+            <td><a href="/hails/{id}/_map">{id}</a></td>
             <td>{creation_datetime}</td>
             <td>{added_by}</td>
             <td>{operateur}</td>
