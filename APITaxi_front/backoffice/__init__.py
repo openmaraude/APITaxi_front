@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 def init_app(app):
+    from APITaxi_models.hail import Hail
     from . import ads, drivers, home, user_key, zupc, profile, dash, hails
     app.register_blueprint(ads.mod)
     app.register_blueprint(drivers.mod)
