@@ -7,23 +7,19 @@ try {
 }
 </json>
 <hailmap>
-    <h1>Hails  and PUT</h1>
-    <div style="float: left;">
-    <div>
-        <div id="map"></div>
-        <div><h3>Distance : {dist_}</h3></div>
-        <div><h3>Adresse du client : {address}</h3></div>
-    </div>
-    <div>
-        <div id="error">{error}</div>
-        <ul>
-        <li each={state, i in hails_states}>
-            <h4>Method: {state.method} @ {state.datetime}</h4><br/>
-            <h5>Initial status: {state.initial_status}</h5>
-        </li>
-        </ul>
-    </div>
-    </div>
+            <div><h3>Distance : {dist_}</h3></div>
+            <div><h3>Adresse envoyée par le client : {address}</h3></div>
+            <div><h3>Adresse reverse géocodée du client : {reverse}</h3></div>
+            <div><br/></div>
+            <div><h2>Status</h2></div>
+            <div>
+                <ul>
+                    <li each={state, i in hails_states}>
+                        <h4>Method: {state.method} @ {state.datetime}</h4><br/>
+                        <h5>Initial status: {state.initial_status}</h5>
+                    </li>
+                </ul>
+            </div>
     this.hails_states = [];
     this.error = '';
     load() {
@@ -65,12 +61,31 @@ try {
                        markerColor: 'blue',
                        prefix: 'fa'
                    });
-                   var m1 = L.marker([r['customer_lat'], r['customer_lon']],
-                            {icon: customerMarker}).addTo(map);
-                   var m2 = L.marker([r['taxi']['lat'], r['taxi']['lon']],
-                            {icon: carMarker}).addTo(map);
+                   var customer_coords = [r['customer_lat'], r['customer_lon']];
+                   var taxi_coords = [r['taxi']['lat'], r['taxi']['lon']];
+                   var m1 = L.marker(customer_coords, {icon: customerMarker})
+                       .addTo(map)
+                       .bindTooltip("Adresse: "+this.address);
+                   var m2 = L.marker(taxi_coords, {icon: carMarker}).addTo(map);
+                   var line = L.polyline([customer_coords, taxi_coords], {color: 'grey'})
+                       .addTo(map).bindTooltip("Distance: "+this.dist_, {permanent:true});
                    var group = new L.featureGroup([m1, m2]);
                    map.fitBounds(group.getBounds());
+                   var url_reverse = 'http://api-adresse.data.gouv.fr/reverse/?lat='+
+                                      customer_coords[0]+'&lon='+customer_coords[1];
+
+                   fetch(url_reverse)
+                       .then(function(response2){
+                            const status = response2 ? response2.status : 500;
+                            if (status === 200) {
+                                return response2.json();
+                            }
+                            throw response2;
+                       })
+                       .then(function(r2){
+                            this.reverse = r2['features'][0]['properties']['label'];
+                            this.update();
+                       }.bind(this));
                 }
                 if (this.hails_states.length == 0) {
                     this.error = "No log for this hail";
