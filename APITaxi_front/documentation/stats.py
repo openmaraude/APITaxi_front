@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from collections import defaultdict
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from flask import Blueprint, render_template, current_app
 from flask_security import current_user
 from flask_restful import request
@@ -32,6 +32,7 @@ def stats_taxis(dep):
 
     depattern = '{0:02d}%'.format(dep) if dep else '%'
     last_day = datetime.now() + timedelta(days=-1)
+    last_week = datetime.now() + timedelta(days=-7)
     last_6months = datetime.now() + relativedelta(months=-6)
 
 
@@ -48,7 +49,7 @@ def stats_taxis(dep):
                                     func.count('0').label('nactivetaxis')) \
                    .join(Taxi.ads) \
                    .filter(ADS.insee.like(depattern)) \
-                   .filter(Taxi.last_update_at >= last_6months) \
+                   .filter(Taxi.last_update_at >= last_week) \
                    .group_by(Taxi.added_by)
 
         nb_active_taxis = db.session.query(Taxi.added_by,
@@ -69,7 +70,7 @@ def stats_taxis(dep):
                                     func.count('0').label('nactivetaxis')) \
                    .join(Taxi.ads) \
                    .filter(ADS.insee.like(depattern)) \
-                   .filter(Taxi.last_update_at >= last_6months) \
+                   .filter(Taxi.last_update_at >= last_week) \
                    .filter(Taxi.added_by == current_user.id) \
                    .group_by(Taxi.added_by)
 
@@ -92,7 +93,7 @@ def stats_taxis(dep):
                                     func.count('0').label('nactivetaxis')) \
                    .join(Taxi.ads) \
                    .filter(ADS.insee.like(depattern)) \
-                   .filter(Taxi.last_update_at >= last_6months)
+                   .filter(Taxi.last_update_at >= last_week)
 
         nb_active_taxis = db.session.query(
                                            func.count('0').label('ntaxis'),
@@ -176,6 +177,7 @@ def stats_hails(dep):
                      .join(Taxi.ads) \
                      .filter(ADS.insee.like(depattern)) \
                      .filter(Hail.creation_datetime >= last_day) \
+                     .filter(Hail._status != 'customer_banned') \
                      .group_by(Hail.operateur_id) \
 
         nb_hails_ok_d = db.session.query(Hail.operateur_id,
@@ -184,7 +186,10 @@ def stats_hails(dep):
                         .join(Taxi.ads) \
                         .filter(ADS.insee.like(depattern)) \
                         .filter(Hail.creation_datetime >= last_day) \
-                        .filter(Hail._status == 'accepted_by_customer') \
+                        .filter(or_(Hail._status == 'accepted_by_customer', \
+                                    Hail._status == 'timeout_accepted_by_customer', \
+                                    Hail._status == 'customer_on_board', \
+                                    Hail._status == 'finished' )) \
                         .group_by(Hail.operateur_id) \
 
         nb_hails_y = db.session.query(Hail.operateur_id,
@@ -193,6 +198,7 @@ def stats_hails(dep):
                      .join(Taxi.ads) \
                      .filter(ADS.insee.like(depattern)) \
                      .filter(Hail.creation_datetime >= last_year) \
+                     .filter(Hail._status != 'customer_banned') \
                      .group_by(Hail.operateur_id) \
 
         nb_hails_ok_y = db.session.query(Hail.operateur_id,
@@ -201,7 +207,10 @@ def stats_hails(dep):
                         .join(Taxi.ads) \
                         .filter(ADS.insee.like(depattern)) \
                         .filter(Hail.creation_datetime >= last_year) \
-                        .filter(Hail._status == 'accepted_by_customer') \
+                        .filter(or_(Hail._status == 'accepted_by_customer', \
+                                    Hail._status == 'timeout_accepted_by_customer', \
+                                    Hail._status == 'customer_on_board', \
+                                    Hail._status == 'finished' )) \
                         .group_by(Hail.operateur_id) \
 
         for ha in nb_hails_d:
@@ -221,6 +230,7 @@ def stats_hails(dep):
                      .join(Taxi.ads) \
                      .filter(ADS.insee.like(depattern)) \
                      .filter(Hail.creation_datetime >= last_day) \
+                     .filter(Hail._status != 'customer_banned') \
                      .filter(Hail.operateur_id == current_user.id) \
                      .group_by(Hail.added_by) \
 
@@ -230,7 +240,10 @@ def stats_hails(dep):
                         .join(Taxi.ads) \
                         .filter(ADS.insee.like(depattern)) \
                         .filter(Hail.creation_datetime >= last_day) \
-                        .filter(Hail._status == 'accepted_by_customer') \
+                        .filter(or_(Hail._status == 'accepted_by_customer', \
+                                    Hail._status == 'timeout_accepted_by_customer', \
+                                    Hail._status == 'customer_on_board', \
+                                    Hail._status == 'finished' )) \
                         .filter(Hail.operateur_id == current_user.id) \
                         .group_by(Hail.added_by) \
 
@@ -240,6 +253,7 @@ def stats_hails(dep):
                      .join(Taxi.ads) \
                      .filter(ADS.insee.like(depattern)) \
                      .filter(Hail.creation_datetime >= last_year) \
+                     .filter(Hail._status != 'customer_banned') \
                      .filter(Hail.operateur_id == current_user.id) \
                      .group_by(Hail.added_by) \
 
@@ -249,7 +263,10 @@ def stats_hails(dep):
                         .join(Taxi.ads) \
                         .filter(ADS.insee.like(depattern)) \
                         .filter(Hail.creation_datetime >= last_year) \
-                        .filter(Hail._status == 'accepted_by_customer') \
+                        .filter(or_(Hail._status == 'accepted_by_customer', \
+                                    Hail._status == 'timeout_accepted_by_customer', \
+                                    Hail._status == 'customer_on_board', \
+                                    Hail._status == 'finished' )) \
                         .filter(Hail.operateur_id == current_user.id) \
                         .group_by(Hail.added_by) \
 
@@ -271,6 +288,7 @@ def stats_hails(dep):
                      .join(Taxi.ads) \
                      .filter(ADS.insee.like(depattern)) \
                      .filter(Hail.creation_datetime >= last_day) \
+                     .filter(Hail._status != 'customer_banned') \
                      .filter(Hail.added_by == current_user.id) \
                      .group_by(Hail.operateur_id) \
 
@@ -280,7 +298,10 @@ def stats_hails(dep):
                         .join(Taxi.ads) \
                         .filter(ADS.insee.like(depattern)) \
                         .filter(Hail.creation_datetime >= last_day) \
-                        .filter(Hail._status == 'accepted_by_customer') \
+                        .filter(or_(Hail._status == 'accepted_by_customer', \
+                                    Hail._status == 'timeout_accepted_by_customer', \
+                                    Hail._status == 'customer_on_board', \
+                                    Hail._status == 'finished' )) \
                         .filter(Hail.added_by == current_user.id) \
                         .group_by(Hail.operateur_id) \
 
@@ -290,6 +311,7 @@ def stats_hails(dep):
                      .join(Taxi.ads) \
                      .filter(ADS.insee.like(depattern)) \
                      .filter(Hail.creation_datetime >= last_year) \
+                     .filter(Hail._status != 'customer_banned') \
                      .filter(Hail.added_by == current_user.id) \
                      .group_by(Hail.operateur_id) \
 
@@ -299,7 +321,10 @@ def stats_hails(dep):
                         .join(Taxi.ads) \
                         .filter(ADS.insee.like(depattern)) \
                         .filter(Hail.creation_datetime >= last_year) \
-                        .filter(Hail._status == 'accepted_by_customer') \
+                        .filter(or_(Hail._status == 'accepted_by_customer', \
+                                    Hail._status == 'timeout_accepted_by_customer', \
+                                    Hail._status == 'customer_on_board', \
+                                    Hail._status == 'finished' )) \
                         .filter(Hail.added_by == current_user.id) \
                         .group_by(Hail.operateur_id) \
 
@@ -321,6 +346,7 @@ def stats_hails(dep):
                      .join(Taxi.ads) \
                      .filter(ADS.insee.like(depattern)) \
                      .filter(Hail.creation_datetime >= last_day) \
+                     .filter(Hail._status != 'customer_banned') \
 
         nb_hails_ok_d = db.session.query(
                                          func.count(Hail.id).label('nhails')) \
@@ -328,7 +354,10 @@ def stats_hails(dep):
                         .join(Taxi.ads) \
                         .filter(ADS.insee.like(depattern)) \
                         .filter(Hail.creation_datetime >= last_day) \
-                        .filter(Hail._status == 'accepted_by_customer') \
+                        .filter(or_(Hail._status == 'accepted_by_customer', \
+                                    Hail._status == 'timeout_accepted_by_customer', \
+                                    Hail._status == 'customer_on_board', \
+                                    Hail._status == 'finished' )) \
 
         nb_hails_y = db.session.query(
                                       func.count(Hail.id).label('nhails')) \
@@ -336,6 +365,7 @@ def stats_hails(dep):
                      .join(Taxi.ads) \
                      .filter(ADS.insee.like(depattern)) \
                      .filter(Hail.creation_datetime >= last_year) \
+                     .filter(Hail._status != 'customer_banned') \
 
         nb_hails_ok_y = db.session.query(
                                          func.count(Hail.id).label('nhails')) \
@@ -343,7 +373,10 @@ def stats_hails(dep):
                         .join(Taxi.ads) \
                         .filter(ADS.insee.like(depattern)) \
                         .filter(Hail.creation_datetime >= last_year) \
-                        .filter(Hail._status == 'accepted_by_customer') \
+                        .filter(or_(Hail._status == 'accepted_by_customer', \
+                                    Hail._status == 'timeout_accepted_by_customer', \
+                                    Hail._status == 'customer_on_board', \
+                                    Hail._status == 'finished' )) \
 
     
     tab_nb_hails['Total']['nhails_d'] = 0

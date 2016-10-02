@@ -23,9 +23,9 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
 
 <h2>Nombres de Taxis</h2>
 <table class="pure-table pure-table-bordered pure-table-horizontal pure-table-striped">
-    <thead><tr><td>Opérateur</td><td title="Taxis actifs sur les dernières 24h">Taxis actifs</td><td title="(Taxis actifs sur les 6 derniers mois)">(Taxis total)</td></tr></thead>
+    <thead><tr><td>Opérateur</td><td title="Taxis actifs sur les dernières 24h">Taxis actifs du jour</td><td title="Taxis actifs sur les derniers 7j">Taxis actifs de la semaine</td></tr></thead>
        {% for k, v in nb_taxis|dictsort %}
-       <tr><td>{{ k }}</td><td>{{ v['nactivetaxis']|default("0", True) }}</td><td>({{ v['ntaxis']|default("0", True) }})</td></tr>
+       <tr><td>{{ k }}</td><td>{{ v['nactivetaxis']|default("0", True) }}</td><td>{{ v['ntaxis']|default("0", True) }}</td></tr>
        {% endfor %}
 </table>
 
