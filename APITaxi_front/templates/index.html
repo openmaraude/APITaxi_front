@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('static', filename='css/pure-tables.css')}}">
+{% endblock %}
+{% block content %}
+{% if user_name_list > 0 %}
+{% if is_admin %}
+Users:
+<select onchange="change_user(this.value);">
+    <option></option>
+    {% for user in user_name_list %}
+    <option value="{{ user }}">{{ user }}</option>
+    {% endfor %}
+</select>
+{% endif %}
+<table id="taxis" class="pure-table" style="visibility:hidden">
+    <thead>
+        <tr>
+            <td>Id</td>
+            <td>Status final</td>
+            <td>Distance client/taxi</td>
+            <td>Map</td>
+            <td>Explore</td>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script type="text/javascript">
+var users = {{ user_json|safe }};
+function change_user(user_name) {
+    document.getElementById('taxis').style.visibility = 'visible';
+    var sel = document.getElementById('taxis').childNodes[3];
+    sel.innerHTML = "";
+    var taxis = users[user_name]
+    for(var i=0; i<taxis.length; ++i) {
+        var taxi = taxis[i];
+        sel.innerHTML += '<tr><td colspan="4"><b>Taxi: '+ taxi[0] +'</b></td></tr>';
+        var hails = taxi[1];
+        for(var j=0; j<hails.length; ++j) {
+            var hail = hails[j];
+            sel.innerHTML += '<tr>' +
+                '<td>' + hail[0] + '</td>' +
+                '<td>' + hail[1] + '</td>' +
+                '<td>' + hail[2] + '</td>' +
+                '<td>Map</td>' +
+                '<td>Explore</td></tr>';
+        }
+    }
+}
+
+window.onload = function loaded() {
+    var l_url = document.URL.split('#');
+    if (l_url.length >= 2 && l_url[1] == 'showtable') {
+        change_user("{{user_name_list[0]}}");
+    }
+};
+{% endif %}
+</script>
+{% endblock %}
