@@ -37,7 +37,7 @@ function change_user(user_name) {
     var taxis = users[user_name]
     for(var i=0; i<taxis.length; ++i) {
         var taxi = taxis[i];
-        sel.innerHTML += '<tr><td colspan="4"><b>Taxi: '+ taxi[0] +'</b></td></tr>';
+        sel.innerHTML += '<tr><td colspan="4"><b>Taxi '+ taxi[2] +' ('+ taxi[0] +')</b></td></tr>';
         var hails = taxi[1];
         for(var j=0; j<hails.length; ++j) {
             var hail = hails[j];

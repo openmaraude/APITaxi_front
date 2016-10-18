@@ -4,6 +4,7 @@ from flask_security import login_required, current_user
 from APITaxi_utils import request_wants_json
 from APITaxi_models.security import User
 from APITaxi_models.hail import Hail
+from APITaxi_models.taxis import Taxi
 from datetime import datetime, timedelta
 from itertools import groupby
 import json
@@ -11,11 +12,13 @@ from geopy.distance import vincenty
 
 class HailEncoder(json.JSONEncoder):
     def default(self, obj):
-        if not isinstance(obj, Hail):
-            return json.JSONEncoder.default(self, obj)
-        return [obj.id, obj.status,
+        if isinstance(obj, Hail):
+            return [obj.id, obj.status,
                vincenty(obj.customer_lat, obj.customer_lon,
                        obj.initial_taxi_lat, obj.initial_taxi_lon).meters]
+        elif isinstance(obj, Taxi):
+            return obj.vehicle.licence_plate
+        return json.JSONEncoder.default(self, obj)
 
 
 mod = Blueprint('home_bo', __name__)
@@ -37,7 +40,9 @@ def home():
                             Hail._status.in_(['timeout_taxi', 'declined_by_taxi'])
         ).all()
         hails_sorted = sorted(hails, key=lambda h: h.taxi_id)
-        hails_grouped = [(v[0], list(v[1])) for v in groupby(hails_sorted, key=lambda h: h.taxi_id)]
+        hails_grouped = [(v[0], list(v[1]), Taxi.query.get(v[0]))
+                         for v in groupby(hails_sorted, key=lambda h: h.taxi_id)
+                        ]
         users[user.email] = sorted(hails_grouped, key=lambda l: len(l[1]), reverse=True)
     return render_template('index.html',
                           user_name_list=[u.email for u in user_list],
