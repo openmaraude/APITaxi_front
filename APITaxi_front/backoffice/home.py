@@ -44,7 +44,7 @@ def home():
         hails_grouped = [(v[0], list(v[1]), Taxi.query.get(v[0]))
                          for v in groupby(hails_sorted, key=lambda h: h.taxi_id)
                         ]
-        users[user.email] = sorted(hails_grouped, key=lambda l: len(l[1]), reverse=True)
+        users[user.email] = sorted(hails_grouped, key=lambda l: len(l[1]), reverse=True)[20:]
     return render_template('index.html',
                           user_name_list=[u.email for u in user_list],
                           user_json=json.dumps(users, cls=HailEncoder),
