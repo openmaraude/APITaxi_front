@@ -27,7 +27,7 @@ mod = Blueprint('home_bo', __name__)
 @login_required
 def home():
     if current_user.has_role('admin'):
-        user_list = [u for u in User.query.all() if "operateur" in u.roles]
+        user_list = [u for u in User.query.all() if u.has_role('operateur')]
     elif current_user.has_role('operateur'):
         user_list = [current_user]
     else:
