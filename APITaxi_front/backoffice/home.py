@@ -35,7 +35,7 @@ def home():
     users = {}
     for user in user_list:
         hails = Hail.query.filter(
-                            Hail.added_by == user.id,
+                            Hail.operateur_id == user.id,
                             Hail.added_at >= datetime.now() - timedelta(weeks=1),
                             Hail._status.in_(['timeout_taxi', 'declined_by_taxi',
                                              'incident_taxi'])
