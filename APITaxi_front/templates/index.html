@@ -85,7 +85,7 @@ function change_user(user_name) {
         return;
     }
     $.ajax({
-          url: '/stats?user='+user_name,
+          url: '/stats_hails?user='+user_name,
           type: 'GET',
           dataType: 'json',
           beforeSend: function(xhr) {
