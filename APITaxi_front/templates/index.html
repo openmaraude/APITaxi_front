@@ -1,9 +1,12 @@
 {% extends "base.html" %}
+
 {% block styles %}
 {{super()}}
 <link rel="stylesheet" href="{{url_for('static', filename='css/pure-tables.css')}}">
 {% endblock %}
+
 {% block content %}
+  {{super()}}
 {% if user_name_list > 0 %}
 {% if is_admin %}
 Users:
@@ -14,6 +17,8 @@ Users:
     {% endfor %}
 </select>
 {% endif %}
+<div class="row">
+    <div class="col-md-6">
 <table id="taxis" class="pure-table" style="visibility:hidden">
     <thead>
         <tr>
@@ -27,36 +32,131 @@ Users:
     <tbody>
     </tbody>
 </table>
+</div>
+<div id="charts" class="col-md-6"></div>
+</div>
+{% endif %}
+{% endblock %}
 
+
+{% block scripts %}
+{% if user_name_list > 0 %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
 <script type="text/javascript">
-var users = {{ user_json|safe }};
+var titles = {
+    "ok": "Finalisée",
+    "declined_by_taxi": "Refusée par le taxi",
+    "declined_by_customer": "Refusée par le client"
+};
 function change_user(user_name) {
-    document.getElementById('taxis').style.visibility = 'visible';
-    var sel = document.getElementById('taxis').childNodes[3];
-    sel.innerHTML = "";
-    var taxis = users[user_name]
-    for(var i=0; i<taxis.length; ++i) {
-        var taxi = taxis[i];
-        sel.innerHTML += '<tr><td colspan="4"><b>Taxi '+ taxi[2] +' ('+ taxi[0] +')</b></td></tr>';
-        var hails = taxi[1];
-        for(var j=0; j<hails.length; ++j) {
-            var hail = hails[j];
-            sel.innerHTML += '<tr>' +
-                '<td>' + hail[0] + '</td>' +
-                '<td>' + hail[1] + '</td>' +
-                '<td>' + hail[2] + '</td>' +
-                '<td><a href="/hails/' + hail[0] + '/_map">Map</a></td>' +
-                '<td><a href="/hails/' + hail[0] + '/_explore">Explore</a></td></tr>';
+    $.ajax({
+          url: '/table?user='+user_name,
+          type: 'GET',
+          dataType: 'json',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-VERSION", "2");
+            xhr.setRequestHeader("X-API-KEY", "{{ apikey }}");
+            xhr.setRequestHeader("Accept", "application/json");
+          },
+          success: function(data) {
+            document.getElementById('taxis').style.visibility = 'visible';
+            var sel = document.getElementById('taxis').childNodes[3];
+            sel.innerHTML = "";
+            var taxis = data.data;
+            for(var i=0; i<taxis.length; ++i) {
+                var taxi = taxis[i];
+                sel.innerHTML += '<tr><td colspan="4">'
+                    +'<b>Taxi '+ taxi[2] +' ('+ taxi[0] +')</b></td></tr>';
+                var hails = taxi[1];
+                for(var j=0; j<hails.length; ++j) {
+                    var hail = hails[j];
+                    sel.innerHTML += '<tr>' +
+                    '<td>' + hail[0] + '</td>' +
+                    '<td>' + hail[1] + '</td>' +
+                    '<td>' + hail[2] + '</td>' +
+                    '<td><a href="/hails/' + hail[0] + '/_map">Map</a></td>' +
+                    '<td><a href="/hails/' + hail[0] + '/_explore">Explore</a></td></tr>';
+                }
+            }
         }
+    });
+    var l_url = document.URL.split('#');
+    if (l_url.length <= 1 || l_url[1] != 'showgraph') {
+        return;
     }
+    $.ajax({
+          url: '/stats?user='+user_name,
+          type: 'GET',
+          dataType: 'json',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-VERSION", "2");
+            xhr.setRequestHeader("X-API-KEY", "{{ apikey }}");
+            xhr.setRequestHeader("Accept", "application/json");
+          },
+          success: function(data) {
+            $("#charts").empty();
+            data.data.map(function(v, index1) {
+              if (data.data.length > 1) {
+                $("#charts").append($("<h2>" + v.email + "</h2>"));
+              }
+              Object.keys(v).map(function(key) {
+                if (key == 'email' || v[key].length == 0 || key == "total") {
+                  return;
+                }
+                var newChart = $("<canvas></canvas>")
+                      .attr("width", 600).attr("height", 400)
+                      .attr("id", "canva-"+index1+"-"+key)
+                ;
+                $("#charts").append(newChart);
+                new Chart(newChart, {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(v[key]).sort().map(
+                          function(d){
+                              return new Date(d).toISOString().slice(0, 10);
+                          }
+                        ),
+                        datasets: [{
+                            label: titles[key],
+                            data: Object.keys(v[key]).sort().map(
+                              function(d){
+                                return ((v[key][d]/v['total'][d])*100).toFixed(2);
+                              })
+                        }]
+                    },
+                    options: {
+                        scales: {
+                          yAxes: [{
+                              display: true,
+                              ticks: {
+                                  beginAtZero: true,
+                                  max: 100
+                              }
+                          }]
+                        },
+                        responsive: false,
+                        maintainAspectRatio: true,
+                        tooltips: {
+                            callbacks:{
+                                label: function(items, data) {
+                                    return [items.yLabel + "%",
+                                        "# " + v[key][items.xLabel]];
+                                }
+                            }
+                        }
+                    },
+                 });
+               });
+            });
+          },
+    });
 }
 
 window.onload = function loaded() {
-    var l_url = document.URL.split('#');
-    if (l_url.length >= 2 && l_url[1] == 'showtable') {
-        change_user("{{user_name_list[0]}}");
-    }
-};
+    change_user("{{user_name_list[0]}}");
+}
+
 </script>
+  {{super()}}
 {% endif %}
 {% endblock %}
