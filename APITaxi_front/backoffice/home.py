@@ -72,7 +72,7 @@ def table():
             cls=HailEncoder))})
 
 
-@mod.route('/stats')
+@mod.route('/stats_hails')
 @login_required
 def stats():
     statuses = {"declined_by_taxi": ["timeout_taxi", "declined_by_taxi", "incident_taxi"],
