@@ -59,29 +59,33 @@ function change_user(user_name) {
             xhr.setRequestHeader("Accept", "application/json");
           },
           success: function(data) {
-            document.getElementById('taxis').style.visibility = 'visible';
-            var sel = document.getElementById('taxis').childNodes[3];
-            sel.innerHTML = "";
-            var taxis = data.data;
-            for(var i=0; i<taxis.length; ++i) {
-                var taxi = taxis[i];
-                sel.innerHTML += '<tr><td colspan="4">'
-                    +'<b>Taxi '+ taxi[2] +' ('+ taxi[0] +')</b></td></tr>';
-                var hails = taxi[1];
-                for(var j=0; j<hails.length; ++j) {
-                    var hail = hails[j];
-                    sel.innerHTML += '<tr>' +
+            $("#taxis").css('visibility', 'visible');
+            var sel = $("#taxis tbody");
+            sel.empty();
+            data.data.map(function(taxi) {
+                sel.append('<tr><td colspan="4">'
+                    +'<b>Taxi '+ taxi["taxi"]["licence"] +' ('+ taxi["id"] +')</b></td></tr>'
+                );
+                if (document.URL.split('#').indexOf("showdetails") != -1) {
+                    sel.append(
+                            '<tr><td colspan="4">Courses reçues: ' + taxi["taxi"]["received"]
+                          + ' acceptées: ' + taxi["taxi"]["accepted"]
+                          + ' confirmées client: ' + taxi["taxi"]["accepted_customer"]
+                          + '</td></tr>'
+                    );
+                }
+                taxi.hails.map(function(hail) {
+                    sel.append('<tr>' +
                     '<td>' + hail[0] + '</td>' +
                     '<td>' + hail[1] + '</td>' +
                     '<td>' + hail[2] + '</td>' +
                     '<td><a href="/hails/' + hail[0] + '/_map">Map</a></td>' +
-                    '<td><a href="/hails/' + hail[0] + '/_explore">Explore</a></td></tr>';
-                }
-            }
+                    '<td><a href="/hails/' + hail[0] + '/_explore">Explore</a></td></tr>');
+                });
+            });
         }
     });
-    var l_url = document.URL.split('#');
-    if (l_url.length <= 1 || l_url[1] != 'showgraph') {
+    if (document.URL.split('#').indexOf("showgraph") == -1) {
         return;
     }
     $.ajax({
