@@ -25,6 +25,7 @@ Users:
             <td>Id</td>
             <td>Status final</td>
             <td>Distance client/taxi</td>
+            <td>Date</td>
             <td>Map</td>
             <td>Explore</td>
         </tr>
@@ -76,9 +77,10 @@ function change_user(user_name) {
                 }
                 taxi.hails.map(function(hail) {
                     sel.append('<tr>' +
-                    '<td>' + hail[0] + '</td>' +
-                    '<td>' + hail[1] + '</td>' +
-                    '<td>' + hail[2] + '</td>' +
+                    '<td>' + hail["id"] + '</td>' +
+                    '<td>' + hail["status"] + '</td>' +
+                    '<td>' + hail["distance"] + ' mètres</td>' +
+                    '<td>' + hail["date"] + '</td>' +
                     '<td><a href="/hails/' + hail[0] + '/_map">Map</a></td>' +
                     '<td><a href="/hails/' + hail[0] + '/_explore">Explore</a></td></tr>');
                 });

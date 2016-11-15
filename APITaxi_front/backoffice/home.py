@@ -56,10 +56,13 @@ def table():
     class HailEncoder(json.JSONEncoder):
         def default(self, obj):
             if isinstance(obj, Hail):
-                return [obj.id, obj.status,
-                        '{:d} mètres'.format(trunc(
+                return {"id": obj.id,
+                        "status": obj.status,
+                        "date": obj.added_at.isoformat(),
+                        "distance": trunc(
                             vincenty((obj.customer_lat, obj.customer_lon),
-                           (obj.initial_taxi_lat, obj.initial_taxi_lon)).meters))]
+                                     (obj.initial_taxi_lat, obj.initial_taxi_lon)).meters)
+                }
             elif isinstance(obj, Taxi):
                 q = db.session.query(func.count('id')).filter(Hail.taxi_id == obj.id,
                                                               *filters)
