@@ -6,7 +6,7 @@ from APITaxi_utils import request_wants_json
 from APITaxi_models.security import User, db
 from APITaxi_models.hail import Hail
 from APITaxi_models.taxis import Taxi
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from itertools import groupby
 import json
 from geopy.distance import vincenty
@@ -99,9 +99,12 @@ def stats():
         abort(400)
 
     res = []
+    begin_date = date.today() - timedelta(weeks=2)
+    range_date = [(begin_date + timedelta(days=d)).isoformat() for d in
+                  range(0, (date.today() - begin_date).days)]
     for user in user_list:
         email = user.email if user else 'total'
-        filters = [Hail.added_at >= datetime.now() - timedelta(weeks=2)]
+        filters = [Hail.added_at >= begin_date]
         if user and user.has_role('moteur'):
             filters += [Hail.added_by == user.id]
         if user and user.has_role('operateur'):
@@ -121,7 +124,8 @@ def stats():
                 ).order_by(
                     func.date(Hail.added_at)
             )
-            res[-1][key] = {k_v[0].isoformat(): k_v[1] for k_v in q.all()}
+            tmp = {k_v[0].isoformat(): k_v[1] for k_v in q.all()}
+            res[-1][key] = {d: tmp.get(d, 0) for d in range_date}
     return jsonify({"data": res})
 
 

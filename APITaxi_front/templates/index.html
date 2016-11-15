@@ -120,7 +120,11 @@ function change_user(user_name) {
                             label: titles[key],
                             data: Object.keys(v[key]).sort().map(
                               function(d){
-                                return ((v[key][d]/v['total'][d])*100).toFixed(2);
+                                  if (v['total'][d] != 0) {
+                                      return ((v[key][d]/v['total'][d])*100).toFixed(2);
+                                  } else {
+                                      return 0;
+                                  }
                               })
                         }]
                     },
