@@ -13,17 +13,6 @@ from geopy.distance import vincenty
 from math import trunc
 from sqlalchemy import func
 
-class HailEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Hail):
-            return [obj.id, obj.status,
-                    '{:d} mètres'.format(trunc(
-                        vincenty((obj.customer_lat, obj.customer_lon),
-                       (obj.initial_taxi_lat, obj.initial_taxi_lon)).meters))]
-        elif isinstance(obj, Taxi):
-            return obj.vehicle.licence_plate
-        return json.JSONEncoder.default(self, obj)
-
 
 mod = Blueprint('home_bo', __name__)
 
@@ -56,19 +45,40 @@ def table():
         user = current_user
     if not user:
         abort(400)
+    filters = [Hail.operateur_id == user.id,
+               Hail.added_at >= datetime.now() - timedelta(weeks=1),
+               Hail._status != 'customer_banned']
     hails = Hail.query.filter(
-                        Hail.operateur_id == user.id,
-                        Hail.added_at >= datetime.now() - timedelta(weeks=1),
-                        Hail._status.in_(['timeout_taxi', 'declined_by_taxi',
-                                         'incident_taxi'])
+        Hail._status.in_(['timeout_taxi', 'declined_by_taxi', 'incident_taxi']),
+        *filters
     ).all()
+
+    class HailEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, Hail):
+                return {"id": obj.id,
+                        "status": obj.status,
+                        "date": obj.added_at.isoformat(),
+                        "distance": trunc(
+                            vincenty((obj.customer_lat, obj.customer_lon),
+                                     (obj.initial_taxi_lat, obj.initial_taxi_lon)).meters)
+                }
+            elif isinstance(obj, Taxi):
+                q = db.session.query(func.count('id')).filter(Hail.taxi_id == obj.id,
+                                                              *filters)
+                return {"licence": obj.vehicle.licence_plate,
+                        "received": q.first()[0],
+                        "accepted": q.filter(Hail.change_to_accepted_by_taxi != None).first()[0],
+                        "accepted_customer": q.filter(Hail.change_to_accepted_by_customer != None).first()[0]}
+            return json.JSONEncoder.default(self, obj)
     hails_sorted = sorted(hails, key=lambda h: h.taxi_id)
-    hails_grouped = [(v[0], list(v[1]), Taxi.query.get(v[0]))
+    hails_grouped = [
+        {"id": v[0], "hails": list(v[1]), "taxi": Taxi.query.get(v[0])}
                      for v in groupby(hails_sorted, key=lambda h: h.taxi_id)
-                    ]
+    ]
     return jsonify({"data":
         json.loads(json.dumps(
-            sorted(hails_grouped, key=lambda l: len(l[1]), reverse=True)[:20],
+            sorted(hails_grouped, key=lambda l: len(l["hails"]), reverse=True)[:20],
             cls=HailEncoder))})
 
 
