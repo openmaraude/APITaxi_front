@@ -1,3 +1,4 @@
+var previousDate = undefined;
 function load(opts, other) {
     other.hails = [];
     var selection = {"moteur": [], "operateur": [], "status": []};
@@ -14,7 +15,9 @@ function load(opts, other) {
                     selection[o.parentElement.name].push(o.value);
                     return o.parentElement.name+'='+o.value
                 });
-        params.push('date='+$('#datetimepicker1 input').val());
+        if ($('#creation-date input').val()) {
+            params.push('date='+$('#creation-date input').val());
+        }
         fetch('/hails/?p='+page+'&'+params.join('&'), {headers:headers})
             .then(function(response) {
                 return response.json();
@@ -34,10 +37,15 @@ function load(opts, other) {
                 $('.selectpicker').on('change', function(){
                     getHails(1);
                 });
-                $('#datetimepicker1').datetimepicker({
-                    format: "YYYY/MM/DD hh:mm:00"
-                }).on('dp.change', function (e) {
-                    getHails(1);
+                $('#creation-date').datepicker({
+                    autoclose: true,
+                    todayHighlight: true,
+                    format: 'yyyy/mm/dd'
+                }).on('changeDate', function(e){
+                    if (e.date != previousDate) {
+                        previousDate = e.date;
+                        getHails(1);
+                    }
                 });
                 if(r.meta.prev_page != null) {
                     $('#prev_page').removeClass('disabled');

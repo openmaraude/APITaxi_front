@@ -5,7 +5,7 @@
 {{super()}}
 <link rel="stylesheet" href="{{url_for('static', filename='css/pure-tables.css')}}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css">
-        <link href="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+<link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap-datepicker3.min.css')}}">
 {% endblock %}
 
 {% block scripts %}
@@ -13,11 +13,12 @@
 <script src="https://cdn.rawgit.com/github/fetch/master/fetch.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/riot/2.3.17/riot+compiler.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-datepicker.min.js')}}"></script>
 
 <script src="{{url_for('static', filename='js/hail_load.js')}}" type="riot/tag"></script>
 <script src="{{url_for('static', filename='js/hails.js')}}" type="riot/tag"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js"></script>
-<script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
+
 <script>
 var m = {{moteurs|safe}};
 var o = {{operateurs|safe}};
