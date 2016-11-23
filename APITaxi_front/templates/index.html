@@ -73,7 +73,9 @@ function change_user(user_name) {
             sel.empty();
             data.data.map(function(taxi) {
                 sel.append('<tr><td colspan="4">'
-                    +'<b>Taxi '+ taxi["taxi"]["licence"] +' ('+ taxi["id"] +')</b></td></tr>'
+                    +'<b>Taxi '+ taxi["taxi"]["licence"]
+                    +' (<a href="/taxis/'+ taxi["id"] +'/hails/_explore">'+ taxi["id"]
+                    +'</a>)</b></td></tr>'
                 );
                 if (document.URL.split('#').indexOf("showdetails") != -1) {
                     sel.append(

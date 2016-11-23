@@ -6,9 +6,10 @@ from APITaxi_models.security import User
 mod = Blueprint('hail', __name__)
 
 @mod.route('/hails/_explore')
+@mod.route('/taxis/<string:taxi_id>/hails/_explore')
 @login_required
 @roles_accepted('admin', 'operateur', 'moteur')
-def hails_explore():
+def hails_explore(taxi_id=None):
     if 'id' in request.args:
         return hails_log(request.args['id'])
     operateurs = []
@@ -20,7 +21,7 @@ def hails_explore():
             moteurs.append(str(u.email))
     return render_template('hails.html', apikey=current_user.apikey,
                           statuses=status_enum_list, operateurs=operateurs,
-                          moteurs=moteurs)
+                          moteurs=moteurs, taxi_id=taxi_id)
 
 
 @mod.route('/hails/<string:hail_id>/_explore')
