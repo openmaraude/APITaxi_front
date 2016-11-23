@@ -91,8 +91,8 @@ function change_user(user_name) {
                     '<td>' + hail["status"] + '</td>' +
                     '<td>' + hail["distance"] + ' mètres</td>' +
                     '<td>' + hail["date"] + '</td>' +
-                    '<td><a href="/hails/' + hail[0] + '/_map">Map</a></td>' +
-                    '<td><a href="/hails/' + hail[0] + '/_explore">Explore</a></td></tr>');
+                    '<td><a href="/hails/' + hail["id"] + '/_map">Map</a></td>' +
+                    '<td><a href="/hails/' + hail["id"] + '/_explore">Explore</a></td></tr>');
                 });
             })
         }
