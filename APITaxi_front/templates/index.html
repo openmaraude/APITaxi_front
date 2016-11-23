@@ -45,9 +45,17 @@ Users:
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
 <script type="text/javascript">
 var titles = {
-    "ok": "Finalisée",
-    "declined_by_taxi": "Refusée par le taxi",
-    "declined_by_customer": "Refusée par le client"
+    "ok": {"ok": "Finalisée"},
+    "declined_by_taxi": {"timeout": "timeout", "declined": "Refusée par le taxi",
+                         "total": "Total vu comme refusé par le taxi"},
+    "declined_by_customer": {"timeout": "timeout",
+                             "declined": "Non reconfirmée par le client",
+                             "total": "Total vu comme non reconfirmée par le client"}
+};
+var short_titles = {
+    "timeout": "timeouts",
+    "declined": "refusées",
+    "total": "total", "ok": "ok"
 };
 function change_user(user_name) {
     $.ajax({
@@ -84,7 +92,7 @@ function change_user(user_name) {
                     '<td><a href="/hails/' + hail[0] + '/_map">Map</a></td>' +
                     '<td><a href="/hails/' + hail[0] + '/_explore">Explore</a></td></tr>');
                 });
-            });
+            })
         }
     });
     if (document.URL.split('#').indexOf("showgraph") == -1) {
@@ -117,22 +125,25 @@ function change_user(user_name) {
                 new Chart(newChart, {
                     type: 'line',
                     data: {
-                        labels: Object.keys(v[key]).sort().map(
+                        labels: Object.keys(v[key][Object.keys(v[key])[0]]).sort().map(
                           function(d){
                               return new Date(d).toISOString().slice(0, 10);
                           }
                         ),
-                        datasets: [{
-                            label: titles[key],
-                            data: Object.keys(v[key]).sort().map(
-                              function(d){
-                                  if (v['total'][d] != 0) {
-                                      return ((v[key][d]/v['total'][d])*100).toFixed(2);
-                                  } else {
+                        datasets: Object.keys(v[key]).map(
+                          function(substatus){
+                              return {
+                                label: titles[key][substatus],
+                                data: Object.keys(v[key][substatus]).sort().map(
+                                  function(d){
+                                    if (v['total']['total'][d] != 0) {
+                                      return ((v[key][substatus][d]/v['total']['total'][d])*100).toFixed(2);
+                                    } else {
                                       return 0;
-                                  }
-                              })
-                        }]
+                                    }
+                                  })
+                              };
+                        })
                     },
                     options: {
                         scales: {
@@ -149,8 +160,13 @@ function change_user(user_name) {
                         tooltips: {
                             callbacks:{
                                 label: function(items, data) {
-                                    return [items.yLabel + "%",
-                                        "# " + v[key][items.xLabel]];
+                                    var result = Object.keys(v[key]).map(
+                                      function(substatus) {
+                                        return v[key][substatus][items.xLabel]
+                                            + " " + short_titles[substatus];
+                                      });
+                                    result.unshift(items.yLabel + "%");
+                                    return result;
                                 }
                             }
                         }

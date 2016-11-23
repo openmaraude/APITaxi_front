@@ -85,11 +85,18 @@ def table():
 @mod.route('/stats_hails')
 @login_required
 def stats():
-    statuses = {"declined_by_taxi": ["timeout_taxi", "declined_by_taxi", "incident_taxi"],
-                "declined_by_customer": ["timeout_customer", "declined_by_customer",
-                                        "incident_customer"],
-                "ok": ["accepted_by_customer", "customer_on_board", "finished"],
-                "total": []}
+    statuses = {
+        "declined_by_taxi": {
+            "timeout": ["timeout_taxi"],
+            "declined": ["declined_by_taxi", "incident_taxi"]
+        },
+        "declined_by_customer": {
+            "timeout": ["timeout_customer"],
+            "declined": ["declined_by_customer", "incident_customer"]
+        },
+        "ok": {"ok": ["accepted_by_customer", "customer_on_board", "finished"]},
+        "total": {"total": []}
+    }
     user = None
     if current_user.has_role('admin'):
         parser = reqparse.RequestParser()
@@ -121,21 +128,29 @@ def stats():
             filters += [Hail.operateur_id == user.id]
         res.append({"email": email})
         for key in status_keys:
-            status_filters = [Hail._status != 'customer_banned']
-            if statuses[key]:
-                status_filters += [Hail._status.in_(statuses[key])]
-            q = db.session.query(
-                    func.date(Hail.added_at),
-                    func.count('id')
-                ).select_from(Hail).filter(
-                    *status_filters + filters
-                ).group_by(
-                    func.date(Hail.added_at)
-                ).order_by(
-                    func.date(Hail.added_at)
-            )
-            tmp = {k_v[0].isoformat(): k_v[1] for k_v in q.all()}
-            res[-1][key] = {d: tmp.get(d, 0) for d in range_date}
+            res[-1][key] = {}
+            for substatus, status_list in statuses[key].iteritems():
+                status_filters = [Hail._status != 'customer_banned']
+                if status_list:
+                    status_filters += [Hail._status.in_(status_list)]
+                q = db.session.query(
+                        func.date(Hail.added_at),
+                        func.count('id')
+                    ).select_from(Hail).filter(
+                        *status_filters + filters
+                    ).group_by(
+                        func.date(Hail.added_at)
+                    ).order_by(
+                        func.date(Hail.added_at)
+                )
+		tmp = {k_v[0].isoformat(): k_v[1] for k_v in q.all()}
+                res[-1][key][substatus] = {d: tmp.get(d, 0) for d in range_date}
+
+            if len(res[-1][key].keys()) > 1:
+                res[-1][key]['total'] = {
+                    v[0]: sum(v[1:])
+                        for v in zip(res[-1][key].values()[0].keys(),
+                                 *map(lambda d: d.values(), res[-1][key].values()))
+                }
+
     return jsonify({"data": res})
-
-
