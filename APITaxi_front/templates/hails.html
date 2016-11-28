@@ -24,7 +24,7 @@ var m = {{moteurs|safe}};
 var o = {{operateurs|safe}};
 var s = {{statuses|safe}};
 riot.mount('hails', {apikey:"{{ apikey }}", moteurs:m,
-    operateurs:o, statuses:s, taxi_id:"{{ taxi_id }}"});
+    operateurs:o, statuses:s, taxi_id:{% if taxi_id %}"{{ taxi_id|safe }}"{%else%}undefined{%endif%}});
 </script>
 {% endblock %}
 

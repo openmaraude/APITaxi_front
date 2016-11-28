@@ -18,7 +18,9 @@ function load(opts, other) {
         if ($('#creation-date input').val()) {
             params.push('date='+$('#creation-date input').val());
         }
-        params.push("taxi_id="+other.opts.taxi_id);
+        if (other.opts.taxi_id) {
+            params.push("taxi_id="+other.opts.taxi_id);
+        }
         fetch('/hails/?p='+page+'&'+params.join('&'), {headers:headers})
             .then(function(response) {
                 return response.json();
