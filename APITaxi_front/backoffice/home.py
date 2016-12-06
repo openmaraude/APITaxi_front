@@ -69,7 +69,10 @@ def table():
                 return {"licence": obj.vehicle.licence_plate,
                         "received": q.first()[0],
                         "accepted": q.filter(Hail.change_to_accepted_by_taxi != None).first()[0],
-                        "accepted_customer": q.filter(Hail.change_to_accepted_by_customer != None).first()[0]}
+                        "accepted_customer": q.filter(
+                            Hail.change_to_accepted_by_customer != None).first()[0],
+                        "internal_id": obj.vehicle.internal_id
+                       }
             return json.JSONEncoder.default(self, obj)
     hails_sorted = sorted(hails, key=lambda h: h.taxi_id)
     hails_grouped = [
