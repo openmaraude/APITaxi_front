@@ -77,14 +77,12 @@ function change_user(user_name) {
                     +' (<a href="/taxis/'+ taxi["id"] +'/hails/_explore">'+ taxi["id"]
                     +'</a>)</b></td></tr>'
                 );
-                if (document.URL.split('#').indexOf("showdetails") != -1) {
-                    sel.append(
-                            '<tr><td colspan="4">Courses reçues: ' + taxi["taxi"]["received"]
-                          + ' acceptées: ' + taxi["taxi"]["accepted"]
-                          + ' confirmées client: ' + taxi["taxi"]["accepted_customer"]
-                          + '</td></tr>'
-                    );
-                }
+                sel.append(
+                        '<tr><td colspan="4">Courses reçues: ' + taxi["taxi"]["received"]
+                      + ' acceptées: ' + taxi["taxi"]["accepted"]
+                      + ' confirmées client: ' + taxi["taxi"]["accepted_customer"]
+                      + '</td></tr>'
+                );
                 taxi.hails.map(function(hail) {
                     sel.append('<tr>' +
                     '<td>' + hail["id"] + '</td>' +
@@ -97,9 +95,6 @@ function change_user(user_name) {
             })
         }
     });
-    if (document.URL.split('#').indexOf("showgraph") == -1) {
-        return;
-    }
     $.ajax({
           url: '/stats_hails?user='+user_name,
           type: 'GET',
