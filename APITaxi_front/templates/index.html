@@ -17,6 +17,7 @@ Users:
     {% endfor %}
 </select>
 {% endif %}
+Rechercher un taxi : <input type="text" size="20" id="searchbox">
 <div class="row">
     <div class="col-md-6">
 <table id="taxis" class="pure-table" style="visibility:hidden">
@@ -57,9 +58,10 @@ var short_titles = {
     "declined": "refusées",
     "total": "total", "ok": "ok"
 };
-function change_user(user_name) {
+
+function call_api(url, success) {
     $.ajax({
-          url: '/table?user='+user_name,
+          url: url,
           type: 'GET',
           dataType: 'json',
           beforeSend: function(xhr) {
@@ -67,7 +69,12 @@ function change_user(user_name) {
             xhr.setRequestHeader("X-API-KEY", "{{ apikey }}");
             xhr.setRequestHeader("Accept", "application/json");
           },
-          success: function(data) {
+          success: success
+    });
+}
+
+function display_table(q) {
+    call_api('/table?'+q, function(data) {
             $("#taxis").css('visibility', 'visible');
             var sel = $("#taxis tbody");
             sel.empty();
@@ -97,18 +104,12 @@ function change_user(user_name) {
                     '<td><a href="/hails/' + hail["id"] + '/_explore">Explore</a></td></tr>');
                 });
             })
-        }
-    });
-    $.ajax({
-          url: '/stats_hails?user='+user_name,
-          type: 'GET',
-          dataType: 'json',
-          beforeSend: function(xhr) {
-            xhr.setRequestHeader("X-VERSION", "2");
-            xhr.setRequestHeader("X-API-KEY", "{{ apikey }}");
-            xhr.setRequestHeader("Accept", "application/json");
-          },
-          success: function(data) {
+        });
+}
+
+function change_user(user_name) {
+    display_table('user='+user_name);
+    call_api('/stats_hails?user='+user_name, function(data) {
             $("#charts").empty();
             data.data.map(function(v, index1) {
               if (data.data.length > 1) {
@@ -181,6 +182,9 @@ function change_user(user_name) {
 
 window.onload = function loaded() {
     change_user("{{user_name_list[0]}}");
+    document.getElementById("searchbox").addEventListener('input', function() {
+        display_table('q='+this.value);
+    });
 }
 
 </script>
