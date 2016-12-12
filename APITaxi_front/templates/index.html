@@ -75,10 +75,14 @@ function change_user(user_name) {
                 sel.append('<tr><td colspan="4">'
                     +'<b>Taxi '+ taxi["taxi"]["licence"]
                     +' (<a href="/taxis/'+ taxi["id"] +'/hails/_explore">'+ taxi["id"]
-                    +'</a>)</b></td></tr>'
+                    +'</a>)</b>'
                 );
+                if (taxi["internal_id"] != undefined) {
+                    sel.append(" identifiant interne: " + taxi["internal_id"])
+                }
                 sel.append(
-                        '<tr><td colspan="4">Courses reçues: ' + taxi["taxi"]["received"]
+                        '</td></tr>'
+                      + '<tr><td colspan="4">Courses reçues: ' + taxi["taxi"]["received"]
                       + ' acceptées: ' + taxi["taxi"]["accepted"]
                       + ' confirmées client: ' + taxi["taxi"]["accepted_customer"]
                       + '</td></tr>'
