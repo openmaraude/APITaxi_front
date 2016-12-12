@@ -132,9 +132,20 @@ function change_user(user_name) {
                           }
                         ),
                         datasets: Object.keys(v[key]).map(
-                          function(substatus){
+                          function(substatus, index){
+                              switch(index%6) {
+                                  case 0: borderColor = "rgba(60,80,20,1)"; break;
+                                  case 1: borderColor = "rgba(0,102,102,1)"; break;
+                                  case 2: borderColor = "rgba(153,102,0,1)"; break;
+                                  case 3: borderColor = "rgba(153,0,103,1)"; break;
+                                  case 4: borderColor = "rgba(153,204,51,1)"; break;
+                                  case 5: borderColor = "rgba(51,153,153,1)"; break;
+                              }
                               return {
                                 label: titles[key][substatus],
+                                borderColor: borderColor,
+                                backgroundColor: "white",
+                                borderWidth: 4,
                                 data: Object.keys(v[key][substatus]).sort().map(
                                   function(d){
                                     if (v['total']['total'][d] != 0) {
