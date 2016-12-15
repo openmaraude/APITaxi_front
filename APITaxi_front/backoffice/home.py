@@ -6,12 +6,13 @@ from APITaxi_utils import request_wants_json
 from APITaxi_models.security import User, db
 from APITaxi_models.hail import Hail
 from APITaxi_models.taxis import Taxi
+from APITaxi_models.vehicle import VehicleDescription, Vehicle
 from datetime import datetime, timedelta, date
 from itertools import groupby
 import json
 from geopy.distance import vincenty
 from math import trunc
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 
 mod = Blueprint('home_bo', __name__)
@@ -34,24 +35,57 @@ def home():
 @login_required
 def table():
     user = None
+    parser = reqparse.RequestParser()
+    parser.add_argument('user')
+    parser.add_argument('q')
+    args = parser.parse_args()
     if current_user.has_role('admin'):
-        parser = reqparse.RequestParser()
-        parser.add_argument('user')
-        args = parser.parse_args()
-        if not 'user' in args:
+        if not 'user' in args and not 'q' in args:
+            print  args
             abort(400)
         user = User.query.filter(User.email==args['user']).first()
     elif current_user.has_role('operateur'):
         user = current_user
-    if not user:
+    else:
         abort(400)
-    filters = [Hail.operateur_id == user.id,
-               Hail.added_at >= datetime.now() - timedelta(weeks=1),
+    filters = [Hail.added_at >= datetime.now() - timedelta(weeks=100),
                Hail._status != 'customer_banned']
-    hails = Hail.query.filter(
-        Hail._status.in_(['timeout_taxi', 'declined_by_taxi', 'incident_taxi']),
-        *filters
-    ).all()
+    taxis = []
+    if user:
+        filters.append(Hail.operateur_id == user.id)
+    if 'q' in args and args['q']:
+        q = args['q']
+        filters_taxi = [Taxi.id.like("%{}%".format(q)),]
+        vehicle_descs = VehicleDescription.query.filter(
+           VehicleDescription.internal_id.like("%{}%".format(q))).all()
+        if vehicle_descs:
+            filters_taxi.append(
+                Taxi.vehicle_id.in_([v.vehicle_id for v in vehicle_descs])
+            )
+        vehicles = Vehicle.query.filter(
+            Vehicle.licence_plate.like("%{}%".format(q))).all()
+        if vehicles:
+            filters_taxi.append(
+                Taxi.vehicle_id.in_([v.id for v in vehicles])
+            )
+
+        taxis = filter(
+            lambda t: current_user.has_role('admin') or
+                      any(map(lambda vd: vd.added_by == current_user.id,
+                          t.vehicle.descriptions)),
+            Taxi.query.filter(or_(*filters_taxi)).all()
+        )
+        if taxis:
+            filters.append(Hail.taxi_id.in_([t.id for t in taxis]))
+        else:
+            filters = None
+    if filters:
+        hails = Hail.query.filter(
+            Hail._status.in_(['timeout_taxi', 'declined_by_taxi', 'incident_taxi']),
+            *filters
+        ).all()
+    else:
+        hails = []
 
     class HailEncoder(json.JSONEncoder):
         def default(self, obj):
@@ -79,6 +113,9 @@ def table():
         {"id": v[0], "hails": list(v[1]), "taxi": Taxi.query.get(v[0])}
                      for v in groupby(hails_sorted, key=lambda h: h.taxi_id)
     ]
+    for taxi in taxis:
+        if taxi.id not in [g["taxi"].id for g in hails_grouped]:
+            hails_grouped.append({"id": taxi.id, "hails": [], "taxi": taxi})
     return jsonify({"data":
         json.loads(json.dumps(
             sorted(hails_grouped, key=lambda l: len(l["hails"]), reverse=True)[:20],
