@@ -51,8 +51,6 @@ def create_app(sqlalchemy_uri=None):
 
     from .extensions import user_datastore
     init_login_manager(app, user_datastore, LoginForm)
-    from . import demo
-    demo.create_app(app)
 
     from APITaxi_models import security
     user_datastore.init_app(db, security.User, security.CachedUser,
