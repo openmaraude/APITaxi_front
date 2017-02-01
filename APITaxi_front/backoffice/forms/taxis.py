@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from APITaxi_utils.model_form import ModelForm
-from APITaxi_models import models
+import APITaxi_models as models
 from wtforms import HiddenField, SubmitField, StringField, FormField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
