@@ -5,12 +5,12 @@ from wtforms import HiddenField, SubmitField, StringField, FormField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
 
-class modelsDescriptionForm(ModelForm):
+class VehicleDescriptionForm(ModelForm):
     def __init__(self, *args, **kwargs):
         kwargs['csrf_enabled'] = False
         super(ModelForm, self).__init__(*args, **kwargs)
     class Meta:
-        model = models.modelsDescription
+        model = models.VehicleDescription
         exclude = ['added_at', 'added_via', 'source', 'last_update_at']
     model = StringField(label=models.Model.name.info['label'],
                         description=models.Model.name.description)
@@ -18,12 +18,12 @@ class modelsDescriptionForm(ModelForm):
                               description=models.Constructor.name.description)
 
 
-class modelsForm(ModelForm):
+class VehicleForm(ModelForm):
     def __init__(self, *args, **kwargs):
         kwargs['csrf_enabled'] = False
         super(ModelForm, self).__init__(*args, **kwargs)
     class Meta:
-        model = models.models
+        model = models.Vehicle
 
 
 class ADSForm(ModelForm):
@@ -34,16 +34,16 @@ class ADSForm(ModelForm):
         model = models.ADS
         exclude = ['added_at', 'added_via', 'source', 'last_update_at']
 
-class ADSFormmodels(ModelForm):
-    models = FormField(modelsForm)
-    models_description = FormField(modelsDescriptionForm)
+class ADSFormVehicle(ModelForm):
+    vehicle = FormField(VehicleForm)
+    vehicle_description = FormField(VehicleDescriptionForm)
     ads = FormField(ADSForm)
 
-class ADSCreateForm(ADSFormmodels):
+class ADSCreateForm(ADSFormVehicle):
     submit = SubmitField(u'Créer')
 
 
-class ADSUpdateForm(ADSFormmodels):
+class ADSUpdateForm(ADSFormVehicle):
     id = HiddenField()
     submit = SubmitField("Modifier")
 

@@ -7,7 +7,7 @@ from flask import Blueprint, render_template, current_app
 from flask_security import current_user
 from flask_restful import request
 from ..extensions import user_datastore
-import APITaxi_models import models
+import APITaxi_models as models
 
 mod = Blueprint('stats', __name__)
 
