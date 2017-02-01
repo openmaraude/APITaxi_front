@@ -3,10 +3,7 @@ from flask import Blueprint, render_template, url_for, jsonify
 from flask_restplus import reqparse, abort
 from flask_security import login_required, current_user
 from APITaxi_utils import request_wants_json
-from APITaxi_models.security import User, db
-from APITaxi_models.hail import Hail
-from APITaxi_models.taxis import Taxi
-from APITaxi_models.vehicle import VehicleDescription, Vehicle
+import APITaxi_models as models
 from datetime import datetime, timedelta, date
 from itertools import groupby
 import json
@@ -21,7 +18,7 @@ mod = Blueprint('home_bo', __name__)
 @login_required
 def home():
     if current_user.has_role('admin'):
-        user_list = [u for u in User.query.all() if u.has_role('operateur')]
+        user_list = [u for u in models.security.User.query.all() if u.has_role('operateur')]
     elif current_user.has_role('operateur'):
         user_list = [current_user]
     else:
@@ -43,45 +40,45 @@ def table():
         if not 'user' in args and not 'q' in args:
             print  args
             abort(400)
-        user = User.query.filter(User.email==args['user']).first()
+        user = models.security.User.query.filter(models.security.User.email==args['user']).first()
     elif current_user.has_role('operateur'):
         user = current_user
     else:
         abort(400)
-    filters = [Hail.added_at >= datetime.now() - timedelta(weeks=100),
-               Hail._status != 'customer_banned']
+    filters = [models.Hail.added_at >= datetime.now() - timedelta(weeks=100),
+               models.Hail._status != 'customer_banned']
     taxis = []
     if user:
-        filters.append(Hail.operateur_id == user.id)
+        filters.append(models.Hail.operateur_id == user.id)
     if 'q' in args and args['q']:
         q = args['q']
-        filters_taxi = [Taxi.id.like("%{}%".format(q)),]
-        vehicle_descs = VehicleDescription.query.filter(
-           VehicleDescription.internal_id.like("%{}%".format(q))).all()
+        filters_taxi = [models.Taxi.id.like("%{}%".format(q)),]
+        vehicle_descs = models.VehicleDescription.query.filter(
+           models.VehicleDescription.internal_id.like("%{}%".format(q))).all()
         if vehicle_descs:
             filters_taxi.append(
-                Taxi.vehicle_id.in_([v.vehicle_id for v in vehicle_descs])
+                models.Taxi.vehicle_id.in_([v.vehicle_id for v in vehicle_descs])
             )
-        vehicles = Vehicle.query.filter(
-            Vehicle.licence_plate.like("%{}%".format(q))).all()
+        vehicles = models.Vehicle.query.filter(
+            models.Vehicle.licence_plate.like("%{}%".format(q))).all()
         if vehicles:
             filters_taxi.append(
-                Taxi.vehicle_id.in_([v.id for v in vehicles])
+                models.Taxi.vehicle_id.in_([v.id for v in vehicles])
             )
 
         taxis = filter(
             lambda t: current_user.has_role('admin') or
                       any(map(lambda vd: vd.added_by == current_user.id,
                           t.vehicle.descriptions)),
-            Taxi.query.filter(or_(*filters_taxi)).all()
+            models.Taxi.query.filter(or_(*filters_taxi)).all()
         )
         if taxis:
-            filters.append(Hail.taxi_id.in_([t.id for t in taxis]))
+            filters.append(models.Hail.taxi_id.in_([t.id for t in taxis]))
         else:
             filters = None
     if filters:
-        hails = Hail.query.filter(
-            Hail._status.in_(['timeout_taxi', 'declined_by_taxi', 'incident_taxi']),
+        hails = models.Hail.query.filter(
+            models.Hail._status.in_(['timeout_taxi', 'declined_by_taxi', 'incident_taxi']),
             *filters
         ).all()
     else:
@@ -89,7 +86,7 @@ def table():
 
     class HailEncoder(json.JSONEncoder):
         def default(self, obj):
-            if isinstance(obj, Hail):
+            if isinstance(obj, models.Hail):
                 return {"id": obj.id,
                         "status": obj.status,
                         "date": obj.added_at.isoformat(),
@@ -98,19 +95,19 @@ def table():
                                      (obj.initial_taxi_lat, obj.initial_taxi_lon)).meters)
                 }
             elif isinstance(obj, Taxi):
-                q = db.session.query(func.count('id')).filter(Hail.taxi_id == obj.id,
+                q = models.db.session.query(func.count('id')).filter(models.Hail.taxi_id == obj.id,
                                                               *filters)
                 return {"licence": obj.vehicle.licence_plate,
                         "received": q.first()[0],
-                        "accepted": q.filter(Hail.change_to_accepted_by_taxi != None).first()[0],
+                        "accepted": q.filter(models.Hail.change_to_accepted_by_taxi != None).first()[0],
                         "accepted_customer": q.filter(
-                            Hail.change_to_accepted_by_customer != None).first()[0],
+                            models.Hail.change_to_accepted_by_customer != None).first()[0],
                         "internal_id": obj.vehicle.internal_id
                        }
             return json.JSONEncoder.default(self, obj)
     hails_sorted = sorted(hails, key=lambda h: h.taxi_id)
     hails_grouped = [
-        {"id": v[0], "hails": list(v[1]), "taxi": Taxi.query.get(v[0])}
+        {"id": v[0], "hails": list(v[1]), "taxi": models.Taxi.query.get(v[0])}
                      for v in groupby(hails_sorted, key=lambda h: h.taxi_id)
     ]
     for taxi in taxis:
@@ -144,7 +141,7 @@ def stats():
         args = parser.parse_args()
         if not 'user' in args:
             abort(400)
-        user_list = [User.query.filter(User.email==args['user']).first(), None]
+        user_list = [models.security.User.query.filter(models.security.User.email==args['user']).first(), None]
         status_keys = statuses.keys()
     elif current_user.has_role('operateur'):
         user_list = [current_user]
@@ -161,27 +158,27 @@ def stats():
                   range(0, (date.today() - begin_date).days)]
     for user in user_list:
         email = user.email if user else 'total'
-        filters = [Hail.added_at >= begin_date]
+        filters = [models.Hail.added_at >= begin_date]
         if user and user.has_role('moteur'):
-            filters += [Hail.added_by == user.id]
+            filters += [models.Hail.added_by == user.id]
         if user and user.has_role('operateur'):
-            filters += [Hail.operateur_id == user.id]
+            filters += [models.Hail.operateur_id == user.id]
         res.append({"email": email})
         for key in status_keys:
             res[-1][key] = {}
             for substatus, status_list in statuses[key].iteritems():
-                status_filters = [Hail._status != 'customer_banned']
+                status_filters = [models.Hail._status != 'customer_banned']
                 if status_list:
-                    status_filters += [Hail._status.in_(status_list)]
-                q = db.session.query(
-                        func.date(Hail.added_at),
+                    status_filters += [models.Hail._status.in_(status_list)]
+                q = models.db.session.query(
+                        func.date(models.Hail.added_at),
                         func.count('id')
-                    ).select_from(Hail).filter(
+                    ).select_from(models.Hail).filter(
                         *status_filters + filters
                     ).group_by(
-                        func.date(Hail.added_at)
+                        func.date(models.Hail.added_at)
                     ).order_by(
-                        func.date(Hail.added_at)
+                        func.date(models.Hail.added_at)
                 )
 		tmp = {k_v[0].isoformat(): k_v[1] for k_v in q.all()}
                 res[-1][key][substatus] = {d: tmp.get(d, 0) for d in range_date}

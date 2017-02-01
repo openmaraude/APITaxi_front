@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from APITaxi_models import administrative as administrative_models
+import APITaxi_models import models
 from .forms.administrative import ZUPCreateForm, ZUPCUpdateForm
 from APITaxi_utils.request_wants_json import request_wants_json
 from flask_security import login_required, roles_accepted, current_user
@@ -23,7 +23,7 @@ def zupc():
         abort(403)
     page = int(request.args.get('page')) if 'page' in request.args else 1
     return render_template('lists/zupc.html',
-        zupc_list=administrative_models.ZUPC.query.paginate(page))
+        zupc_list=models.ZUPC.query.paginate(page))
 
 
 @mod.route('/zupc/form', methods=['GET', 'POST'])
@@ -32,7 +32,7 @@ def zupc():
 def zupc_form():
     form = None
     if request.args.get("id"):
-        zupc = administrative_models.ZUPC.query.get(request.args.get("id"))
+        zupc = models.ZUPC.query.get(request.args.get("id"))
         if not zupc:
             abort(404, message="Unable to find ZUPC")
         form = ZUPCUpdateForm(obj=zupc)
@@ -46,7 +46,7 @@ def zupc_form():
                 return redirect(url_for('zupc.zupc'))
         else:
             if form.validate():
-                zupc = administrative_models.ZUPC()
+                zupc = models.ZUPC()
                 form.populate_obj(zupc)
                 current_app.extensions['sqlalchemy'].db.session.add(zupc)
                 current_app.extensions['sqlalchemy'].db.session.commit()
@@ -61,7 +61,7 @@ def zupc_form():
 def zupc_delete():
     if not request.args.get("id"):
         abort(404, message="id is required")
-    zupc = administrative_models.ZUPC.query.get(request.args.get("id"))
+    zupc = models.ZUPC.query.get(request.args.get("id"))
     if not zupc:
         abort(404, message="Unable to find the ZUPC")
     current_app.extensions['sqlalchemy'].db.session.delete(zupc)
@@ -75,8 +75,8 @@ def zupc_autocomplete():
     term = request.args.get('q')
     like = "%{}%".format(term)
 
-    response = administrative_models.ZUPC.query.filter(
-            administrative_models.ZUPC.nom.ilike(like)).all()
+    response = models.ZUPC.query.filter(
+            models.ZUPC.nom.ilike(like)).all()
     return jsonify(suggestions=map(lambda zupc:{'name': zupc.nom, 'id': int(zupc.id)},
                                         response))
 

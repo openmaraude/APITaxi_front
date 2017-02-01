@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, current_app
 from flask_security import current_user
 from ..extensions import user_datastore
-from APITaxi_models.taxis import Taxi
+import APITaxi_models import models
 from functools import partial
 
 mod = Blueprint('examples', __name__)
@@ -30,7 +30,7 @@ def doc_index():
             apikeys_moteur.add(('your token', current_user.apikey))
         apikeys_operator.add(('neotaxi', user_datastore.find_user(email='neotaxi').apikey))
         apikeys_moteur.add(('neomap', user_datastore.find_user(email='neomap').apikey))
-        taxis = Taxi.query.filter(Taxi.added_by==user_datastore.\
+        taxis = models.Taxi.query.filter(models.Taxi.added_by==user_datastore.\
                     find_user(email='neotaxi').id).all()
     else:
         apikeys_operator = [('anonymous', 'token')]

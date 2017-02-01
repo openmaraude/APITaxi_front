@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from APITaxi_utils.model_form import ModelForm
-from APITaxi_models import administrative
+import APITaxi_models import models
 from wtforms import HiddenField, SubmitField
 from wtforms.fields import FormField
 from wtforms_alchemy import ModelFormField
@@ -8,12 +8,12 @@ from wtforms.widgets import ListWidget
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
 def departements():
-    return administrative.Departement.query.all()
+    return models.Departement.query.all()
 
 class ZUPCSimpleForm(ModelForm):
     class Meta:
         skip_unknown_types = True
-        model = administrative.ZUPC
+        model = models.ZUPC
     exclude = ['shape']
 
 class ZUPCForm(ZUPCSimpleForm):
