@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import APITaxi_models import models
+import APITaxi_models as models
 from .forms.administrative import ZUPCreateForm, ZUPCUpdateForm
 from APITaxi_utils.request_wants_json import request_wants_json
 from flask_security import login_required, roles_accepted, current_user

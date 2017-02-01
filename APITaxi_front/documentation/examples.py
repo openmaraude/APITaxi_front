@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, current_app
 from flask_security import current_user
 from ..extensions import user_datastore
-import APITaxi_models import models
+import APITaxi_models as models
 from functools import partial
 
 mod = Blueprint('examples', __name__)

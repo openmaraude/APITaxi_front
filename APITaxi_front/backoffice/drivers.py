@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .forms.taxis import DriverCreateForm, DriverUpdateForm
-import APITaxi_models imports models
+import APITaxi_models as models
 from APITaxi_utils.populate_obj import create_obj_from_json
 from APITaxi_utils.request_wants_json import request_wants_json
 from flask import Blueprint, render_template, request, redirect, url_for, current_app
