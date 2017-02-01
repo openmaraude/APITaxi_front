@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from .forms.taxis import (ADSForm, VehicleForm, ADSCreateForm, ADSUpdateForm,
                           VehicleDescriptionForm)
-from APITaxi_models import (taxis as taxis_models, vehicle as vehicle_models,
-        administrative as administrative_models)
+import APITaxi_models as models
 from APITaxi_utils.populate_obj import create_obj_from_json
 from APITaxi_utils.request_wants_json import request_wants_json
 from flask import (Blueprint, render_template, request, redirect, url_for,
@@ -34,11 +33,11 @@ def get_ads_list():
         return ads_list()
 
 def ads_list():
-    if not taxis_models.ADS.can_be_listed_by(current_user):
+    if not models.ADS.can_be_listed_by(current_user):
         if current_user.has_role('stats'):
             return self.metadata()
         abort(403, message="You're not allowed to see this page")
-    q = taxis_models.ADS.query
+    q = models.ADS.query
     if not current_user.has_role('admin') and not current_user.has_role('prefecture'):
         q = q.filter_by(added_by=current_user.id)
     page = int(request.args.get('page')) if 'page' in request.args else 1
@@ -50,11 +49,11 @@ def ads_details(numero, insee):
             "numero": str(numero),
             "insee": str(insee)
             }
-    ads = taxis_models.ADS.query.filter_by(**filters).all()
+    ads = models.ADS.query.filter_by(**filters).all()
     if not ads:
         abort(404, error="Unable to find this couple INSEE/numero")
     ads = ads[0]
-    d = taxis_models.ADS.__dict__
+    d = models.ADS.__dict__
     keys_to_show = ads.showable_fields(current_user)
     is_valid_key = lambda k: hasattr(k, "info") and k.info.has_key("label")\
                              and k.info['label'] and k.key in keys_to_show
@@ -69,7 +68,7 @@ def ads_details(numero, insee):
 def ads_form():
     ads = form = None
     if request.args.get("id"):
-        ads = taxis_models.ADS.query.get(request.args.get("id"))
+        ads = models.ADS.query.get(request.args.get("id"))
         if not ads:
             abort(404, message="Unable to find the ADS")
         if not ads.can_be_edited_by(current_user):
@@ -86,18 +85,18 @@ def ads_form():
         if not form.validate():
             return render_template('forms/ads.html', form=form)
         if not ads:
-            ads = taxis_models.ADS(form.vehicle.form.data['licence_plate'])
+            ads = models.ADS(form.vehicle.form.data['licence_plate'])
         if not ads.vehicle.description:
-            ads.vehicle.descriptions.append(vehicle_models.VehicleDescription(
+            ads.vehicle.descriptions.append(models.VehicleDescription(
                 vehicle_id=ads.vehicle.id, added_by=current_user.id))
         else:
             ads.last_update_at = datetime.now().isoformat()
-        zupc = administrative_models.ZUPC.query\
+        zupc = models.ZUPC.query\
                 .filter_by(insee=form.ads.insee.data).first()
         if zupc is None:
             abort(400, message="Unable to find a ZUPC for insee: {}".format(
                 ads.insee))
-        ads.zupc = administrative_models.ZUPC.query.get(zupc.parent_id)
+        ads.zupc = models.ZUPC.query.get(zupc.parent_id)
         ads.zupc_id = ads.zupc.id
         try:
             form.ads.form.populate_obj(ads)
@@ -117,7 +116,7 @@ def ads_form():
 def ads_delete():
     if not request.args.get("id"):
         abort(404, message="You need to specify an id")
-    ads = taxis_models.ADS.query.get(request.args.get("id"))
+    ads = models.ADS.query.get(request.args.get("id"))
     if not ads:
         abort(404, message="Unable to find this ADS")
     if not ads.can_be_deleted_by(current_user):
@@ -125,7 +124,7 @@ def ads_delete():
     db = current_app.extensions['sqlalchemy'].db
     db.session.delete(ads)
     #We need to delete attached taxis
-    for taxi in db.session.query(taxis_models.Taxi).filter_by(ads_id=ads.id):
+    for taxi in db.session.query(models.Taxi).filter_by(ads_id=ads.id):
         db.session.delete(taxi)
     db.session.commit()
     return redirect(url_for("api.ads"))

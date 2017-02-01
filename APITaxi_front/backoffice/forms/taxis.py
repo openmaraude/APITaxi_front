@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
 from APITaxi_utils.model_form import ModelForm
-from APITaxi_models import taxis, administrative, vehicle
+from APITaxi_models import models
 from wtforms import HiddenField, SubmitField, StringField, FormField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
 
-class VehicleDescriptionForm(ModelForm):
+class modelsDescriptionForm(ModelForm):
     def __init__(self, *args, **kwargs):
         kwargs['csrf_enabled'] = False
         super(ModelForm, self).__init__(*args, **kwargs)
     class Meta:
-        model = vehicle.VehicleDescription
+        model = models.modelsDescription
         exclude = ['added_at', 'added_via', 'source', 'last_update_at']
-    model = StringField(label=vehicle.Model.name.info['label'],
-                        description=vehicle.Model.name.description)
-    constructor = StringField(label=vehicle.Constructor.name.info['label'],
-                              description=vehicle.Constructor.name.description)
+    model = StringField(label=models.Model.name.info['label'],
+                        description=models.Model.name.description)
+    constructor = StringField(label=models.Constructor.name.info['label'],
+                              description=models.Constructor.name.description)
 
 
-class VehicleForm(ModelForm):
+class modelsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         kwargs['csrf_enabled'] = False
         super(ModelForm, self).__init__(*args, **kwargs)
     class Meta:
-        model = taxis.Vehicle
+        model = models.models
 
 
 class ADSForm(ModelForm):
@@ -31,29 +31,29 @@ class ADSForm(ModelForm):
         kwargs['csrf_enabled'] = False
         super(ModelForm, self).__init__(*args, **kwargs)
     class Meta:
-        model = taxis.ADS
+        model = models.ADS
         exclude = ['added_at', 'added_via', 'source', 'last_update_at']
 
-class ADSFormVehicle(ModelForm):
-    vehicle = FormField(VehicleForm)
-    vehicle_description = FormField(VehicleDescriptionForm)
+class ADSFormmodels(ModelForm):
+    models = FormField(modelsForm)
+    models_description = FormField(modelsDescriptionForm)
     ads = FormField(ADSForm)
 
-class ADSCreateForm(ADSFormVehicle):
+class ADSCreateForm(ADSFormmodels):
     submit = SubmitField(u'Créer')
 
 
-class ADSUpdateForm(ADSFormVehicle):
+class ADSUpdateForm(ADSFormmodels):
     id = HiddenField()
     submit = SubmitField("Modifier")
 
 
 def departements():
-    return administrative.Departement.query.all()
+    return models.Departement.query.all()
 
 class DriverForm(ModelForm):
     class Meta:
-        model = taxis.Driver
+        model = models.Driver
         exclude = ['added_at', 'added_via', 'source', 'last_update_at']
 
     departement = QuerySelectField(query_factory=departements, get_label='nom')
