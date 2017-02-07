@@ -124,7 +124,7 @@ def list_active_taxis(dep):
         email=current_app.config.get('HIDDEN_OPERATOR', 'testing_operator')
     ).first()
 
-    taxis = models.Taxi.query.join(User).join(models.Taxi.ads) \
+    taxis = models.Taxi.query.join(models.security.User).join(models.Taxi.ads) \
             .filter(models.ADS.insee.like(depattern)) \
             .filter(models.Taxi.last_update_at >= last_day)
     if not current_user.has_role('admin'):
