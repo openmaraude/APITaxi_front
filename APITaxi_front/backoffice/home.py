@@ -94,7 +94,7 @@ def table():
                             vincenty((obj.customer_lat, obj.customer_lon),
                                      (obj.initial_taxi_lat, obj.initial_taxi_lon)).meters)
                 }
-            elif isinstance(obj, Taxi):
+            elif isinstance(obj, models.Taxi):
                 q = models.db.session.query(func.count('id')).filter(models.Hail.taxi_id == obj.id,
                                                               *filters)
                 return {"licence": obj.vehicle.licence_plate,
