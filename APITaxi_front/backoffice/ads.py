@@ -2,7 +2,6 @@
 from .forms.taxis import (ADSForm, VehicleForm, ADSCreateForm, ADSUpdateForm,
                           VehicleDescriptionForm)
 import APITaxi_models as models
-from APITaxi_utils.populate_obj import create_obj_from_json
 from APITaxi_utils.request_wants_json import request_wants_json
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    abort, jsonify, current_app)
