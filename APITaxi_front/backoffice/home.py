@@ -79,8 +79,9 @@ def table():
     if filters:
         hails = models.Hail.query.filter(
             models.Hail._status.in_(['timeout_taxi', 'declined_by_taxi', 'incident_taxi']),
+            models.Hail.creation_datetime >= date.today() - timedelta(weeks=8),
             *filters
-        ).all()
+        ).order_by(models.Hail.creation_datetime.desc()).all()
     else:
         hails = []
 
