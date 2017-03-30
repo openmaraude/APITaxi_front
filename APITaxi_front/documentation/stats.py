@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
+from time import mktime
 from collections import defaultdict
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func, or_
@@ -15,13 +16,17 @@ mod = Blueprint('stats', __name__)
 def stats_index():
 
     dep = request.args.get('dep', 0, type=int)
+    yesterday = (datetime.today() - timedelta(1)).replace(hour=2)
+    last_week = yesterday - timedelta(7)
 
     return render_template('stats.html',
                            dep=dep,
                            nb_taxis=stats_taxis(dep),
                            taxis=list_active_taxis(dep),
                            nb_hails=stats_hails(dep),
-                           hails=list_hails(dep)
+                           hails=list_hails(dep),
+                           yesterday=lambda: int(mktime(yesterday.timetuple()) * 1000),
+                           last_week=lambda: int(mktime(last_week.timetuple()) * 1000)
                           )
 
 def stats_taxis(dep):

@@ -1,14 +1,49 @@
-{% extends "documentation/base.html" %}
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/utils.html" as util %}
+{% block title %} Registre des Taxis {% endblock %}
 {% block styles %}
  {{super()}}
  <style>
 .menu-index ul{
 height:auto;
 }
+.bigup {
+font-size: 45px;
+}
+.container .row {
+text-align: center;
+padding: 30px;
+margin-top: 100px;
+background-color: #EFEEEC;
+}
+.container .row h2 {
+font-size: 15px;
+}
+.stat {
+background-color: #FFFFFF;
+min-height: 150px;
+margin: 15px;
+}
+.section 
  </style>
-{% endblock %}
-{% block documentationcontent %}
+<link rel="stylesheet"
+      href="{{url_for('static', filename='css/simple-sidebar.css')}}">
+<link rel="stylesheet"
+      href="{{url_for('static', filename='css/pure-tables.css')}}">
+<link rel="stylesheet"
+      href="{{url_for('static', filename='css/vertical-nav.css')}}">
+<link rel="stylesheet" 
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
 
+{% endblock %}
+{% block content %}
+<div id="stats-container" class="container">
+<div class="row">
+
+<h1>Nombres de Taxis actifs</h1>
+{% if nb_taxis|length > 1 %} 
 <div style="float:right">
 Départment : <select onChange="location.search = location.search.replace(/[^&$]*/i, 'dep=' + $(this).val());">
 <option value="00" {% if dep==0 %} selected="selected"{% endif %}>France entière</option>
@@ -20,23 +55,66 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
 {% endfor %}
 </select>
 </div>
-
-<h2>Nombres de Taxis</h2>
 <table class="pure-table pure-table-bordered pure-table-horizontal pure-table-striped">
     <thead><tr><td>Opérateur</td><td title="Taxis actifs sur les dernières 24h">Taxis actifs du jour</td><td title="Taxis actifs sur les derniers 7j">Taxis actifs de la semaine</td></tr></thead>
        {% for k, v in nb_taxis|dictsort %}
        <tr><td>{{ k }}</td><td>{{ v['nactivetaxis']|default("0", True) }}</td><td>{{ v['ntaxis']|default("0", True) }}</td></tr>
        {% endfor %}
 </table>
+{% else %}
+<div class="col-sm-3">
+<div class="stat">
+<h2>Hier</h2><hr>
+<div class="bigup">{{  nb_taxis.values()[0]['nactivetaxis'] }}</div></div></div>
+<div class="col-sm-3">
+<div class="stat">
+<h2>Depuis une semaine</h2><hr>
+<div class="bigup">{{ nb_taxis.values()[0]['ntaxis']|default("0", True) }}</div></div></div>
+<div class="col-sm-6">
+<div class="stat">
+<img src="http://dash.api.taxi/render/dashboard-solo/db/taxis-par-jour?from={{ last_week()  }}&to={{ yesterday()  }}&theme=light&panelId=1&width=450&height=150">
+</div>
+</div>
+
+{% endif %}
 
 
-<h2>Nombres de Courses</h2>
+</div>
+<div class="row">
+<h1>Nombres de Courses</h1>
+{% if nb_hails|length > 1 %} 
 <table class="pure-table pure-table-bordered pure-table-horizontal pure-table-striped">
     <thead><tr><td> </td><td>Courses OK du jour</td><td>(Demandes de course du jour)</td><td>Courses OK cumulées</td><td>(Demandes de course cumulées)</td></tr></thead>
        {% for k, v in nb_hails|dictsort%}
        <tr><td>{{ k }}</td><td>{{ v['nhails_ok_d']|default("0", True) }}</td><td>({{ v['nhails_d']|default("0", True) }})</td><td>{{ v['nhails_ok_y']|default("0", True) }}</td><td>({{ v['nhails_y']|default("0", True) }})</td></tr>
        {% endfor %}
 </table>
+{% else %}
+<div class="col-sm-3">
+<div class="stat">
+<h2>Ok du jour</h2><hr>
+<div class="bigup">{{ nb_hails.values()[0]['nhails_ok_d']|default("0", True) }}</div>
+</div>
+</div>
+<div class="col-sm-3">
+<div class="stat">
+<h2>Demandes de courses du jour</h2><hr>
+<div class="bigup">{{ nb_hails.values()[0]['nhails_d']|default("0", True) }}</div>
+</div>
+</div>
+<div class="col-sm-3">
+<div class="stat">
+<h2>Courses Ok depuis le début</h2><hr>
+<div class="bigup">{{ nb_hails.values()[0]['nhails_ok_y']|default("0", True) }}</div>
+</div>
+</div>
+<div class="col-sm-3">
+<div class="stat">
+<h2>Demandes de courses depuis le début</h2><hr>
+<div class="bigup">{{ nb_hails.values()[0]['nhails_y']|default("0", True) }}</div>
+</div>
+</div>
+{% endif %}
 
 
 {% if taxis %}
@@ -58,6 +136,8 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
       {% endfor %}
  </table>
  {% endif %}
+</div>
+</div>
 
 
 
