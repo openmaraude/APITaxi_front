@@ -58,8 +58,11 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
 <table class="pure-table pure-table-bordered pure-table-horizontal pure-table-striped">
     <thead><tr><td>Opérateur</td><td title="Taxis actifs sur les dernières 24h">Taxis actifs du jour</td><td title="Taxis actifs sur les derniers 7j">Taxis actifs de la semaine</td></tr></thead>
        {% for k, v in nb_taxis|dictsort %}
+       {% if k != 'Total' %}
        <tr><td>{{ k }}</td><td>{{ v['nactivetaxis']|default("0", True) }}</td><td>{{ v['ntaxis']|default("0", True) }}</td></tr>
+       {% endif %}
        {% endfor %}
+       <tr><td>Total</td><td>{{ nb_taxis['Total']['nactivetaxis']|default("0", True) }}</td><td>{{ nb_taxis['Total']['ntaxis']|default("0", True) }}</td></tr>
 </table>
 {% else %}
 <div class="col-sm-3">
@@ -86,8 +89,21 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
 <table class="pure-table pure-table-bordered pure-table-horizontal pure-table-striped">
     <thead><tr><td> </td><td>Courses OK du jour</td><td>(Demandes de course du jour)</td><td>Courses OK cumulées</td><td>(Demandes de course cumulées)</td></tr></thead>
        {% for k, v in nb_hails|dictsort%}
-       <tr><td>{{ k }}</td><td>{{ v['nhails_ok_d']|default("0", True) }}</td><td>({{ v['nhails_d']|default("0", True) }})</td><td>{{ v['nhails_ok_y']|default("0", True) }}</td><td>({{ v['nhails_y']|default("0", True) }})</td></tr>
+       {% if k != 'Total' %}
+       <tr>
+           <td>{{ k }}</td><td>{{ v['nhails_ok_d']|default("0", True) }}</td>
+           <td>({{ v['nhails_d']|default("0", True) }})</td>
+           <td>{{ v['nhails_ok_y']|default("0", True) }}</td>
+           <td>({{ v['nhails_y']|default("0", True) }})</td>
+       </tr>
+       {% endif %}
        {% endfor %}
+       <tr><td>Total</td>
+           <td>{{ nb_hails['Total']['nhails_ok_d']|default("0", True) }}</td>
+           <td>({{ nb_hails['Total']['nhails_d']|default("0", True) }})</td>
+           <td>{{ nb_hails['Total']['nhails_ok_y']|default("0", True) }}</td>
+           <td>({{ nb_hails['Total']['nhails_y']|default("0", True) }})</td>
+       </tr>
 </table>
 {% else %}
 <div class="col-sm-3">
