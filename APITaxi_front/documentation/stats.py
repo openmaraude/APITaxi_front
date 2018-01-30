@@ -32,8 +32,9 @@ def stats_index():
 def stats_taxis(dep):
 
     depattern = '{0:02d}%'.format(dep) if dep else '%'
-    last_day = datetime.now() + timedelta(days=-1)
-    last_week = datetime.now() + timedelta(days=-7)
+    today = datetime.today().replace(hour=0, minute=0, second=0)
+    yesterday = today - timedelta(days=1)
+    last_week = today - timedelta(days=7)
     last_6months = datetime.now() + relativedelta(months=-6)
 
 
@@ -58,7 +59,8 @@ def stats_taxis(dep):
                                            func.count(models.Taxi.id).label('nactivetaxis')) \
                           .join(models.Taxi.ads) \
                           .filter(models.ADS.insee.like(depattern)) \
-                          .filter(models.Taxi.last_update_at >= last_day) \
+                          .filter(models.Taxi.last_update_at >= yesterday) \
+                          .filter(models.Taxi.last_update_at < today) \
                           .group_by(models.Taxi.added_by)
         for ta in nb_taxis:
             tab_nb_taxis[user_datastore.get_user(ta.added_by).commercial_name]['ntaxis'] = ta.ntaxis
@@ -80,7 +82,8 @@ def stats_taxis(dep):
                                            func.count(models.Taxi.id).label('nactivetaxis')) \
                           .join(models.Taxi.ads) \
                           .filter(models.ADS.insee.like(depattern)) \
-                          .filter(models.Taxi.last_update_at >= last_day) \
+                          .filter(models.Taxi.last_update_at >= yesterday) \
+                          .filter(models.Taxi.last_update_at < today) \
                           .filter(models.Taxi.added_by == current_user.id) \
                           .group_by(models.Taxi.added_by)
         for ta in nb_taxis:
@@ -101,7 +104,8 @@ def stats_taxis(dep):
                                            func.count(models.Taxi.id).label('nactivetaxis')) \
                           .join(models.Taxi.ads) \
                           .filter(models.ADS.insee.like(depattern)) \
-                          .filter(models.Taxi.last_update_at >= last_day)
+                          .filter(models.Taxi.last_update_at >= yesterday) \
+                          .filter(models.Taxi.last_update_at < today)
     if hidden_operator:
         nb_taxis = nb_taxis.filter(models.Taxi.added_by != hidden_operator.id)
     if hidden_operator:
@@ -122,26 +126,27 @@ def list_active_taxis(dep):
         return defaultdict(dict)
 
     depattern = '{0:02d}%'.format(dep) if dep else '%'
-    last_day = datetime.now() + timedelta(days=-1)
+    today = datetime.today().replace(hour=0, minute=0, second=0)
+    yesterday = today - timedelta(days=1)
 
-    taxis = []
     hidden_operator = models.security.User.query.filter_by(
         email=current_app.config.get('HIDDEN_OPERATOR', 'testing_operator')
     ).first()
 
-    taxis = models.Taxi.query.join(models.security.User).join(models.Taxi.ads) \
+    taxis_query = models.Taxi.query.join(models.security.User).join(models.Taxi.ads) \
             .filter(models.ADS.insee.like(depattern)) \
-            .filter(models.Taxi.last_update_at >= last_day)
+            .filter(models.Taxi.last_update_at >= yesterday) \
+            .filter(models.Taxi.last_update_at < today)
     if not current_user.has_role('admin'):
-        taxis = taxis.filter(models.Taxi.added_by == current_user.id)
+        taxis_query = taxis_query.filter(models.Taxi.added_by == current_user.id)
 
     if hidden_operator:
-        taxis = taxis.filter(models.Taxi.added_by != hidden_operator.id)
+        taxis_query = taxis_query.filter(models.Taxi.added_by != hidden_operator.id)
 
-    taxis = taxis.order_by(models.Taxi.added_by).limit(20).all()
+    taxis_query = taxis_query.order_by(models.Taxi.added_by)
 
     tab_taxis = defaultdict(dict)
-    for taxi in taxis:
+    for taxi in taxis_query.all():
         tab_taxis[taxi.id]['added_by'] = user_datastore.get_user(taxi.added_by).commercial_name
         tab_taxis[taxi.id]['ads.insee'] = taxi.ads.insee
         zupc = None
@@ -161,7 +166,8 @@ def stats_hails(dep):
 
     depattern = '{0:02d}%'.format(dep) if dep else '%'
 
-    last_day = (datetime.now() + timedelta(days=-1)).date()
+    today = datetime.today().replace(hour=0, minute=0, second=0)
+    yesterday = today - timedelta(days=1)
     last_year = datetime.now() + relativedelta(months=-12)
 
     nb_hails_d = []
@@ -177,7 +183,8 @@ def stats_hails(dep):
                      .join(models.Hail.taxi_relation) \
                      .join(models.Taxi.ads) \
                      .filter(models.ADS.insee.like(depattern)) \
-                     .filter(func.date(models.Hail.creation_datetime) >= last_day) \
+                     .filter(func.date(models.Hail.creation_datetime) >= yesterday) \
+                     .filter(func.date(models.Hail.creation_datetime) < today) \
                      .filter(models.Hail._status != 'customer_banned') \
                      .group_by(models.Hail.operateur_id) \
 
@@ -186,7 +193,8 @@ def stats_hails(dep):
                         .join(models.Hail.taxi_relation) \
                         .join(models.Taxi.ads) \
                         .filter(models.ADS.insee.like(depattern)) \
-                        .filter(func.date(models.Hail.creation_datetime) >= last_day) \
+                        .filter(func.date(models.Hail.creation_datetime) >= yesterday) \
+                        .filter(func.date(models.Hail.creation_datetime) < today) \
                         .filter(or_(models.Hail._status == 'accepted_by_customer', \
                                     models.Hail._status == 'timeout_accepted_by_customer', \
                                     models.Hail._status == 'customer_on_board', \
@@ -230,7 +238,8 @@ def stats_hails(dep):
                      .join(models.Hail.taxi_relation) \
                      .join(models.Taxi.ads) \
                      .filter(models.ADS.insee.like(depattern)) \
-                     .filter(func.date(models.Hail.creation_datetime) >= last_day) \
+                     .filter(func.date(models.Hail.creation_datetime) >= yesterday) \
+                     .filter(func.date(models.Hail.creation_datetime) < today) \
                      .filter(models.Hail._status != 'customer_banned') \
                      .filter(models.Hail.operateur_id == current_user.id) \
                      .group_by(models.Hail.added_by) \
@@ -240,7 +249,8 @@ def stats_hails(dep):
                         .join(models.Hail.taxi_relation) \
                         .join(models.Taxi.ads) \
                         .filter(models.ADS.insee.like(depattern)) \
-                        .filter(func.date(models.Hail.creation_datetime) >= last_day) \
+                        .filter(func.date(models.Hail.creation_datetime) >= yesterday) \
+                        .filter(func.date(models.Hail.creation_datetime) < today) \
                         .filter(or_(models.Hail._status == 'accepted_by_customer', \
                                     models.Hail._status == 'timeout_accepted_by_customer', \
                                     models.Hail._status == 'customer_on_board', \
@@ -288,7 +298,8 @@ def stats_hails(dep):
                      .join(models.Hail.taxi_relation) \
                      .join(models.Taxi.ads) \
                      .filter(models.ADS.insee.like(depattern)) \
-                     .filter(func.date(models.Hail.creation_datetime) >= last_day) \
+                     .filter(func.date(models.Hail.creation_datetime) >= yesterday) \
+                     .filter(func.date(models.Hail.creation_datetime) < today) \
                      .filter(models.Hail._status != 'customer_banned') \
                      .filter(models.Hail.added_by == current_user.id) \
                      .group_by(models.Hail.operateur_id) \
@@ -298,7 +309,8 @@ def stats_hails(dep):
                         .join(models.Hail.taxi_relation) \
                         .join(models.Taxi.ads) \
                         .filter(models.ADS.insee.like(depattern)) \
-                        .filter(func.date(models.Hail.creation_datetime) >= last_day) \
+                        .filter(func.date(models.Hail.creation_datetime) >= yesterday) \
+                        .filter(func.date(models.Hail.creation_datetime) < today) \
                         .filter(or_(models.Hail._status == 'accepted_by_customer', \
                                     models.Hail._status == 'timeout_accepted_by_customer', \
                                     models.Hail._status == 'customer_on_board', \
@@ -346,7 +358,8 @@ def stats_hails(dep):
                      .join(models.Hail.taxi_relation) \
                      .join(models.Taxi.ads) \
                      .filter(models.ADS.insee.like(depattern)) \
-                     .filter(func.date(models.Hail.creation_datetime) >= last_day) \
+                     .filter(func.date(models.Hail.creation_datetime) >= yesterday) \
+                     .filter(func.date(models.Hail.creation_datetime) < today) \
                      .filter(models.Hail._status != 'customer_banned') \
 
         nb_hails_ok_d = models.db.session.query(
@@ -354,7 +367,8 @@ def stats_hails(dep):
                         .join(models.Hail.taxi_relation) \
                         .join(models.Taxi.ads) \
                         .filter(models.ADS.insee.like(depattern)) \
-                        .filter(func.date(models.Hail.creation_datetime) >= last_day) \
+                        .filter(func.date(models.Hail.creation_datetime) >= yesterday) \
+                        .filter(func.date(models.Hail.creation_datetime) < today) \
                         .filter(or_(models.Hail._status == 'accepted_by_customer', \
                                     models.Hail._status == 'timeout_accepted_by_customer', \
                                     models.Hail._status == 'customer_on_board', \
