@@ -9,6 +9,8 @@ from flask_security import current_user
 from flask_restful import request
 from ..extensions import user_datastore
 import APITaxi_models as models
+from APITaxi_utils import influx_db
+from influxdb.exceptions import InfluxDBClientError
 
 mod = Blueprint('stats', __name__)
 
@@ -45,78 +47,42 @@ def stats_taxis(dep):
         email=current_app.config.get('HIDDEN_OPERATOR', 'testing_operator')
     ).first()
 
-    if current_user.has_role('admin'):
-        nb_taxis = models.db.session.query(models.Taxi.added_by,
-                                    func.count(models.Taxi.id).label('ntaxis'),
-                                    func.count('0').label('nactivetaxis')) \
-                   .join(models.Taxi.ads) \
-                   .filter(models.ADS.insee.like(depattern)) \
-                   .filter(models.Taxi.last_update_at >= last_week) \
-                   .group_by(models.Taxi.added_by)
+    client = influx_db.get_client(current_app.config['INFLUXDB_TAXIS_DB'])
+    query_base = """
+        SELECT "value", "operator", "zupc"
+        FROM "nb_taxis_every_{frequency}"
+        WHERE time > now() - 1{time_unity}
+    """
+    if depattern == '%':
+        query_base += """AND "zupc" !~ /.?/"""
+    else:
+        query_base += """AND "zupc" =~ /^{}/""".format(depattern)
 
-        nb_active_taxis = models.db.session.query(models.Taxi.added_by,
-                                           func.count('0').label('ntaxis'),
-                                           func.count(models.Taxi.id).label('nactivetaxis')) \
-                          .join(models.Taxi.ads) \
-                          .filter(models.ADS.insee.like(depattern)) \
-                          .filter(models.Taxi.last_update_at >= yesterday) \
-                          .filter(models.Taxi.last_update_at < today) \
-                          .group_by(models.Taxi.added_by)
-        for ta in nb_taxis:
-            tab_nb_taxis[user_datastore.get_user(ta.added_by).commercial_name]['ntaxis'] = ta.ntaxis
-        for ta in nb_active_taxis:
-            tab_nb_taxis[user_datastore.get_user(ta.added_by).commercial_name]['nactivetaxis'] = ta.nactivetaxis
+    if current_user.has_role('operateur'):
+        query_base += """AND "operator"='{}'""".format(current_user.email)
+    elif  not current_user.has_role('admin'):
+        query_base += """AND "operator" !~ /.?/"""
 
-    elif current_user.has_role('operateur'):
-        nb_taxis = models.db.session.query(models.Taxi.added_by,
-                                    func.count(models.Taxi.id).label('ntaxis'),
-                                    func.count('0').label('nactivetaxis')) \
-                   .join(models.Taxi.ads) \
-                   .filter(models.ADS.insee.like(depattern)) \
-                   .filter(models.Taxi.last_update_at >= last_week) \
-                   .filter(models.Taxi.added_by == current_user.id) \
-                   .group_by(models.Taxi.added_by)
+    query_weekly = query_base.format(frequency="10080", time_unity='w')
+    query_daily = query_base.format(frequency="1440", time_unity='d')
 
-        nb_active_taxis = models.db.session.query(models.Taxi.added_by,
-                                           func.count('0').label('ntaxis'),
-                                           func.count(models.Taxi.id).label('nactivetaxis')) \
-                          .join(models.Taxi.ads) \
-                          .filter(models.ADS.insee.like(depattern)) \
-                          .filter(models.Taxi.last_update_at >= yesterday) \
-                          .filter(models.Taxi.last_update_at < today) \
-                          .filter(models.Taxi.added_by == current_user.id) \
-                          .group_by(models.Taxi.added_by)
-        for ta in nb_taxis:
-            tab_nb_taxis[user_datastore.get_user(ta.added_by).commercial_name]['ntaxis'] = ta.ntaxis
-        for ta in nb_active_taxis:
-            tab_nb_taxis[user_datastore.get_user(ta.added_by).commercial_name]['nactivetaxis'] = ta.nactivetaxis
+    for l in client.query(query_daily):
+        for v in l:
+            if v['operator'] == 'admin':
+                continue
+            if v['operator'] == None:
+                tab_nb_taxis['Total']['nactivetaxis'] = v['value']
+            else:
+                tab_nb_taxis[user_datastore.get_user(v['operator']).commercial_name]['nactivetaxis'] = v['value']
 
-    if not tab_nb_taxis:
-        nb_taxis = models.db.session.query(
-                                    func.count(models.Taxi.id).label('ntaxis'),
-                                    func.count('0').label('nactivetaxis')) \
-                   .join(models.Taxi.ads) \
-                   .filter(models.ADS.insee.like(depattern)) \
-                   .filter(models.Taxi.last_update_at >= last_week)
-
-        nb_active_taxis = models.db.session.query(
-                                           func.count('0').label('ntaxis'),
-                                           func.count(models.Taxi.id).label('nactivetaxis')) \
-                          .join(models.Taxi.ads) \
-                          .filter(models.ADS.insee.like(depattern)) \
-                          .filter(models.Taxi.last_update_at >= yesterday) \
-                          .filter(models.Taxi.last_update_at < today)
-    if hidden_operator:
-        nb_taxis = nb_taxis.filter(models.Taxi.added_by != hidden_operator.id)
-    if hidden_operator:
-        nb_active_taxis = nb_active_taxis.filter(models.Taxi.added_by != hidden_operator.id)
-
-    tab_nb_taxis['Total']['ntaxis'] = 0
-    tab_nb_taxis['Total']['nactivetaxis'] = 0
-    for ta in nb_taxis:
-        tab_nb_taxis['Total']['ntaxis'] += ta.ntaxis
-    for ta in nb_active_taxis:
-        tab_nb_taxis['Total']['nactivetaxis'] += ta.nactivetaxis
+    for l in client.query(query_weekly):
+        for v in l:
+            if v['operator'] == 'admin':
+                continue
+            if v['operator'] == None:
+                tab_nb_taxis['Total']['ntaxis'] = v['value']
+            else:
+                tab_nb_taxis[user_datastore.get_user(v['operator']).commercial_name]['ntaxis'] = v['value']
 
     return tab_nb_taxis
 
