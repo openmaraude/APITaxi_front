@@ -54,14 +54,14 @@ def stats_taxis(dep):
         WHERE time > now() - 1{time_unity}
     """
     if depattern == '%':
-        query_base += """AND "zupc" !~ /.?/"""
+        query_base += """AND "zupc" = ''"""
     else:
         query_base += """AND "zupc" =~ /^{}/""".format(depattern)
 
     if current_user.has_role('operateur'):
         query_base += """AND "operator"='{}'""".format(current_user.email)
     elif  not current_user.has_role('admin'):
-        query_base += """AND "operator" !~ /.?/"""
+        query_base += """AND "operator" = ''"""
 
     query_weekly = query_base.format(frequency="10080", time_unity='w')
     query_daily = query_base.format(frequency="1440", time_unity='d')
