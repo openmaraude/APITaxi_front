@@ -58,13 +58,16 @@ def stats_taxis(dep):
     else:
         query_base += """AND "zupc" =~ /^{}/""".format(depattern)
 
-    if current_user.has_role('operateur'):
-        query_base += """AND "operator"='{}'""".format(current_user.email)
-    elif  not current_user.has_role('admin'):
-        query_base += """AND "operator" = ''"""
+    if not current_user.has_role('admin'):
+        if current_user.has_role('operateur'):
+            query_base += """AND "operator"='{}'""".format(current_user.email)
+        else:
+            query_base += """AND "operator" = ''"""
 
     query_weekly = query_base.format(frequency="10080", time_unity='w')
     query_daily = query_base.format(frequency="1440", time_unity='d')
+    current_app.logger.info(query_weekly)
+    current_app.logger.info(query_daily)
 
     for l in client.query(query_daily):
         for v in l:
@@ -83,7 +86,6 @@ def stats_taxis(dep):
                 tab_nb_taxis['Total']['ntaxis'] = v['value']
             else:
                 tab_nb_taxis[user_datastore.get_user(v['operator']).commercial_name]['ntaxis'] = v['value']
-
     return tab_nb_taxis
 
 
