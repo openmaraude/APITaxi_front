@@ -33,7 +33,7 @@ def stats_index():
 
 def stats_taxis(dep):
 
-    depattern = '{0:02d}%'.format(dep) if dep else '%'
+    depattern = '{0:02d}'.format(dep) if dep else None
     today = datetime.today().replace(hour=0, minute=0, second=0)
     yesterday = today - timedelta(days=1)
     last_week = today - timedelta(days=7)
@@ -53,10 +53,10 @@ def stats_taxis(dep):
         FROM "nb_taxis_every_{frequency}"
         WHERE time > now() - 1{time_unity}
     """
-    if depattern == '%':
-        query_base += """AND "zupc" = ''"""
-    else:
+    if depattern is not None:
         query_base += """AND "zupc" =~ /^{}/""".format(depattern)
+    else:
+        query_base += """AND "zupc" = ''"""
 
     if not current_user.has_role('admin'):
         if current_user.has_role('operateur'):
