@@ -53,7 +53,7 @@ def create_app(sqlalchemy_uri=None):
     init_login_manager(app, user_datastore, LoginForm)
 
     from APITaxi_models import security
-    user_datastore.init_app(db, security.User, security.CachedUser,
+    user_datastore.init_app(db, security.User, 
             security.Role)
 
     cache = DogpileCache()
