@@ -4,9 +4,8 @@ from time import mktime
 from collections import defaultdict
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func, or_
-from flask import Blueprint, render_template, current_app
+from flask import Blueprint, render_template, current_app, request
 from flask_security import current_user
-from flask_restful import request
 from ..extensions import user_datastore
 import APITaxi_models as models
 from APITaxi_utils import influx_db
