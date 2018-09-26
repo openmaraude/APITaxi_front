@@ -21,11 +21,11 @@ class ZUPCForm(ZUPCSimpleForm):
 
 
 class ZUPCreateForm(ZUPCForm):
-    submit = SubmitField(u'Créer')
+    submit = SubmitField('Créer')
 
 
 class ZUPCUpdateForm(ZUPCForm):
     id = HiddenField()          
-    submit = SubmitField(u'Modifier')
+    submit = SubmitField('Modifier')
 
 

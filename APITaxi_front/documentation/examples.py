@@ -16,7 +16,7 @@ def make_url(p, *params, **kparams):
         path += '&'.join(params)
     elif kparams:
         path += '?'
-        path += '&'.join([str(k)+'='+str(v) for k, v in kparams.iteritems()])
+        path += '&'.join([str(k)+'='+str(v) for k, v in kparams.items()])
     return path
 
 @mod.route('/documentation/examples')

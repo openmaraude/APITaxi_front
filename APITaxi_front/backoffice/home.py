@@ -38,7 +38,7 @@ def table():
     args = parser.parse_args()
     if current_user.has_role('admin'):
         if not 'user' in args and not 'q' in args:
-            print  args
+            print(args)
             abort(400)
         user = models.security.User.query.filter(models.security.User.email==args['user']).first()
     elif current_user.has_role('operateur'):
@@ -66,12 +66,8 @@ def table():
                 models.Taxi.vehicle_id.in_([v.id for v in vehicles])
             )
 
-        taxis = filter(
-            lambda t: current_user.has_role('admin') or
-                      any(map(lambda vd: vd.added_by == current_user.id,
-                          t.vehicle.descriptions)),
-            models.Taxi.query.filter(or_(*filters_taxi)).all()
-        )
+        taxis = [t for t in models.Taxi.query.filter(or_(*filters_taxi)).all() if current_user.has_role('admin') or
+                      any([vd.added_by == current_user.id for vd in t.vehicle.descriptions])]
         if taxis:
             filters.append(models.Hail.taxi_id.in_([t.id for t in taxis]))
         else:
@@ -143,7 +139,7 @@ def stats():
         if not 'user' in args:
             abort(400)
         user_list = [models.security.User.query.filter(models.security.User.email==args['user']).first(), None]
-        status_keys = statuses.keys()
+        status_keys = list(statuses.keys())
     elif current_user.has_role('operateur'):
         user_list = [current_user]
         status_keys = ["total", "declined_by_taxi", "ok"]
@@ -167,7 +163,7 @@ def stats():
         res.append({"email": email})
         for key in status_keys:
             res[-1][key] = {}
-            for substatus, status_list in statuses[key].iteritems():
+            for substatus, status_list in statuses[key].items():
                 status_filters = [models.Hail._status != 'customer_banned']
                 if status_list:
                     status_filters += [models.Hail._status.in_(status_list)]
@@ -184,11 +180,11 @@ def stats():
 		tmp = {k_v[0].isoformat(): k_v[1] for k_v in q.all()}
                 res[-1][key][substatus] = {d: tmp.get(d, 0) for d in range_date}
 
-            if len(res[-1][key].keys()) > 1:
+            if len(list(res[-1][key].keys())) > 1:
                 res[-1][key]['total'] = {
                     v[0]: sum(v[1:])
-                        for v in zip(res[-1][key].values()[0].keys(),
-                                 *map(lambda d: d.values(), res[-1][key].values()))
+                        for v in zip(list(res[-1][key].values())[0].keys(),
+                                 *[list(d.values()) for d in list(res[-1][key].values())])
                 }
 
     return jsonify({"data": res})

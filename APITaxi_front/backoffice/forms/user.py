@@ -15,4 +15,4 @@ class UserForm(UserFormRaw):
     logo = FileField('image', validators=[
         FileAllowed(images, 'Images only!')
     ])
-    submit = SubmitField(u'Modifier')
+    submit = SubmitField('Modifier')

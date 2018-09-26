@@ -40,7 +40,7 @@ class ADSFormVehicle(ModelForm):
     ads = FormField(ADSForm)
 
 class ADSCreateForm(ADSFormVehicle):
-    submit = SubmitField(u'Créer')
+    submit = SubmitField('Créer')
 
 
 class ADSUpdateForm(ADSFormVehicle):
@@ -60,9 +60,9 @@ class DriverForm(ModelForm):
 
 
 class DriverCreateForm(DriverForm):
-    submit = SubmitField(u'Créer')
+    submit = SubmitField('Créer')
 
 
 class DriverUpdateForm(DriverForm):
     id = HiddenField()
-    submit = SubmitField(u'Modifier')
+    submit = SubmitField('Modifier')

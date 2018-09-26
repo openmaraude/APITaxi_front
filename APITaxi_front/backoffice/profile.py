@@ -26,9 +26,9 @@ def profile_form():
     if current_user.has_role('prefecture'):
         del form._fields['email_technical']
         del form._fields['phone_number_technical']
-        form._fields['email_customer'].description = u'Adresse email de contact'
+        form._fields['email_customer'].description = 'Adresse email de contact'
         form._fields['email_customer'].label.text = form._fields['email_customer'].description
-        form._fields['phone_number_customer'].description = u'Numéro de téléphone de contact'
+        form._fields['phone_number_customer'].description = 'Numéro de téléphone de contact'
         form._fields['phone_number_customer'].label.text = \
                 form._fields['phone_number_customer'].description
 

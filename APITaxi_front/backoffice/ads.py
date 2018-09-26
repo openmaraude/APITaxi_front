@@ -20,10 +20,10 @@ def get_ads_list():
     if request_wants_json():
         abort(501, message="You can't ask for JSON")
     parser = reqparse.RequestParser()
-    parser.add_argument('numero', type=unicode, help=u"Numero de l'ADS", required=False,
+    parser.add_argument('numero', type=str, help="Numero de l'ADS", required=False,
                         location='values')
-    parser.add_argument('insee', type=unicode,
-            help=u"Code INSEE de la commune d\'attribution de l'ADS", required=False,
+    parser.add_argument('insee', type=str,
+            help="Code INSEE de la commune d\'attribution de l'ADS", required=False,
                     location='values')
     args = self.parser.parse_args()
     if args["numero"] and args["insee"]:
@@ -54,11 +54,11 @@ def ads_details(numero, insee):
     ads = ads[0]
     d = models.ADS.__dict__
     keys_to_show = ads.showable_fields(current_user)
-    is_valid_key = lambda k: hasattr(k, "info") and k.info.has_key("label")\
+    is_valid_key = lambda k: hasattr(k, "info") and "label" in k.info\
                              and k.info['label'] and k.key in keys_to_show
     return render_template("details/ads.html",
             ads=[(k[1].info["label"],
-                getattr(ads, k[0])) for k in d.iteritems() if is_valid_key(k[1])])
+                getattr(ads, k[0])) for k in d.items() if is_valid_key(k[1])])
 
 
 @mod.route('/ads/form', methods=['GET', 'POST'])
