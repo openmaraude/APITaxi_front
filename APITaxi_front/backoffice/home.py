@@ -177,7 +177,7 @@ def stats():
                     ).order_by(
                         func.date(models.Hail.added_at)
                 )
-		tmp = {k_v[0].isoformat(): k_v[1] for k_v in q.all()}
+                tmp = {k_v[0].isoformat(): k_v[1] for k_v in q.all()}
                 res[-1][key][substatus] = {d: tmp.get(d, 0) for d in range_date}
 
             if len(list(res[-1][key].keys())) > 1:

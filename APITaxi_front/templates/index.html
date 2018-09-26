@@ -7,7 +7,7 @@
 
 {% block content %}
   {{super()}}
-{% if user_name_list > 0 %}
+{% if user_name_list %}
 {% if is_admin %}
 Users:
 <select onchange="change_user(this.value);">
@@ -42,7 +42,7 @@ Rechercher un taxi : <input type="text" size="20" id="searchbox">
 
 
 {% block scripts %}
-{% if user_name_list > 0 %}
+{% if user_name_list  %}
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
 <script type="text/javascript">
 var titles = {
