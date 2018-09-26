@@ -77,8 +77,7 @@ def zupc_autocomplete():
 
     response = models.ZUPC.query.filter(
             models.ZUPC.nom.ilike(like)).all()
-    return jsonify(suggestions=map(lambda zupc:{'name': zupc.nom, 'id': int(zupc.id)},
-                                        response))
+    return jsonify(suggestions=[{'name': zupc.nom, 'id': int(zupc.id)} for zupc in response])
 
 @mod.route('/zupc/_show_temp')
 def zupc_show_temp():

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from APITaxi_front import create_app
+from .APITaxi_front import create_app
 
 app = create_app()
 
