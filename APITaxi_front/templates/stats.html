@@ -68,11 +68,11 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
 <div class="col-sm-3">
 <div class="stat">
 <h2>Hier</h2><hr>
-<div class="bigup">{{  nb_taxis.values()[0]['nactivetaxis'] }}</div></div></div>
+<div class="bigup">{{ nb_taxis_hier['nactivetaxis']|default('0') }}</div></div></div>
 <div class="col-sm-3">
 <div class="stat">
 <h2>Depuis une semaine</h2><hr>
-<div class="bigup">{{ nb_taxis.values()[0]['ntaxis']|default("0", True) }}</div></div></div>
+<div class="bigup">{{ nb_taxis_hier['ntaxis']|default('0') }}</div></div></div>
 <div class="col-sm-6">
 <div class="stat">
 <img src="http://dash.api.taxi/render/dashboard-solo/db/taxis-par-jour?from={{ last_week()  }}&to={{ yesterday()  }}&theme=light&panelId=1&width=450&height=150">
@@ -109,25 +109,25 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
 <div class="col-sm-3">
 <div class="stat">
 <h2>Ok du jour</h2><hr>
-<div class="bigup">{{ nb_hails.values()[0]['nhails_ok_d']|default("0", True) }}</div>
+<div class="bigup">{{ nb_hails_hier['nhails_ok_d']|default("0") }}</div>
 </div>
 </div>
 <div class="col-sm-3">
 <div class="stat">
 <h2>Demandes de courses du jour</h2><hr>
-<div class="bigup">{{ nb_hails.values()[0]['nhails_d']|default("0", True) }}</div>
+<div class="bigup">{{ nb_hails_hier['nhails_d']|default("0") }}</div>
 </div>
 </div>
 <div class="col-sm-3">
 <div class="stat">
 <h2>Courses Ok depuis le début</h2><hr>
-<div class="bigup">{{ nb_hails.values()[0]['nhails_ok_y']|default("0", True) }}</div>
+<div class="bigup">{{ nb_hails_hier['nhails_ok_y']|default("0", True) }}</div>
 </div>
 </div>
 <div class="col-sm-3">
 <div class="stat">
 <h2>Demandes de courses depuis le début</h2><hr>
-<div class="bigup">{{ nb_hails.values()[0]['nhails_y']|default("0", True) }}</div>
+<div class="bigup">{{ nb_hails_hier['nhails_y']|default("0", True) }}</div>
 </div>
 </div>
 {% endif %}
@@ -137,7 +137,7 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
 <h2>Taxis actifs</h2>
 <table class="pure-table pure-table-bordered pure-table-horizontal pure-table-striped">
     <thead><tr><td>Taxi</td><td>Opérateur</td><td>INSEE</td><td>Ville</td><td>ADS</td><td>Carte Pro</td><td>rafraichissment</td></tr></thead>
-    {% for k, v in taxis|dictsort(by="value") %}
+    {% for k, v in taxis %}
     <tr><td>{{ k }}</td><td>{{ v['added_by'] }}</td><td>{{ v['ads.insee'] }}</td><td>{{ v['zupc.nom'] }}</td><td>{{ v['ads.numero'] }}</td><td>{{ v['driver.professional_licence'] }}</td><td>{{ v['last_update_at'] }}</td></tr>
      {% endfor %}
 </table>
@@ -147,7 +147,7 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
  <h2>Courses récentes</h2>
  <table class="pure-table pure-table-bordered pure-table-horizontal pure-table-striped">
      <thead><tr><td>Date</td><td>Course</td><td>Moteur</td><td>Opérateur</td><td>INSEE</td><td>Ville</td><td>Etat</td></tr></thead>
-     {% for k, v in hails|dictsort(by="value") %}
+     {% for k, v in hails %}
      <tr><td>{{ v['creation_datetime'] }}</td><td>{{ k }}</td><td>{{ v['added_by'] }}</td><td>{{ v['operator'] }}</td><td>{{ v['ads.insee'] }}</td><td>{{ v['zupc.nom'] }}</td><td>{{ v['last_status'] }}</td></tr>
       {% endfor %}
  </table>

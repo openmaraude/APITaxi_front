@@ -19,12 +19,18 @@ def stats_index():
     dep = request.args.get('dep', 0, type=int)
     yesterday = (datetime.today() - timedelta(1)).replace(hour=2)
     last_week = yesterday - timedelta(7)
+    nb_taxis = stats_taxis(dep)
+    nb_taxis_hier = list(nb_taxis.values())[0] if nb_taxis.values() else {}
+    nb_hails=stats_hails(dep)
+    nb_hails_hier = list(nb_hails.values())[0] if nb_hails.values() else {}
 
     return render_template('stats.html',
                            dep=dep,
-                           nb_taxis=stats_taxis(dep),
+                           nb_taxis=nb_taxis,
+                           nb_taxis_hier=nb_taxis_hier,
                            taxis=list_active_taxis(dep),
                            nb_hails=stats_hails(dep),
+                           nb_hails_hier=nb_hails_hier,
                            hails=list_hails(dep),
                            yesterday=lambda: int(mktime(yesterday.timetuple()) * 1000),
                            last_week=lambda: int(mktime(last_week.timetuple()) * 1000)
@@ -126,7 +132,7 @@ def list_active_taxis(dep):
         tab_taxis[taxi.id]['driver.professional_licence'] = taxi.driver.professional_licence
         tab_taxis[taxi.id]['last_update_at'] = taxi.last_update_at
 
-    return tab_taxis
+    return sorted(list(tab_taxis.items()), key=lambda k, v: v['last_update_at'])
 
 
 def stats_hails(dep):
@@ -446,6 +452,5 @@ def list_hails(dep):
             tab_hails[hail.id]['zupc.nom'] = ''
         tab_hails[hail.id]['ads.numero'] = hail.numero
         tab_hails[hail.id]['last_status'] = hail._status
-
-    return tab_hails
+    return sorted(list(tab_hails.items()), key=lambda k_v: k_v[1]['creation_datetime'])
 
