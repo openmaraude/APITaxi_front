@@ -132,7 +132,7 @@ def list_active_taxis(dep):
         tab_taxis[taxi.id]['driver.professional_licence'] = taxi.driver.professional_licence
         tab_taxis[taxi.id]['last_update_at'] = taxi.last_update_at
 
-    return sorted(list(tab_taxis.items()), key=lambda k, v: v['last_update_at'])
+    return sorted(list(tab_taxis.items()), key=lambda k_v: k_v[1]['last_update_at'])
 
 
 def stats_hails(dep):
