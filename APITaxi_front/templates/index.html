@@ -7,7 +7,7 @@
 
 {% block content %}
   {{super()}}
-{% if user_name_list %}
+{% if user_name_list is defined %}
 {% if is_admin %}
 Users:
 <select onchange="change_user(this.value);">
@@ -42,7 +42,7 @@ Rechercher un taxi : <input type="text" size="20" id="searchbox">
 
 
 {% block scripts %}
-{% if user_name_list  %}
+{% if user_name_list is defined %}
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
 <script type="text/javascript">
 var titles = {
@@ -51,11 +51,13 @@ var titles = {
                          "total": "Total vu comme refusé par le taxi"},
     "declined_by_customer": {"timeout": "timeout",
                              "declined": "Non reconfirmée par le client",
+                             "declined_before_taxi_acceptance": "Non reconfirmée par le client avant confirmation taxi",
                              "total": "Total vu comme non reconfirmée par le client"}
 };
 var short_titles = {
     "timeout": "timeouts",
     "declined": "refusées",
+    "declined_before_taxi_acceptance": "refusées avant conf",
     "total": "total", "ok": "ok"
 };
 

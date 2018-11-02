@@ -38,7 +38,6 @@ def table():
     args = parser.parse_args()
     if current_user.has_role('admin'):
         if not 'user' in args and not 'q' in args:
-            print(args)
             abort(400)
         user = models.security.User.query.filter(models.security.User.email==args['user']).first()
     elif current_user.has_role('operateur'):
@@ -126,7 +125,8 @@ def stats():
         },
         "declined_by_customer": {
             "timeout": ["timeout_customer"],
-            "declined": ["declined_by_customer", "incident_customer"]
+            "declined": ["declined_by_customer", "incident_customer"],
+            "declined_before_taxi_acceptance": ["declined_by_customer", "incident_customer"]
         },
         "ok": {"ok": ["accepted_by_customer", "customer_on_board", "finished"]},
         "total": {"total": []}
@@ -152,7 +152,7 @@ def stats():
     res = []
     begin_date = date.today() - timedelta(weeks=2)
     range_date = [(begin_date + timedelta(days=d)).isoformat() for d in
-                  range(0, (date.today() - begin_date).days)]
+                  range(0, (date.today() - begin_date).days + 1)]
     for user in user_list:
         email = user.email if user else 'total'
         filters = [models.Hail.added_at >= begin_date]
@@ -167,6 +167,8 @@ def stats():
                 status_filters = [models.Hail._status != 'customer_banned']
                 if status_list:
                     status_filters += [models.Hail._status.in_(status_list)]
+                if substatus == "declined_before_taxi_acceptance":
+                    filters + [models.Hail.change_to_accepted_by_taxi != None]
                 q = models.db.session.query(
                         func.date(models.Hail.added_at),
                         func.count('id')
