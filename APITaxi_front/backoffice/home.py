@@ -186,7 +186,7 @@ def stats():
                 res[-1][key]['total'] = {
                     v[0]: sum(v[1:])
                         for v in zip(list(res[-1][key].values())[0].keys(),
-                                 *[list(d.values()) for d in list(res[-1][key].values())])
+                                 *[list(d.values()) for substatus, d in list(res[-1][key].items()) if substatus != "declined_before_taxi_acceptance"])
                 }
 
     return jsonify({"data": res})
