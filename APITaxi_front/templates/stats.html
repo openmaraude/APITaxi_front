@@ -32,8 +32,11 @@ margin: 15px;
       href="{{url_for('static', filename='css/pure-tables.css')}}">
 <link rel="stylesheet"
       href="{{url_for('static', filename='css/vertical-nav.css')}}">
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/Chart.min.css') }}">
 <link rel="stylesheet" 
       href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/default.min.css">
+<script src="{{ url_for('static', filename='js/Chart.bundle.min.js') }}"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 
@@ -75,9 +78,28 @@ Départment : <select onChange="location.search = location.search.replace(/[^&$]
 <div class="bigup">{{ nb_taxis_hier['ntaxis']|default('0') }}</div></div></div>
 <div class="col-sm-6">
 <div class="stat">
-<img src="http://dash.api.taxi/render/dashboard-solo/db/taxis-par-jour?from={{ last_week()  }}&to={{ yesterday()  }}&theme=light&panelId=1&width=450&height=150">
+<canvas id="statChart" width="400" height="200"></canvas>
 </div>
 </div>
+<script>
+var ctx = document.getElementById('statChart')
+var chart = new Chart(ctx, {
+   type: 'line',
+   data: {
+      labels: {{ nb_taxis_week | map(attribute='date') | list | tojson }},
+      datasets: [
+         {
+           label: "Nombre de taxis",
+           data: {{ nb_taxis_week | map(attribute='value') | list | tojson }},
+           fill: false,
+           borderColor: "rgb(75, 192, 192)",
+           lineTension: 0.1
+         }
+      ],
+      options: {}
+   }
+})
+</script>
 
 {% endif %}
 

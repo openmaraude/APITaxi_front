@@ -10,6 +10,7 @@ from ..extensions import user_datastore
 import APITaxi_models as models
 from APITaxi_utils import influx_db
 from influxdb.exceptions import InfluxDBClientError
+import json
 
 mod = Blueprint('stats', __name__)
 
@@ -23,6 +24,7 @@ def stats_index():
     nb_taxis_hier = list(nb_taxis.values())[0] if nb_taxis.values() else {}
     nb_hails=stats_hails(dep)
     nb_hails_hier = list(nb_hails.values())[0] if nb_hails.values() else {}
+    nb_taxis_week = get_nb_taxis_week()
 
     return render_template('stats.html',
                            dep=dep,
@@ -31,10 +33,23 @@ def stats_index():
                            taxis=list_active_taxis(dep),
                            nb_hails=stats_hails(dep),
                            nb_hails_hier=nb_hails_hier,
+                           nb_taxis_week=nb_taxis_week,
                            hails=list_hails(dep),
                            yesterday=lambda: int(mktime(yesterday.timetuple()) * 1000),
                            last_week=lambda: int(mktime(last_week.timetuple()) * 1000)
                           )
+
+def format_date(s):
+    return (
+        datetime.strptime(s, '%Y-%m-%dT%H:%M:%SZ') - timedelta(1)
+    ).strftime('%d-%m-%Y')
+
+def get_nb_taxis_week():
+    client = influx_db.get_client(current_app.config['INFLUXDB_TAXIS_DB'])
+    return [
+               {'date': format_date(p['time']), 'value': p['value']}
+               for p in client.query("""SELECT value FROM "nb_taxis_every_1440" WHERE "operator" = '' AND "zupc" = '' AND time >= now() - 1w;""").get_points()
+    ]
 
 def stats_taxis(dep):
 
