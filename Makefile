@@ -5,6 +5,6 @@ all:
 	@echo "Do not forget to update __version__"
 
 release:
-	docker build -t openmaraude/apitaxi_front:${VERSION} -t openmaraude/apitaxi_front:latest .
-	docker push openmaraude/apitaxi_front:${VERSION}
-	docker push openmaraude/apitaxi_front:latest
+	docker build -t openmaraude/api_taxi_front:${VERSION} -t openmaraude/api_taxi_front:latest .
+	docker push openmaraude/api_taxi_front:${VERSION}
+	docker push openmaraude/api_taxi_front:latest
