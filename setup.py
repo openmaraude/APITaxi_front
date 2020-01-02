@@ -13,6 +13,10 @@ DEPENDENCIES = [
     'WTForms-JSON',
     'Pillow',
     'bcrypt',
+    'celery',
+    'geopy',
+    'psycopg2',
+    'flask-uploads',
 ]
 
 
