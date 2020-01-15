@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block navbar %}
+{{ super() }}
+
+<style type="text/css">
+  #hails {
+    margin: 0 auto;
+  }
+
+  #hails th, #hails td {
+    border: 1px solid black;
+    padding: 5px;
+  }
+
+  .customer-requests {
+    display: flex;
+  }
+
+  .phone, .hails {
+    margin: 10px;
+    padding: 10px;
+  }
+
+  .phone {
+    border-right: 1px solid #aaa;
+    min-width: 150px;
+  }
+
+  .hails {
+    display: flex;
+  }
+
+  .hail {
+    border: 1px solid #aaa;
+    margin: 5px;
+  }
+
+  .hail .hail-title {
+    background-color: rgba(255, 0, 0, 0.4);
+    font-weight: bold;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .hail.finished .hail-title {
+    background-color: rgba(0, 255, 0, 0.4);
+  }
+
+  .hail-content {
+    padding: 20px;
+  }
+
+  .hail-content ul {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+  }
+
+  .hail-details {
+    display: none;
+  }
+</style>
+
+<script type="text/javascript">
+
+  function displayHail(node) {
+    node.style.display = node.style.display == 'block' ? 'none' : 'block';
+  }
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+  <div class="">
+    <h1>Filters</h1>
+
+      <form method="get">
+        <p>
+          Afficher les requêtes du <input type="date" id="start" name="start" value="{{ start.strftime('%Y-%m-%d') }}" /> jusqu'à la fin du mois
+        </p>
+        <p>
+          <input type="submit" />
+        </p>
+      </form>
+  </div>
+
+
+{% for group in customers_requests | groupby('date') %}
+
+  <h1>{{ group.grouper }}</h1>
+
+  {% for req in group.list %}
+    <div class="customer-requests">
+      <div class="phone">{{ req.phone }}</div>
+
+      <div class="hails">
+        {% for hail in req.hails %}
+        <div class="hail {{ hail.status }}">
+          <div class="hail-title">
+            {{ (hail.added_at | str_to_datetime).strftime('%H:%M:%S') }}
+            <br />
+            {{ hail.status }}
+        </div>
+          <div class="hail-content">
+            <ul>
+              <li><strong>Taxi:</strong> {{ hail.taxi_id }}</li>
+              <li>
+                <a href="#{{ hail.id }}" onclick="displayHail(this.parentNode.children[1]);">...</a>
+                <div class="hail-details">
+                  <ul>
+                  {% for key, value in hail.items() %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                  {% endfor %}
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+{% endfor %}
+</div>
+
+{% endblock %}
