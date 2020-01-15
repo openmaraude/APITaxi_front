@@ -29,6 +29,7 @@
 
   .hails {
     display: flex;
+    flex-wrap: wrap;
   }
 
   .hail {
@@ -75,24 +76,21 @@
 {{ super() }}
 
 <div class="container">
-
-  <div class="">
     <h1>Filters</h1>
 
-      <form method="get">
-        <p>
-          Afficher les requêtes du <input type="date" id="start" name="start" value="{{ start.strftime('%Y-%m-%d') }}" /> jusqu'à la fin du mois
-        </p>
-        <p>
-          <input type="submit" />
-        </p>
-      </form>
-  </div>
+    <form method="get">
+      <p>
+        Afficher les requêtes du <input type="date" id="start" name="start" value="{{ start.strftime('%Y-%m-%d') }}" /> jusqu'à la fin du mois
+      </p>
+      <p>
+        <input type="submit" />
+      </p>
+    </form>
 
 
 {% for group in customers_requests | groupby('date') %}
 
-  <h1>{{ group.grouper }}</h1>
+  <h2>{{ group.grouper }}</h2>
 
   {% for req in group.list %}
     <div class="customer-requests">
