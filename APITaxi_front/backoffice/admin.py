@@ -36,7 +36,7 @@ def list_hails():
             start = value
         # Ignore bad dates
         except ValueError:
-            flash('Date invalide')
+            flash('Start date format is invalid. The format should be : %Y-%m-%d')
 
     end = start + dateutil.relativedelta.relativedelta(months=+1, day=1)
 
