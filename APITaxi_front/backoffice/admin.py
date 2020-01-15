@@ -4,7 +4,7 @@ import datetime
 import dateutil
 import json
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, flash, render_template, request
 from flask_security import login_required, roles_accepted
 
 from sqlalchemy import cast, func, Date, literal_column, String, text
@@ -26,15 +26,19 @@ blueprint.add_app_template_filter(str_to_datetime)
 @login_required
 @roles_accepted('admin')
 def list_hails():
-
-    start_month = datetime.date.today().replace(day=1)
+    start = datetime.date.today().replace(day=1)
 
     # Parse ?start
     start_arg = request.args.get('start')
     if start_arg:
-        value = datetime.datetime.strptime(start_arg, '%Y-%m-%d')
+        try:
+            value = datetime.datetime.strptime(start_arg, '%Y-%m-%d')
+            start = value
+        # Ignore bad dates
+        except ValueError:
+            flash('Date invalide')
 
-        start_month = value
+    end = start + dateutil.relativedelta.relativedelta(months=+1, day=1)
 
     # For each client (== phone number) and day, get all the hails
     query = Hail.query.with_entities(
@@ -47,7 +51,8 @@ def list_hails():
             )
         ).label('hails')
     ).filter(
-        cast(Hail.added_at, Date) >= start_month
+        cast(Hail.added_at, Date) >= start,
+        cast(Hail.added_at, Date) < end,
     ).group_by(
         Hail.customer_phone_number,
         cast(Hail.added_at, Date)
@@ -56,5 +61,5 @@ def list_hails():
     return render_template(
         'admin/hails.html',
         customers_requests=query,
-        start=start_month
+        start=start
     )
