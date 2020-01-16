@@ -9,11 +9,18 @@
 </style>
 {% set navigation_bar = [
 ] -%}
-{% set user_bar = [
-    ('/user_key', 'user_key', 'Clé'),
-    ('/documentation', 'documentation', 'Documentation'),
-    ('/user/form', 'user_form', 'Mon compte'),
-    ('/logout', 'logout', 'Déconnexion')
+
+{% set admin_bar = [
+    ('#', 'admin', 'Admin', [
+      ('/admin/hails', 'Hails'),
+    ])
+] if current_user.has_role('admin') else [] %}
+
+{% set user_bar = admin_bar + [
+    ('/user_key', 'user_key', 'Clé', None),
+    ('/documentation', 'documentation', 'Documentation', None),
+    ('/user/form', 'user_form', 'Mon compte', None),
+    ('/logout', 'logout', 'Déconnexion', None)
 ] -%}
 {% set active_page = active_page|default('index') -%}
 
@@ -32,8 +39,19 @@
         {% endfor %}
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        {% for href, id, caption in user_bar %}
+        {% for href, id, caption, submenus in user_bar %}
+        {% if not submenus %}
         <li{% if id == active_page %} class="active"{% endif %}><a href="{{ href|e }}">{{ caption|e }}</a></li>
+        {% else %}
+        <li class="nav-item dropdown{% if id == active_page %} active{%endif %}">
+          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ caption }}</a>
+          <ul class="dropdown-menu nav navbar-nav">
+            {% for href, caption in submenus %}
+            <li><a class="dropdown-item" href="{{ href }}">{{ caption }}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+        {% endif %}
         {% endfor %}
       </ul>
     </div><!-- /.navbar-collapse -->
@@ -45,5 +63,3 @@
 {{ super() }}
 {{util.flashed_messages()}}
 {% endblock %}
-
-
