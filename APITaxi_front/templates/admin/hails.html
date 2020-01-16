@@ -88,7 +88,7 @@
     </form>
 
 
-{% for group in customers_requests | groupby('date') %}
+{% for group in customers_requests | groupby('date') | reverse %}
 
   <h2>{{ group.grouper }}</h2>
 

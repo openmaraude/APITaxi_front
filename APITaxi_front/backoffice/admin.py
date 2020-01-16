@@ -56,6 +56,8 @@ def list_hails():
     ).group_by(
         Hail.customer_phone_number,
         cast(Hail.added_at, Date)
+    ).order_by(
+        cast(Hail.added_at, Date).desc()
     )
 
     return render_template(
