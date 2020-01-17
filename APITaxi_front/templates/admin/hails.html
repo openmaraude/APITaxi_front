@@ -4,8 +4,9 @@
 {{ super() }}
 
 <style type="text/css">
-  #hails {
-    margin: 0 auto;
+
+  .summary {
+    text-align: right;
   }
 
   #hails th, #hails td {
@@ -100,6 +101,13 @@
 {% for group in customers_requests | groupby('data.date') | reverse %}
 
   <h2>{{ group.grouper }}</h2>
+
+  <div class="summary">
+    <strong>
+      Courses ok : {{ group.list | selectattr('success', 'equalto', True) | list | count  }}/{{ group.list | selectattr('success', 'equalto', False) | list | count  }}
+      ({{ '%.f' % ((group.list | selectattr('success', 'equalto', True) | list | count) * 100 / (group.list | selectattr('success', 'equalto', False) | list | count)) }}%)
+    <strong>
+  </div>
 
   {% for req in group.list %}
     <div class="customer-requests">
