@@ -13,6 +13,13 @@ from sqlalchemy.dialects.postgresql import aggregate_order_by
 from APITaxi_models import db, Hail
 
 
+# Hails with this status are considered successful
+SUCCESS_STATUS = (
+    'finished',
+    'customer_on_board',
+)
+
+
 blueprint = Blueprint('admin', __name__)
 
 
@@ -60,8 +67,17 @@ def list_hails():
         cast(Hail.added_at, Date).desc()
     )
 
+    customers_requests = []
+    for row in query:
+        success = any(hail for hail in row.hails if hail['status'] in SUCCESS_STATUS)
+        customers_requests.append({
+            'success': success,
+            'data': row,
+        })
+
     return render_template(
         'admin/hails.html',
-        customers_requests=query,
+        success_status=SUCCESS_STATUS,
+        customers_requests=customers_requests,
         start=start
     )

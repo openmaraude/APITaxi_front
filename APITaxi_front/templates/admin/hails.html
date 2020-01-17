@@ -23,13 +23,20 @@
   }
 
   .phone {
-    border-right: 1px solid #aaa;
-    min-width: 150px;
+    min-width: 130px;
   }
 
   .hails {
     display: flex;
     flex-wrap: wrap;
+  }
+
+  .hails-failure {
+    border-left: 5px solid rgba(255, 0, 0, 0.4);
+  }
+
+  .hails-success {
+    border-left: 5px solid rgba(0, 150, 0, 0.4);
   }
 
   .hail {
@@ -44,9 +51,11 @@
     text-align: center;
   }
 
-  .hail.finished .hail-title, .hail.customer_on_board .hail-title {
-    background-color: rgba(0, 255, 0, 0.4);
+  {% for status in success_status %}
+  .hail.{{ status }} .hail-title {
+    background-color: rgba(0, 150, 0, 0.4);
   }
+  {% endfor %}
 
   .hail-content {
     padding: 20px;
@@ -88,16 +97,16 @@
     </form>
 
 
-{% for group in customers_requests | groupby('date') | reverse %}
+{% for group in customers_requests | groupby('data.date') | reverse %}
 
   <h2>{{ group.grouper }}</h2>
 
   {% for req in group.list %}
     <div class="customer-requests">
-      <div class="phone">{{ req.phone }}</div>
+      <div class="phone">{{ req.data.phone }}</div>
 
-      <div class="hails">
-        {% for hail in req.hails %}
+      <div class="hails hails-{{ 'success' if req.success else 'failure' }}">
+        {% for hail in req.data.hails %}
         <div class="hail {{ hail.status }}">
           <div class="hail-title">
             {{ (hail.added_at | str_to_datetime).strftime('%H:%M:%S') }}
