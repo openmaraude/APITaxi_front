@@ -119,6 +119,8 @@
           <div class="hail-title">
             {{ (hail.added_at | str_to_datetime).strftime('%H:%M:%S') }}
             <br />
+            {{ hail.operator.commercial_name }}
+            <br />
             {{ hail.status }}
         </div>
           <div class="hail-content">

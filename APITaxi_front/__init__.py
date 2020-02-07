@@ -12,6 +12,7 @@ def create_app(sqlalchemy_uri=None):
     import os
 
     app = Flask(__name__)
+    app.config['SQLALCHEMY_ECHO'] = True
     app.config.from_object('APITaxi_front.default_settings')
     if 'APITAXI_CONFIG_FILE' in os.environ:
         app.config.from_envvar('APITAXI_CONFIG_FILE')

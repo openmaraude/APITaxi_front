@@ -11,6 +11,7 @@ from sqlalchemy import cast, func, Date, literal_column, String, text
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 
 from APITaxi_models import db, Hail
+from APITaxi_models.security import User
 
 
 # Hails with this status are considered successful
@@ -70,6 +71,15 @@ def list_hails():
     customers_requests = []
     for row in query:
         success = any(hail for hail in row.hails if hail['status'] in SUCCESS_STATUS)
+
+        # For each hail, fetch operator details.
+        #
+        # SQL query is only run on database of the operator is not already in
+        # the SQLAlchemy session's identity map, so this loop is not as
+        # expensive as it could appear.
+        for idx, hail in enumerate(row.hails):
+            hail['operator'] = User.query.get(hail['operateur_id'])
+
         customers_requests.append({
             'success': success,
             'data': row,
