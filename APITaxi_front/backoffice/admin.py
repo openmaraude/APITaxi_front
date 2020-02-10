@@ -79,6 +79,7 @@ def list_hails():
         # expensive as it could appear.
         for idx, hail in enumerate(row.hails):
             hail['operator'] = User.query.get(hail['operateur_id'])
+            hail['added'] = User.query.get(hail['added_by'])
 
         customers_requests.append({
             'success': success,

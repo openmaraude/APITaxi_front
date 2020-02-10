@@ -119,7 +119,9 @@
           <div class="hail-title">
             {{ (hail.added_at | str_to_datetime).strftime('%H:%M:%S') }}
             <br />
-            {{ hail.operator.commercial_name }}
+            Opérateur: {{ hail.operator.commercial_name }}
+            <br />
+            Course par: {{ hail.added.commercial_name or hail.added.email }}
             <br />
             {{ hail.status }}
         </div>
