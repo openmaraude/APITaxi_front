@@ -6,7 +6,7 @@ __homepage__ = "https://github.com/"
 __version__ = '0.1.0'
 __doc__ = "Frontend of api.taxi"
 
-def create_app(sqlalchemy_uri=None):
+def create_app():
     from flask import Flask, request_started, request, request_finished, g
     from flask_bootstrap import Bootstrap
     import os
@@ -28,8 +28,6 @@ def create_app(sqlalchemy_uri=None):
         if not k in os.environ:
             continue
         app.config[k] = os.environ[k]
-    if sqlalchemy_uri:
-        app.config['SQLALCHEMY_DATABASE_URI'] = sqlalchemy_uri
 
     from APITaxi_models import db
     db.init_app(app)
