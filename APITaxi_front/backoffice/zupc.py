@@ -18,7 +18,7 @@ def zupc():
     if request_wants_json():
         abort(400, message="bad format")
     roles_accepted = set(['admin', 'mairie', 'prefecture', 'operateur'])
-    if  current_user.is_anonymous() or\
+    if  current_user.is_anonymous or\
             len(roles_accepted.intersection(current_user.roles)) == 0:
         abort(403)
     page = int(request.args.get('page')) if 'page' in request.args else 1
