@@ -14,7 +14,7 @@ mod = Blueprint('drivers', __name__)
 @mod.route('/drivers/_view')
 @login_required
 @roles_accepted('admin', 'operateur', 'prefecture', 'stats')
-def drivers_view(self):
+def drivers_view():
     if not models.Driver.can_be_listed_by(current_user):
         if current_user.has_role('stats'):
             return self.metadata()
