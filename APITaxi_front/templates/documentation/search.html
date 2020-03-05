@@ -1,0 +1,45 @@
+{% extends "documentation/base.html" %}
+
+{% block main %}
+<h2>Search engine</h2>
+
+<p>There are two main interactions between <strong>Taxis Search Engines</strong> and the <strong>Taxi Exchange Point (TXP)</strong>: looking for taxis around a client, and hailing a taxi for a client.</p>
+
+<p><strong>Warning:</strong> in accordance with the Terms of Service, you are allowed to look for a taxi or hail one <em>only</em> within the context of a real-time interactive demand of a real customer: automation, replay and any other form of mass data gathering is expressly forbidden.</p>
+
+<h3 id="search">Looking for taxis around a client</h3>
+
+<p>In order to obtain the list of all taxis available around a client, your application does an <code>GET</code> request on the <em>taxis</em> API.</p>
+
+<p>That API sends back all the available taxis around the  <code>{lon,lat}</code> location of the client with all their characteristics. Only the taxis that are available and can be hailed by the client are returned (the list is already filtered according to the French taxis regulation).</p>
+
+<h5>Favorite operator</h5>
+
+<p>The optional <code>favorite_operator</code> parameter allows to specify a preferred operator. It is useful for taxis geolocated by several operators at the same time (which is expressly allowed by the French law).</p>
+
+<p>In that case, it is the description of the taxi and the location recently updated by that <code>favorite_operator</code> that will be returned. If no recent position has been updated by the <code>favorite_operator</code>, or if no <code>favorite_operator</code> is specified in the request, the description of the taxi and location returned are those of the operator who updated the position of the taxi most recently.</p>
+
+<h3 id="hail_create">Hailing a taxi</h3>
+
+<p>Once you have received the list of all taxis available around a client, you can hail one of those taxis. That Hail is created by doing a <code>POST</code> request to the <em>hails</em> API.</p>
+
+<p>The JSON object <code>hail</code> to be created has to be in the data section of the request. The initial status of the Hail should be set to <code>emitted</code>.</p>
+
+<p>In case of success, the response contains the newly created JSON object <code>hail</code>including its newly created <em>id</em> which will then be used to query and update the status of the hail.</p>
+
+<h3 id="hail_get">Querying the status of a Hail</h3>
+
+<p>In order to keep track of the status of the hail, you can do a <code>GET</code> request to the  <em>hails</em> API</a>.</p>
+
+<p>The identifier of the hail is the <em>id</em> that was returned in the response of the <code>POST</code> request used to create the hail (see <a href="#post_hail">Hailing a taxi</a>).</p>
+
+<p>The list of all possible statuses is available in the reference documentation.</p>
+
+
+<h3 id="hail_update">Updating a Hail</h3>
+
+<p>In order to finalise the transaction, the client has to reconfirm the hail after it is acknowledged by the taxi. It is done through a call of the <code>PUT</code> request to the  <em>hails</em> API.</p>
+
+<p>The status of the hail has to be <code>accepted_by_taxi</code> before the client is asked to reconfirm. If you don't send a PUT request with either the <code>accepted_by_customer</code> or the <code>declined_by_customer</code> status in the next 30 seconds, the hail will automatically be updated to <code>timeout_customer</code> and the whole transaction be considered cancelled. You do have to check when you do a PUT with the status <code>accepted_by_customer</code> that the status in the response is indeed <code>accepted_by_customer</code> (you reconfirmed and the taxi is arriving) and not <code>timeout_customer</code> (your reconfirmation arrived too late, the whole transaction had to be canceled).</p>
+
+{% endblock %}

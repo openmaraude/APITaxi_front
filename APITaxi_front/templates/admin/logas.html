@@ -1,0 +1,83 @@
+{% extends "admin/base.html" %}
+
+{% block main %}
+
+<p>Cette fonctionnalité permet aux administrateurs de se connecter en tant que n'importe quel utilisateur. Une fois connecté, déconnectez-vous pour revenir sur votre compte d'administration.</p>
+
+<div class="search-panel">
+  <h5>Filtres</h5>
+  <form class="d-flex flex-wrap" autocomplete="off">
+    <div class="form-group">
+      <label for="search_email">Email</label>
+      <input data-filter-col="email" id="search_email" type="text" class="form-control" placeholder="Email" />
+    </div>
+    <div class="form-group">
+      <label for="search_commercial_name">Nom commercial</label>
+      <input data-filter-col="commercial_name" id="search_commercial_name" type="text" class="form-control" placeholder="Nom commercial" />
+    </div>
+  </form>
+</div>
+
+<table id="table" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Email</th>
+      <th>Nom commercial</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+</table>
+{% endblock %}
+
+{% block scripts %}
+var table = $('#table').DataTable({
+  language: {
+    emptyTable: 'Aucun utilisateur',
+    loadingRecords: 'Chargement en cours...',
+    zeroRecords: 'Aucun résultat trouvé'
+  },
+  // Remove sorting.
+  bSort: false,
+  // Number of items per page.
+  pageLength: 50,
+  // Do not filter or paginate client side, send query for each draw.
+  serverSide: true,
+  // Elements to display for the table. Reference: https://datatables.net/reference/option/dom
+  // tp: display 't'able and 'p'agination. Other default items (info, search
+  // input, ...) are not displayed.
+  sDom: 'tp',
+  // API endpoint called.
+  ajax: {
+    url: "{{ url_for('api.users') }}",
+    dataSrc: 'data'
+  },
+  // Mapping between API response and columns.
+  columns: [
+    {data: 'id'},
+    {name: 'email', data: 'email'},
+    {name: 'commercial_name', data: 'commercial_name'},
+    {
+      data: null,
+      fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
+        $(nTd).html(`
+          <form method="POST" action="{{ url_for('admin.logas') }}">
+            {{ logas_form.hidden_tag() }}
+            <input type="hidden" name="{{ logas_form.user_id.name }}" value="` + sData.id + `" />
+            <button type="submit" class="btn btn-primary">Connexion</button>
+          </form>
+        `)
+      }
+    }
+  ]
+});
+
+// Iterate over inputs from search-panel, and call API to filter results.
+$('.search-panel input').each(function() {
+  $(this).on('keyup change clear', function() {
+    if (this.value != table.column(this.dataset.filterCol).search()) {
+      table.column(this.dataset.filterCol + ':name').search(this.value).draw();
+    }
+  });
+});
+{% endblock %}

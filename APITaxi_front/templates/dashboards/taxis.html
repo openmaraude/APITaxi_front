@@ -1,0 +1,82 @@
+{% extends "dashboards/base.html" %}
+
+{% block main %}
+<h3>Courses</h3>
+
+<p>
+    Ce tableau présente la liste des taxis que vous avez enregistré.
+</p>
+
+<div class="search-panel">
+  <h5>Filtres</h5>
+  <form class="d-flex flex-wrap" autocomplete="off">
+    <div class="form-group">
+      <label for="search_taxi_id">Taxi Id</label>
+      <input data-filter-col="taxi_id" id="search_taxi_id" type="text" class="form-control" placeholder="Taxi id" />
+    </div>
+    <div class="form-group">
+      <label for="search_taxi_licence_plate">Plaque d'immatriculation</label>
+      <input data-filter-col="licence_plate" id="search_taxi_licence_plate" type="text" class="form-control" placeholder="Plaque d'immat." />
+    </div>
+  </form>
+</div>
+
+<table id="table" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Id taxi</th>
+      <th>Date création</th>
+      <th>Immatriculation</th>
+      <th>ZUPC</th>
+      <th>Chauffeur</th>
+    </tr>
+  </thead>
+</table>
+{% endblock %}
+
+{% block scripts %}
+var table = $('#table').DataTable({
+  language: {
+    emptyTable: 'Aucun taxi',
+    loadingRecords: 'Chargement en cours...',
+    zeroRecords: 'Aucun résultat trouvé'
+  },
+  // Remove sorting.
+  bSort: false,
+  // Number of items per page.
+  pageLength: 50,
+  // Do not filter or paginate client side, send query for each draw.
+  serverSide: true,
+  // Elements to display for the table. Reference: https://datatables.net/reference/option/dom
+  // tp: display 't'able and 'p'agination. Other default items (info, search
+  // input, ...) are not displayed.
+  sDom: 'tp',
+  // API endpoint called.
+  ajax: {
+    url: "{{ url_for('api.taxis') }}",
+    dataSrc: 'data'
+  },
+  // Mapping between API response and columns.
+  columns: [
+    {name: 'taxi_id', data: 'id'},
+    {
+        data: 'added_at',
+        render: function (data, type, row) {
+            return moment(data).format('DD/MM/YYYY HH:mm:ss');
+        }
+    },
+    {name: 'licence_plate', data: 'vehicle.licence_plate'},
+    {data: 'ads.zupc.name'},
+    {data: 'driver.fullname'},
+  ]
+});
+
+// Iterate over inputs from search-panel, and call API to filter results.
+$('.search-panel input').each(function() {
+  $(this).on('keyup change clear', function() {
+    if (this.value != table.column(this.dataset.filterCol).search()) {
+      table.column(this.dataset.filterCol + ':name').search(this.value).draw();
+    }
+  });
+});
+{% endblock %}

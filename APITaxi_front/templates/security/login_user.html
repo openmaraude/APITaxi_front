@@ -1,17 +1,40 @@
-{% from "security/_macros.html" import render_field_with_errors, render_field %}
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Authentification{% endblock %}
 
 {% block content %}
-{% include "security/_messages.html" %}
-<h1>Login</h1>
-<form action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
-  {{ login_user_form.hidden_tag() }}
-  {{ render_field_with_errors(login_user_form.email) }}
-  {{ render_field_with_errors(login_user_form.password) }}
-  {{ render_field_with_errors(login_user_form.remember) }}
-  {{ render_field(login_user_form.next) }}
-  {{ render_field(login_user_form.submit) }}
-</form>
-{% endblock %}
+<div class="container">
+  <h3>Authentification</h3>
 
+  <p>
+    L'accès à l'intranet nécessite d'être authentifié. Veuillez renseigner vos identifiants. En cas d'oubli, contactez notre support client.
+  </p>
+
+  <form method="POST" novalidate>
+    <div class="form-group">
+      <label for="{{ login_user_form.email.id }}">Identifiant</label>
+      <input name="{{ login_user_form.email.name }}" type="text" class="form-control{% if login_user_form.email.errors %} is-invalid{% endif %}" id="{{ login_user_form.email.id }}" value="{{ login_user_form.email.data or "" }}" placeholder="Votre identifiant de connexion" required />
+      {% for error in login_user_form.email.errors %}
+      <small class="text-danger">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ login_user_form.password.id }}">Mot de passe</label>
+      <input name="{{ login_user_form.password.name }}" type="password" class="form-control{% if login_user_form.password.errors %} is-invalid{% endif %}" id="{{ login_user_form.password.id }}" value="{{ login_user_form.password.data or "" }}" placeholder="Mot de passe" required />
+      {% for error in login_user_form.password.errors %}
+      <small class="text-danger">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="form-group form-check">
+      <input name="{{ login_user_form.remember.name }}" type="checkbox" class="form-check-input" id="{{ login_user_form.remember.id }}" checked />
+      <label class="form-check-label" for="{{ login_user_form.remember.id }}">Rester connecté</label>
+    </div>
+
+    {{ login_user_form.hidden_tag() }}
+    <button type="submit" class="btn btn-primary {% if login_user_form.errors %}btn-danger{% else %}btn-dark{% endif %}">Connexion</button>
+  </form>
+</div>
+
+{% endblock %}

@@ -64,3 +64,6 @@ target/
 #Settings
 *_settings.py
 !default_settings.py
+
+# node_modules should be versionned. Do not ignore dist directories.
+!APITaxi_front/static/node_modules/**

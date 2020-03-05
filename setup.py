@@ -9,14 +9,12 @@ PACKAGE = 'APITaxi_front'
 DEPENDENCIES = [
     'APITaxi_utils',
     'APITaxi_models',
-    'Flask-Bootstrap',
     'WTForms-JSON',
-    'Pillow',
     'bcrypt',
     'celery',
     'geopy',
     'psycopg2',
-    'flask-uploads',
+    'marshmallow',
 ]
 
 

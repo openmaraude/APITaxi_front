@@ -1,65 +1,78 @@
-{% extends "bootstrap/base.html" %}
-{% import "bootstrap/utils.html" as util %}
-{% block title %} Registre des Taxis {% endblock %}
-{% block navbar %}
-<style>
-    .form {
-        margin: 20px;
-    }
-</style>
-{% set navigation_bar = [
-] -%}
+{% block header %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='node_modules/bootstrap/dist/css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <title>Registre des taxis - {% block title %}{% endblock %}</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="{{ url_for('home.home') }}">Registre des taxis</a>
+      {% if request.cookies.logas_real_api_key %}
+      <small class="text-danger">(Connecté en tant que {{ current_user.commercial_name or "" }} / {{ current_user.email or "" }})</small>
+      {% endif %}
 
-{% set admin_bar = [
-    ('#', 'admin', 'Admin', [
-      ('/admin/hails', 'Hails'),
-    ])
-] if current_user.has_role('admin') else [] %}
+      {% if current_user.is_authenticated %}
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-{% set user_bar = admin_bar + [
-    ('/user_key', 'user_key', 'Clé', None),
-    ('/documentation', 'documentation', 'Documentation', None),
-    ('/user/form', 'user_form', 'Mon compte', None),
-    ('/logout', 'logout', 'Déconnexion', None)
-] -%}
-{% set active_page = active_page|default('index') -%}
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ml-auto">
+            {% if current_user.has_role('admin') %}
+            <li class="nav-item">
+                <a class="nav-link{% if request.path == url_for('admin.index') %} active{% endif %}" href="{{ url_for('admin.index') }}">Administration</a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+                <a class="nav-link{% if request.path == url_for('dashboards.index') %} active{% endif %}" href="{{ url_for('dashboards.index') }}">Tableaux de bord</a>
+            </li>
 
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="navbar-header">
-      <a class="navbar-brand" href="/   ">Registre des taxis</a>
-    </div>
+            <li class="nav-item">
+              <a class="nav-link{% if request.path == url_for('documentation.index') %} active{% endif %}" href="{{ url_for('documentation.index') }}">Documentation</a>
+            </li>
 
-    <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        {% for href, id, caption in navigation_bar %}
-        <li{% if id == active_page %} class="active"{% endif %}><a href="{{ href|e }}">{{ caption|e }}</a></li>
-        {% endfor %}
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        {% for href, id, caption, submenus in user_bar %}
-        {% if not submenus %}
-        <li{% if id == active_page %} class="active"{% endif %}><a href="{{ href|e }}">{{ caption|e }}</a></li>
-        {% else %}
-        <li class="nav-item dropdown{% if id == active_page %} active{%endif %}">
-          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ caption }}</a>
-          <ul class="dropdown-menu nav navbar-nav">
-            {% for href, caption in submenus %}
-            <li><a class="dropdown-item" href="{{ href }}">{{ caption }}</a></li>
-            {% endfor %}
+            <li class="nav-item">
+              <a class="nav-link{% if request.path == url_for('profile.edit') %} active{% endif %}" href="{{ url_for('profile.edit') }}">Mon compte</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link{% if request.path == url_for('admin.logas_logout') %} active{% endif %}" href="{{ url_for('admin.logas_logout') }}">Déconnexion</a>
+            </li>
           </ul>
-        </li>
-        {% endif %}
-        {% endfor %}
-      </ul>
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
-</nav>
-
+        </div>
+      {% endif %}
+    </nav>
 {% endblock %}
+
 {% block content %}
-{{ super() }}
-{{util.flashed_messages()}}
+{% endblock %}
+
+{% block footer %}
+    <footer class="bg-dark">
+        <div class="container">
+          <img src="{{ url_for('static', filename='images/logo_le.taxi.svg') }}" alt="le.taxi logo" />
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='node_modules/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/popper.js/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/datatables/media/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/moment/min/moment.min.js') }}"></script>
+
+    {% if self.scripts() %}
+    <script>
+        $(document).ready(function () {
+            {% block scripts %}{% endblock %}
+        });
+    </script>
+    {% endif %}
+  </body>
+</html>
 {% endblock %}

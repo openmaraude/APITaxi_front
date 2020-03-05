@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Tableaux de bord{% endblock %}
+
+{% block content %}
+<div class="page-sidebar">
+  <nav>
+    <div class="menu-category">Tableaux de bord</div>
+    <ul class="list-unstyled">
+        {% if current_user.has_role('operateur') or current_user.has_role('moteur') %}
+        <li><a{% if request.path == url_for('dashboards.hails') %} class="active"{% endif %} href="{{ url_for('dashboards.hails') }}">Courses</a></li>
+        {% endif %}
+        {% if current_user.has_role('operateur') %}
+        <li><a{% if request.path == url_for('dashboards.taxis') %} class="active"{% endif %} href="{{ url_for('dashboards.taxis') }}">Taxis</a></li>
+        {% endif %}
+    </ul>
+  </nav>
+
+  <main>
+  {% block main %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

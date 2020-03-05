@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Tableaux de bord{% endblock %}
+
+{% block content %}
+<div class="page-sidebar">
+  <nav>
+    <div class="menu-category">Tableaux de bord</div>
+    <ul class="list-unstyled">
+        <li><a{% if request.path == url_for('admin.logas') %} class="active"{% endif %} href="{{ url_for('admin.logas') }}">Log-as</a></li>
+    </ul>
+  </nav>
+
+  <main>
+  {% block main %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

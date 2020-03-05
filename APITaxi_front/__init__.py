@@ -1,25 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import os
+import importlib
+import inspect
+import pkgutil
 
-from flask import Flask, request_started, request, request_finished, g
-from flask_bootstrap import Bootstrap
-from flask_uploads import configure_uploads
+from flask import Flask
+from flask_security import Security, SQLAlchemyUserDatastore
 
 from APITaxi_models import db
-from APITaxi_utils.login_manager import init_app as init_login_manager
 from APITaxi_models.security import User, Role
 
-from . import backoffice, documentation
-from .backoffice.forms.login import LoginForm
-from .extensions import user_datastore
+from . import views
 
 
 __author__ = 'Vincent Lara'
-__contact__ = "vincent.lara@data.gouv.fr"
-__homepage__ = "https://github.com/"
+__contact__ = 'vincent.lara@data.gouv.fr'
+__homepage__ = 'https://github.com/'
 __version__ = '0.1.0'
-__doc__ = "Frontend of api.taxi"
+__doc__ = 'Frontend of api.taxi'
 
 
 def create_app():
@@ -35,14 +34,18 @@ def create_app():
 
     db.init_app(app)
 
-    backoffice.init_app(app)
-    documentation.init_app(app)
-    Bootstrap(app)
+    # Setup flask-security
+    user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+    Security(app, user_datastore)
 
-    configure_uploads(app, (backoffice.extensions.images))
-
-    init_login_manager(app, user_datastore, LoginForm)
-
-    user_datastore.init_app(db, User, Role)
+    # Register blueprints dynamically: list all modules in views/ and register
+    # blueprint. Blueprint's name must be exactly "blueprint".
+    for _imp, modname, _pkg in pkgutil.walk_packages(
+        views.__path__, views.__name__ + '.'
+    ):
+        module = importlib.import_module(modname)
+        blueprint = getattr(module, 'blueprint', None)
+        if blueprint:
+            app.register_blueprint(blueprint)
 
     return app

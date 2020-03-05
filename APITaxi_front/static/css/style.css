@@ -1,0 +1,124 @@
+/*
+ * Shared styles
+ */
+body {
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+/* Add this class to flex items to make their width equal. */
+.flex-even {
+  flex: 1 1 0;
+}
+
+pre.code {
+  font-size: 0.8rem;
+  background-color: rgba(255, 0, 0, 0.05);
+  padding: 20px;
+}
+
+.secret {
+  filter: blur(4px);
+}
+
+.secret:active, .secret:hover {
+  filter: none;
+}
+
+/*
+ * Header
+ */
+.navbar {
+  margin-bottom: 30px;
+}
+
+/*
+ * Footer
+ */
+footer {
+  padding: 20px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+}
+
+footer img {
+  width: 50px;
+}
+
+footer img:hover {
+  transform:scale(2);
+}
+
+.formdoc {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/*
+ * Page form: two columns page where first column are the titles and inputs,
+ * and second column the description.
+ */
+.page-form .formdoc {
+  padding-left: 30px;
+}
+
+.page-form h6 {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/*
+ * Page sidebar: left sidebar and main in the middle.
+ */
+.page-sidebar {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.page-sidebar nav {
+  min-width: 250px;
+  padding-left: 20px;
+}
+
+.page-sidebar nav .menu-category {
+  background-color: #eee;
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: bold;
+  padding: 10px;
+}
+
+.page-sidebar nav > ul > li > a {
+  color: #555;
+  font-weight: bold;
+}
+
+.page-sidebar nav > ul > li > a.active::before {
+  content: '> ';
+}
+
+.page-sidebar nav > ul > li > ul > li > a {
+  margin-left: 10px;
+}
+
+.page-sidebar main {
+  flex-basis: 70%;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.page-sidebar main h3 {
+  margin-bottom: 20px;
+}
+
+.page-sidebar main p {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.page-sidebar .search-panel form .form-group {
+  padding: 10px;
+}

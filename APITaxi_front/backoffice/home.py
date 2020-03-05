@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Blueprint, render_template, url_for, jsonify
+from flask import Blueprint, render_template, url_for, jsonify, redirect
 from flask_restplus import reqparse, abort
 from flask_security import login_required, current_user
 from APITaxi_utils import request_wants_json
@@ -12,23 +12,29 @@ from math import trunc
 from sqlalchemy import func, or_
 
 
-mod = Blueprint('home_bo', __name__)
+blueprint = Blueprint('home', __name__)
 
-@mod.route('/')
+
+@blueprint.route('/')
 @login_required
 def home():
-    if current_user.has_role('admin'):
-        user_list = [u for u in models.security.User.query.all() if u.has_role('operateur')]
-    elif current_user.has_role('operateur'):
-        user_list = [current_user]
-    else:
-        user_list = []
-    return render_template('index.html',
-                          user_name_list=[u.email for u in user_list],
-                          is_admin=current_user.has_role('admin'),
-                          apikey=current_user.apikey)
+    return redirect(url_for('dashboards.index'))
 
-@mod.route('/table')
+###@blueprint.route('/')
+###@login_required
+###def home():
+###    if current_user.has_role('admin'):
+###        user_list = [u for u in models.security.User.query.all() if u.has_role('operateur')]
+###    elif current_user.has_role('operateur'):
+###        user_list = [current_user]
+###    else:
+###        user_list = []
+###    return render_template('index.html',
+###                          user_name_list=[u.email for u in user_list],
+###                          is_admin=current_user.has_role('admin'),
+###                          apikey=current_user.apikey)
+
+@blueprint.route('/table')
 @login_required
 def table():
     user = None
@@ -115,7 +121,7 @@ def table():
             cls=HailEncoder))})
 
 
-@mod.route('/stats_hails')
+@blueprint.route('/stats_hails')
 @login_required
 def stats():
     statuses = {

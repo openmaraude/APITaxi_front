@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Mon compte{% endblock %}
+
+{% block content %}
+<div class="page-form container">
+  <h3>Informations générales</h3>
+
+  <div class="d-flex align-items-center">
+    <div class="flex-even">
+      <strong>Ma clé d'API :</strong> <span class="secret">{{ user.apikey }}</span>
+      <br />
+      <small>Cliquer pour afficher. Cette clé doit rester secrète.</small>
+    </div>
+    <div class="flex-even formdoc">
+      Cette clé est un identifiant unique qui permet à vos applications de se connecter à nos APIs. Cette information est confidentielle : ne la transmettez jamais à des tiers. Si vous pensez que cette clé a été divulguée par erreur à des tiers, contactez nos équipes techniques pour la changer.
+    </div>
+  </div>
+
+  <hr />
+
+  <h3>Mes paramètres </h3>
+
+  <form method="POST" novalidate autocomplete="off">
+    {% if form.errors %}
+      <p class="text-danger">Formulaire invalide. Veuillez corriger les erreurs ci-dessous.</p>
+    {% endif %}
+
+    <h6>Général</h6>
+
+    <!-- Commercial name -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.commercial_name.id }}">Nom commercial</label>
+          <input name="{{ form.commercial_name.name }}" type="text" class="form-control{% if form.commercial_name.errors %} is-invalid{% endif %}" id="{{ form.commercial_name.id }}" value="{{ form.commercial_name.data or "" }}" />
+          {% for error in form.commercial_name.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Ce nom est celui utilisé lorsque nous devons faire une référence à vos services.
+      </div>
+    </div>
+
+    {% if user.has_role('operateur') %}
+    <h6>API</h6>
+
+    <!-- Hails endpoint production -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.hail_endpoint_production.id }}">Endpoint hails de <strong>production</strong></label>
+          <input name="{{ form.hail_endpoint_production.name }}" type="url" class="form-control{% if form.hail_endpoint_production.errors %} is-invalid{% endif %}" id="{{ form.hail_endpoint_production.id }}" value="{{ form.hail_endpoint_production.data or "" }}" />
+          {% for error in form.hail_endpoint_production.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Lorsqu'un moteur de recherche effectue une demande de course à un taxi connecté sur votre application, nous faisons un appel vers cet endpoint pour vous signaler cette demande. Référez-vous à la <a href="{{ url_for('documentation.index') }}">documentation</a> pour plus d'informations.
+      </div>
+    </div>
+
+    <!-- Hails endpoint test -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.hail_endpoint_testing.id }}">Endpoint hails de la plateforme de test</label>
+          <input name="{{ form.hail_endpoint_testing.name }}" type="url" class="form-control{% if form.hail_endpoint_testing.errors %} is-invalid{% endif %}" id="{{ form.hail_endpoint_testing.id }}" value="{{ form.hail_endpoint_testing.data or "" }}" />
+          {% for error in form.hail_endpoint_testing.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Concerne la plateforme de test.
+      </div>
+    </div>
+
+    <!-- Hails HTTP header name -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.operator_header_name.id }}">Nom du header HTTP pour l'authentification</label>
+          <input name="{{ form.operator_header_name.name }}" type="text" class="form-control{% if form.operator_header_name.errors %} is-invalid{% endif %}" id="{{ form.operator_header_name.id }}" value="{{ form.operator_header_name.data or "" }}" />
+          {% for error in form.operator_header_name.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Lorsque l'endpoint renseigné ci-dessus est appelé lors d'une demande de course, nous fournissons un header HTTP vous permettant de nous authentifier. Ce champs permet de configurer le nom de ce header.
+      </div>
+    </div>
+
+    <!-- Hails HTTP header value -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.operator_api_key.id }}">Valeur du header HTTP pour l'authentification</label>
+          <input name="{{ form.operator_api_key.name }}" type="text" class="form-control{% if form.operator_api_key.errors %} is-invalid{% endif %}" id="{{ form.operator_api_key.id }}" value="{{ form.operator_api_key.data or "" }}" />
+          {% for error in form.operator_api_key.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Contenu du header HTTP configuré ci-dessus.
+      </div>
+    </div>
+    {% endif %}
+
+    <h6>Service technique</h6>
+
+    <!-- Technical service phone number -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.phone_number_technical.id }}">Numéro de téléphone du service technique</label>
+          <input name="{{ form.phone_number_technical.name }}" type="tel" class="form-control{% if form.phone_number_technical.errors %} is-invalid{%endif %}" id="{{ form.phone_number_technical.id }}" value="{{ form.phone_number_technical.data or user.phone_number_technical or "" }}" />
+          {% for error in form.phone_number_technical.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Numéro que nous utiliserons pour contacter votre service technique.
+      </div>
+    </div>
+
+    <!-- Technical service email -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.email_technical.id }}">Email du service technique</label>
+          <input name="{{ form.email_technical.name }}" type="email" class="form-control{% if form.email_technical.errors %} is-invalid{%endif %}" id="{{ form.email_technical.id }}" value="{{ form.email_technical.data or user.email_technical or "" }}" />
+          {% for error in form.email_technical.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Email que nous utiliserons pour contacter votre service technique.
+      </div>
+    </div>
+
+    <h6>Service client</h6>
+
+    <!-- Customer service phone number -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.phone_number_customer.id }}">Numéro de téléphone du service client</label>
+          <input name="{{ form.phone_number_customer.name }}" type="tel" class="form-control{% if form.phone_number_customer.errors %} is-invalid{%endif %}" id="{{ form.phone_number_customer.id }}" value="{{ form.phone_number_customer.data or user.phone_number_customer or "" }}" />
+          {% for error in form.phone_number_customer.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Numéro que nous utiliserons pour contacter votre service client.
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.email_customer.id }}">Email du service client</label>
+          <input name="{{ form.email_customer.name }}" type="email" class="form-control{% if form.email_customer.errors %} is-invalid{%endif %}" id="{{ form.email_customer.id }}" value="{{ form.email_customer.data or user.email_customer or "" }}" />
+          {% for error in form.email_customer.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Email que nous utiliserons pour contacter votre service client.
+      </div>
+    </div>
+
+    {{ form.hidden_tag() }}
+    <button type="submit" class="btn btn-primary {% if form.errors %}btn-danger{% else %}btn-dark{% endif %}">Modifier</button>
+
+  </form>
+</div>
+{% endblock %}
