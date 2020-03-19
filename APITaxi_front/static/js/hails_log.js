@@ -46,7 +46,7 @@ try {
                        "X-VERSION": 2,
                        "X-API-KEY": opts.apikey
         };
-        fetch('/hails/' + opts.hail_id + '/_log', {headers:headers})
+        fetch('http://localhost:5000/hails/' + opts.hail_id + '/_log', {headers:headers})
             .then(function(response) {
                 const status = response ? response.status : 500;
                 if (status === 200) {

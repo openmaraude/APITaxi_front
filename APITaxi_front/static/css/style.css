@@ -27,6 +27,15 @@ pre.code {
 }
 
 /*
+ * Table where first column is the header, and second the content.
+ * Make the header having the min size possible.
+ */
+table.descriptionTable tbody th {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/*
  * Header
  */
 .navbar {

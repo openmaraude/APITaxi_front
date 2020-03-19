@@ -3,9 +3,11 @@
 import os
 import importlib
 import inspect
+import json
 import pkgutil
 
 from flask import Flask
+from flask_redis import FlaskRedis
 from flask_security import Security, SQLAlchemyUserDatastore
 
 from APITaxi_models import db
@@ -21,6 +23,14 @@ __version__ = '0.1.0'
 __doc__ = 'Frontend of api.taxi'
 
 
+redis_client = FlaskRedis()
+
+
+def jinja2_json_filter(value, indent=2):
+    """Jinja template filter to render a JSON string with nice indentation."""
+    return json.dumps(json.loads(value), indent=indent)
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -32,7 +42,11 @@ def create_app():
         raise RuntimeError('APITAXI_CONFIG_FILE environment variable required')
     app.config.from_envvar('APITAXI_CONFIG_FILE')
 
+    app.template_filter('json')(jinja2_json_filter)
+
     db.init_app(app)
+
+    redis_client.init_app(app)
 
     # Setup flask-security
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)

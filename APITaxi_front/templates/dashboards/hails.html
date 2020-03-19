@@ -54,7 +54,13 @@ var table = $('#table').DataTable({
   },
   // Mapping between API response and columns.
   columns: [
-    {data: 'id'},
+    {
+        data: 'id',
+        render: function (data, type, row) {
+            var url = "{{ url_for('dashboards.hails_details', hail_id='HAIL_ID') }}".replace('HAIL_ID', data);
+            return '<a href="' + url + '">' + data + '</a>';
+        }
+    },
     {
         data: 'added_at',
         render: function (data, type, row) {
