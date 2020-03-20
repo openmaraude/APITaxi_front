@@ -5,14 +5,21 @@
 {% block content %}
 <div class="page-sidebar">
   <nav>
-    <div class="menu-category">Tableaux de bord</div>
+    <div class="menu-category"><a href="{{ url_for('dashboards.index') }}">Tableaux de bord</a></div>
     <ul class="list-unstyled">
+
         {% if current_user.has_role('operateur') or current_user.has_role('moteur') %}
         <li><a{% if request.path == url_for('dashboards.hails') %} class="active"{% endif %} href="{{ url_for('dashboards.hails') }}">Courses</a></li>
         {% endif %}
+
+        {% if current_user.has_role('admin') %}
+        <li><a{% if request.path == url_for('dashboards.hails_by_user') %} class="active"{% endif %} href="{{ url_for('dashboards.hails_by_user') }}">Courses par utilisateur</a></li>
+        {% endif %}
+
         {% if current_user.has_role('operateur') %}
         <li><a{% if request.path == url_for('dashboards.taxis') %} class="active"{% endif %} href="{{ url_for('dashboards.taxis') }}">Taxis</a></li>
         {% endif %}
+
     </ul>
   </nav>
 
