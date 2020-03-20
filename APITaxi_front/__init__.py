@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import dateutil
 import os
 import importlib
 import inspect
@@ -31,6 +32,11 @@ def jinja2_json_filter(value, indent=2):
     return json.dumps(json.loads(value), indent=indent)
 
 
+def jinja2_str_to_datetime_filter(value):
+    """Jinja template filter to convert a string to a datetime object."""
+    return dateutil.parser.parse(value)
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -43,6 +49,7 @@ def create_app():
     app.config.from_envvar('APITAXI_CONFIG_FILE')
 
     app.template_filter('json')(jinja2_json_filter)
+    app.template_filter('str_to_datetime')(jinja2_str_to_datetime_filter)
 
     db.init_app(app)
 
