@@ -15,6 +15,7 @@ DEPENDENCIES = [
     'geopy',
     'psycopg2',
     'marshmallow',
+    'flask-redis',
 ]
 
 
