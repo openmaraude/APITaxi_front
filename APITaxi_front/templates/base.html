@@ -30,23 +30,23 @@
           <ul class="navbar-nav ml-auto">
             {% if current_user.has_role('admin') %}
             <li class="nav-item">
-                <a class="nav-link{% if request.path == url_for('admin.index') %} active{% endif %}" href="{{ url_for('admin.index') }}">Administration</a>
+                <a class="nav-link{% if url_for('admin.index') in request.path %} active{% endif %}" href="{{ url_for('admin.index') }}">Administration</a>
             </li>
             {% endif %}
             <li class="nav-item">
-                <a class="nav-link{% if request.path == url_for('dashboards.index') %} active{% endif %}" href="{{ url_for('dashboards.index') }}">Tableaux de bord</a>
+                <a class="nav-link{% if url_for('dashboards.index') in request.path %} active{% endif %}" href="{{ url_for('dashboards.index') }}">Tableaux de bord</a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link{% if request.path == url_for('documentation.index') %} active{% endif %}" href="{{ url_for('documentation.index') }}">Documentation</a>
+              <a class="nav-link{% if url_for('documentation.index') in request.path %} active{% endif %}" href="{{ url_for('documentation.index') }}">Documentation</a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link{% if request.path == url_for('profile.edit') %} active{% endif %}" href="{{ url_for('profile.edit') }}">Mon compte</a>
+              <a class="nav-link{% if url_for('profile.edit') in request.path %} active{% endif %}" href="{{ url_for('profile.edit') }}">Mon compte</a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link{% if request.path == url_for('admin.logas_logout') %} active{% endif %}" href="{{ url_for('admin.logas_logout') }}">Déconnexion</a>
+                <a class="nav-link{% if url_for('admin.logas_logout') in request.path %} active{% endif %}" href="{{ url_for('admin.logas_logout') }}">Déconnexion</a>
             </li>
           </ul>
         </div>
