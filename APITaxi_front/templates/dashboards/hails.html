@@ -22,6 +22,8 @@
     <tr>
       <th>Id course</th>
       <th>Date</th>
+      <th>Operateur</th>
+      <th>Moteur de recherche</th>
       <th>Id taxi</th>
       <th>Status final</th>
       <th>Distance client/taxi</th>
@@ -66,6 +68,16 @@ var table = $('#table').DataTable({
         render: function (data, type, row) {
             return moment(data).format('DD/MM/YYYY HH:mm:ss');
         }
+    },
+    {
+      render: function (data, type, row) {
+        return row.operateur.commercial_name || '<i>' + row.operateur.id + '</i>';
+      }
+    },
+    {
+      render: function (data, type, row) {
+        return row.moteur.commercial_name || '<i>' + row.moteur.id + '</i>';
+      }
     },
     {name: 'taxi_id', data: 'taxi.id'},
     {data: 'status'},

@@ -10,6 +10,7 @@ from flask import Blueprint, jsonify, redirect, render_template, request, url_fo
 from flask_security import current_user, login_required, roles_accepted
 
 from sqlalchemy import func, or_
+from sqlalchemy.orm import aliased
 
 from marshmallow import fields, EXCLUDE, pre_load, Schema, ValidationError
 from marshmallow.validate import Range
@@ -169,9 +170,18 @@ def users(length, start, draw, columns=None):
 @check_datatables_arguments
 def hails(length, start, draw, columns=None):
     """List taxis of operateur."""
-    query = Hail.query.filter(
+    UserOperateur = aliased(User)
+    UserMoteur = aliased(User)
+
+    query = Hail.query.with_entities(
+        Hail, UserOperateur, UserMoteur
+    ).filter(
         or_(Hail.operateur_id == current_user.id,
             Hail.added_by == current_user.id)
+    ).join(
+        UserOperateur, Hail.operateur_id == UserOperateur.id
+    ).join(
+        UserMoteur, Hail.added_by == UserMoteur.id
     ).order_by(
         Hail.added_at.desc()
     )
@@ -196,12 +206,20 @@ def hails(length, start, draw, columns=None):
             'taxi': {
                 'id': hail.taxi_id,
             },
+            'operateur': {
+                'id': operateur.id,
+                'commercial_name': operateur.commercial_name,
+            },
+            'moteur': {
+                'id': moteur.id,
+                'commercial_name': moteur.commercial_name,
+            },
             'added_at': hail.added_at.isoformat(),
             'distance': math.trunc(vincenty(
                 (hail.customer_lat, hail.customer_lon),
                 (hail.initial_taxi_lat, hail.initial_taxi_lon)
             ).meters)
-        } for hail in hails]
+        } for hail, operateur, moteur in hails]
     })
 
 
