@@ -60,10 +60,10 @@ var table = $('#table').DataTable({
   columns: [
     {name: 'taxi_id', data: 'id'},
     {
-        data: 'added_at',
-        render: function (data, type, row) {
-            return moment(data).format('DD/MM/YYYY HH:mm:ss');
-        }
+      data: 'added_at',
+      render: function (data, type, row) {
+        return moment(data).format('DD/MM/YYYY HH:mm:ss');
+      }
     },
     {name: 'licence_plate', data: 'vehicle.licence_plate'},
     {data: 'ads.zupc.name'},

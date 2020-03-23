@@ -4,7 +4,7 @@
 <h3>Courses</h3>
 
 <p>
-    Ce tableau présente les courses gérées par votre application.
+  Ce tableau présente les courses gérées par votre application.
 </p>
 
 <div class="search-panel">
@@ -57,17 +57,17 @@ var table = $('#table').DataTable({
   // Mapping between API response and columns.
   columns: [
     {
-        data: 'id',
-        render: function (data, type, row) {
-            var url = "{{ url_for('dashboards.hails_details', hail_id='HAIL_ID') }}".replace('HAIL_ID', data);
-            return '<a href="' + url + '">' + data + '</a>';
-        }
+      data: 'id',
+      render: function (data, type, row) {
+        var url = "{{ url_for('dashboards.hails_details', hail_id='HAIL_ID') }}".replace('HAIL_ID', data);
+        return '<a href="' + url + '">' + data + '</a>';
+      }
     },
     {
-        data: 'added_at',
-        render: function (data, type, row) {
-            return moment(data).format('DD/MM/YYYY HH:mm:ss');
-        }
+      data: 'added_at',
+      render: function (data, type, row) {
+        return moment(data).format('DD/MM/YYYY HH:mm:ss');
+      }
     },
     {
       render: function (data, type, row) {
@@ -82,10 +82,10 @@ var table = $('#table').DataTable({
     {name: 'taxi_id', data: 'taxi.id'},
     {data: 'status'},
     {
-        data: 'distance',
-        render: function (data, type, row) {
-            return data + ' mètres';
-        }
+      data: 'distance',
+      render: function (data, type, row) {
+        return data + ' mètres';
+      }
     },
   ]
 });
