@@ -11,6 +11,8 @@ from flask_security import current_user, login_required, roles_accepted
 from sqlalchemy import cast, Date, func, literal_column
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 
+import redis
+
 from APITaxi_models import Hail
 from APITaxi_models.security import User
 
@@ -42,14 +44,19 @@ def hails_details(hail_id):
     if not (current_user.has_role('admin') or current_user.id in (hail.operateur_id, hail.added_by)):
         abort(403)
 
-    resp = redis_client.zrangebyscore('hail:%s' % hail_id, '-inf', '+inf', withscores=True)
+    try:
+        resp = redis_client.zrangebyscore('hail:%s' % hail_id, '-inf', '+inf', withscores=True)
+    except redis.exceptions.ConnectionError:
+        redis_error = True
+        logs = []
+    else:
+        redis_error = False
+        logs = [
+            (datetime.fromtimestamp(date), json.loads(value.decode('utf8')))
+            for value, date in resp
+        ]
 
-    logs = [
-        (datetime.fromtimestamp(date), json.loads(value.decode('utf8')))
-        for value, date in resp
-    ]
-
-    return render_template('dashboards/hails_details.html', hail=hail, logs=logs)
+    return render_template('dashboards/hails_details.html', hail=hail, logs=logs, redis_error=redis_error)
 
 
 @blueprint.route('/dashboards/hails_by_user')
