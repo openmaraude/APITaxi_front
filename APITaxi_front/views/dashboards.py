@@ -37,7 +37,7 @@ def hails():
     # All the dates for which we generate counters
     dates = db.session.query(
         func.generate_series(
-            func.NOW() - timedelta(days=15),
+            func.NOW() - timedelta(days=30),
             func.NOW(),
             timedelta(days=1)
         ).label('date')
