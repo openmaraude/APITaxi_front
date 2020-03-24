@@ -44,8 +44,8 @@
 
 var barChartData = {
   labels: [
-{%- for date in status_stats.keys() | sort | reverse -%}
-    '{{ date }}'{% if not loop.last %}, {% endif %}
+{%- for date in status_stats.keys() | sort -%}
+    '{{ date.strftime("%d/%m/%Y") }}'{% if not loop.last %}, {% endif %}
 {%- endfor -%}
   ],
   datasets: [
@@ -53,7 +53,7 @@ var barChartData = {
     {
       label: '{{ status }}',
       data: [
-  {%- for date, stats in status_stats.items() | sort | reverse -%}
+  {%- for date, stats in status_stats.items() | sort -%}
         {{ stats.get(status, 0) }}{% if not loop.last %}, {% endif %}
   {%- endfor -%}
       ]

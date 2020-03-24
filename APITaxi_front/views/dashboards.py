@@ -72,7 +72,7 @@ def hails():
     #     ...
     #  }
     stats = {
-        date.strftime('%d-%m-%Y'): {
+        date: {
             row._status: row.count
             for row in groups if row._status
         }
