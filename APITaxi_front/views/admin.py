@@ -29,7 +29,10 @@ class LogAsForm(FlaskForm):
 @roles_accepted('admin')
 def logas():
     """List users. If POST and user_id is submitted, save the current API key
-    in cookie and login as the user."""
+    in cookie and login as the user.
+
+    View is calling the endpoint /api/users to display data.
+    """
     form = LogAsForm()
 
     if form.validate_on_submit():

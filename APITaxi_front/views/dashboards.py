@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from datetime import datetime, timedelta
+import itertools
 import json
 
 import dateutil
@@ -8,12 +9,12 @@ import dateutil
 from flask import abort, Blueprint, flash, redirect, render_template, request, url_for
 from flask_security import current_user, login_required, roles_accepted
 
-from sqlalchemy import cast, Date, func, literal_column
+from sqlalchemy import cast, Date, func, literal_column, or_
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 
 import redis
 
-from APITaxi_models import Hail
+from APITaxi_models import db, Hail
 from APITaxi_models.security import User
 
 from .. import redis_client
@@ -32,7 +33,56 @@ def index():
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def hails():
-    return render_template('dashboards/hails.html')
+    """View is calling the endpoint /api/hails to display data."""
+    # All the dates for which we generate counters
+    dates = db.session.query(
+        func.generate_series(
+            func.NOW() - timedelta(days=15),
+            func.NOW(),
+            timedelta(days=1)
+        ).label('date')
+    ).subquery()
+
+    # For each date, count the number of different Hail status.
+    # Result: one row per date/status
+    query = db.session.query(
+        cast(dates.c.date, Date).label('date'),
+        Hail._status,
+        func.COUNT(Hail.id).label('count')
+    ).outerjoin(
+        Hail, cast(Hail.added_at, Date) == cast(dates.c.date, Date)
+    ).filter(
+        or_(Hail.id.is_(None),
+            Hail.operateur_id == current_user.id,
+            Hail.added_by == current_user.id)
+    ).group_by(
+        cast(dates.c.date, Date),
+        Hail._status
+    ).order_by(
+        cast(dates.c.date, Date)
+    )
+
+    # Use itertools.groupby to build a dictionary such as:
+    #
+    #  {
+    #     '<date>': {
+    #       '<status_name>': <count>,
+    #       ...
+    #     },
+    #     ...
+    #  }
+    stats = {
+        date.strftime('%d-%m-%Y'): {
+            row._status: row.count
+            for row in groups if row._status
+        }
+        for date, groups in itertools.groupby(query.all(), lambda row: row.date)
+    }
+
+    # All unique different status found in stats
+    all_status = set(itertools.chain(*[list(group.keys()) for group in stats.values()]))
+
+    return render_template('dashboards/hails.html', status_stats=stats, all_status=all_status)
 
 
 @blueprint.route('/dashboards/hails/<string:hail_id>')
@@ -129,4 +179,5 @@ def hails_by_user():
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def taxis():
+    """View is calling the endpoint /api/taxis to display data."""
     return render_template('dashboards/taxis.html')

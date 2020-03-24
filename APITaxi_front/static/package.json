@@ -10,6 +10,8 @@
   "license": "MIT",
   "dependencies": {
     "bootstrap": "^4.4.1",
+    "chart.js": "^2.9.3",
+    "chartjs-plugin-colorschemes": "^0.4.0",
     "datatables": "^1.10.18",
     "datatables.net-bs4": "^1.10.20",
     "jquery": "^3.4.1",

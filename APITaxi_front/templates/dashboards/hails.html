@@ -4,8 +4,12 @@
 <h3>Courses</h3>
 
 <p>
-  Ce tableau présente les courses gérées par votre application.
+  Ce graphique présente les courses de ces derniers jours et leurs statuts.
 </p>
+
+<div class="d-flex m-3">
+  <canvas id="hailsChart"></canvas>
+</div>
 
 <div class="search-panel">
   <h5>Filtres</h5>
@@ -16,6 +20,10 @@
     </div>
   </form>
 </div>
+
+<p>
+  Ce tableau présente les courses gérées par votre application.
+</p>
 
 <table id="table" class="table table-striped">
   <thead>
@@ -33,6 +41,56 @@
 {% endblock %}
 
 {% block scripts %}
+
+var barChartData = {
+  labels: [
+{%- for date in status_stats.keys() | sort -%}
+    '{{ date }}'{% if not loop.last %}, {% endif %}
+{%- endfor -%}
+  ],
+  datasets: [
+{% for status in all_status %}
+    {
+      label: '{{ status }}',
+      data: [
+  {%- for date, stats in status_stats.items() | sort -%}
+        {{ stats.get(status, 0) }}{% if not loop.last %}, {% endif %}
+  {%- endfor -%}
+      ]
+    }{% if not loop.last %}, {% endif %}
+{%- endfor -%}
+  ]
+};
+
+new Chart($('#hailsChart'), {
+  type: 'bar',
+  data: barChartData,
+  options: {
+    title: {
+      display: true,
+      text: 'Courses par statut'
+    },
+    tooltips: {
+      mode: 'index',
+      intersect: false
+    },
+    responsive: true,
+    scales: {
+      xAxes: [{
+        stacked: true,
+      }],
+      yAxes: [{
+        stacked: true
+      }]
+    },
+    plugins: {
+      colorschemes: {
+        scheme: 'tableau.Tableau20'
+      }
+    }
+  }
+});
+
 var table = $('#table').DataTable({
   language: {
     emptyTable: 'Aucune course',
