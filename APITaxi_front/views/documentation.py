@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template
+from urllib.parse import urljoin
+
+from flask import Blueprint, current_app, redirect, render_template
 from flask_security import login_required
 
 
@@ -9,6 +11,14 @@ blueprint = Blueprint('documentation', __name__)
 @login_required
 def index():
     return render_template('documentation/index.html')
+
+
+@blueprint.route('/documentation/interactive')
+@login_required
+def interactive():
+    api_url = current_app.config.get('API_TAXI_URL', '')
+    redirect_url = urljoin(api_url, 'doc/')
+    return redirect('/doc/')
 
 
 @blueprint.route('/documentation/search')
