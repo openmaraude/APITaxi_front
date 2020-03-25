@@ -18,7 +18,7 @@ def index():
 def interactive():
     api_url = current_app.config.get('API_TAXI_URL', '')
     redirect_url = urljoin(api_url, 'doc/')
-    return redirect('/doc/')
+    return redirect(redirect_url)
 
 
 @blueprint.route('/documentation/search')
