@@ -9,7 +9,7 @@ import dateutil
 from flask import abort, Blueprint, flash, redirect, render_template, request, url_for
 from flask_security import current_user, login_required, roles_accepted
 
-from sqlalchemy import cast, Date, func, literal_column, or_
+from sqlalchemy import and_, cast, Date, func, literal_column, or_
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 
 import redis
@@ -50,11 +50,12 @@ def hails():
         Hail._status,
         func.COUNT(Hail.id).label('count')
     ).outerjoin(
-        Hail, cast(Hail.added_at, Date) == cast(dates.c.date, Date)
-    ).filter(
-        or_(Hail.id.is_(None),
-            Hail.operateur_id == current_user.id,
-            Hail.added_by == current_user.id)
+        Hail, and_(
+            cast(Hail.added_at, Date) == cast(dates.c.date, Date),
+            or_(Hail.id.is_(None),
+                Hail.operateur_id == current_user.id,
+                Hail.added_by == current_user.id)
+        )
     ).group_by(
         cast(dates.c.date, Date),
         Hail._status
