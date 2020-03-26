@@ -13,14 +13,6 @@ def index():
     return render_template('documentation/index.html')
 
 
-@blueprint.route('/documentation/interactive')
-@login_required
-def interactive():
-    api_url = current_app.config.get('API_TAXI_URL', '')
-    redirect_url = urljoin(api_url, 'doc/')
-    return redirect(redirect_url)
-
-
 @blueprint.route('/documentation/search')
 @login_required
 def search():
@@ -36,7 +28,9 @@ def operator():
 @blueprint.route('/documentation/reference')
 @login_required
 def reference():
-    return render_template('documentation/reference.html')
+    api_url = current_app.config.get('API_TAXI_URL', '')
+    redirect_url = urljoin(api_url, 'doc/')
+    return redirect(redirect_url)
 
 
 @blueprint.route('/documentation/examples')

@@ -2,6 +2,14 @@
 
 {% block title %}Documentation{% endblock %}
 
+{% macro display_submenu(items) %}
+  <ul class="list-unstyled">
+  {% for url, output in items %}
+    <li><a href="{{ url }}">{{ output }}</a></li>
+  {% endfor %}
+  </ul>
+{% endmacro %}
+
 {% block content %}
 <div class="page-sidebar">
   <nav>
@@ -9,63 +17,33 @@
       <li>
         <a{% if request.path == url_for('documentation.index') %} class="active"{% endif %} href="{{ url_for('documentation.index') }}">Introduction</a>
         {% if request.path == url_for('documentation.index') %}
-        <ul class="list-unstyled">
-          <li><a href="{{ url_for('documentation.index') }}#apis">APIs implementation</a></li>
-          <li><a href="{{ url_for('documentation.index') }}#headers">Mandatory HTTP headers</a></li>
-          <li><a href="{{ url_for('documentation.index') }}#authentication">Authentication</a></li>
-        </ul>
+          {{ display_submenu(submenus) }}
         {% endif %}
       </li>
 
       <li>
-        <a{% if request.path == url_for('documentation.search') %} class="active"{% endif %} href="{{ url_for('documentation.search') }}">Search engine</a>
+        <a{% if request.path == url_for('documentation.search') %} class="active"{% endif %} href="{{ url_for('documentation.search') }}">Moteur de recherche</a>
         {% if request.path == url_for('documentation.search') %}
-        <ul class="list-unstyled">
-          <li><a href="{{ url_for('documentation.search') }}#search">Looking for taxis</a></li>
-          <li><a href="{{ url_for('documentation.search') }}#hail_create">Creating a Hail</a></li>
-          <li><a href="{{ url_for('documentation.search') }}#hail_get">Querying a Hail status</a></li>
-          <li><a href="{{ url_for('documentation.search') }}#hail_update">Updating a Hail</a></li>
-        </ul>
+          {{ display_submenu(submenus) }}
         {% endif %}
       </li>
 
       <li>
-        <a{% if request.path == url_for('documentation.operator') %} class="active"{% endif %} href="{{ url_for('documentation.operator') }}">Operator</a>
+        <a{% if request.path == url_for('documentation.operator') %} class="active"{% endif %} href="{{ url_for('documentation.operator') }}">Operateur</a>
         {% if request.path == url_for('documentation.operator') %}
-        <ul class="list-unstyled">
-          <li><a href="{{ url_for('documentation.operator') }}#vehicle_create">Declare a vehicle</a></li>
-          <li><a href="{{ url_for('documentation.operator') }}#driver_create">Declare a driver</a></li>
-          <li><a href="{{ url_for('documentation.operator') }}#ads_create">Declare a licence (ADS)</a></li>
-          <li><a href="{{ url_for('documentation.operator') }}#taxi_create">Declare a taxi</a></li>
-          <li><a href="{{ url_for('documentation.operator') }}#taxi_location_update">Update taxi location</a></li>
-          <li><a href="{{ url_for('documentation.operator') }}#taxi_update">Update taxi status</a></li>
-          <li><a href="{{ url_for('documentation.operator') }}#taxi_get">Query taxi status</a></li>
-          <li><a href="{{ url_for('documentation.operator') }}#hail_receive">Receive hails</a></li>
-          <li><a href="{{ url_for('documentation.operator') }}#hail_get">Query hail status</a></li>
-          <li><a href="{{ url_for('documentation.operator') }}#hail_update">Update hail status</a></li>
-        </ul>
+          {{ display_submenu(submenus) }}
         {% endif %}
       </li>
 
       <li>
-        <a href="{{ url_for('documentation.interactive') }}">Interactive documentation</a>
+        <a href="{{ url_for('documentation.reference') }}">Interactive documentation</a>
       </li>
 
       <li>
-        <a{% if request.path == url_for('documentation.reference') %} class="active"{% endif %} href="{{ url_for('documentation.reference') }}">Reference documentation</a>
-        {% if request.path == url_for('documentation.reference') %}
-        <ul class="list-unstyled">
-          <li><a href="{{ url_for('documentation.reference') }}#taxi">Taxi</a></li>
-          <li><a href="{{ url_for('documentation.reference') }}#ads">License (ADS)</a></li>
-          <li><a href="{{ url_for('documentation.reference') }}#driver">Driver</a></li>
-          <li><a href="{{ url_for('documentation.reference') }}#vehicle">Vehicle</a></li>
-          <li><a href="{{ url_for('documentation.reference') }}#hail">Hail</a></li>
-        </ul>
+        <a{% if request.path == url_for('documentation.examples') %} class="active"{% endif %} href="{{ url_for('documentation.examples') }}">Exemples</a>
+        {% if request.path == url_for('documentation.examples') %}
+          {{ display_submenu(submenus) }}
         {% endif %}
-      </li>
-
-      <li>
-        <a{% if request.path == url_for('documentation.examples') %} class="active"{% endif %} href="{{ url_for('documentation.examples') }}">Examples</a>
       </li>
     </ul>
   </nav>

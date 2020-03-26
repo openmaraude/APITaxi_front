@@ -1,172 +1,406 @@
 {% extends "documentation/base.html" %}
 
+{% set submenus = [
+  ('#intro', 'Introduction'),
+  ('#create_taxi', 'Création d\'un taxi'),
+  ('#geoloc', 'Géolocalisation'),
+  ('#taxi_status', 'Statut du taxi'),
+  ('#receive_trip', 'Recevoir une course'),
+  ('#trip_status', 'Statut de la course'),
+  ('#report_client', 'Signalement de client'),
+] %}
+
 {% block main %}
-<h2>Operator</h2>
 
-<p>The <strong>Taxi Operator</strong> is a technical service provider connecting a taxi to the <strong>Taxi Exchange Point (TXP)</strong>. There are several main interactions between <strong>Operators</strong> and the <strong><abbr title="Taxi Exchange Point">TXP</abbr></strong>: declaring a taxi (including registering the vehicle, driver and license), updating its location and status, receiving a hail issued by a client for a taxi, querying and updating the status of the hail.</p>
+<h2 id="intro">Introduction</h2>
 
-<p><strong>Warning:</strong> in accordance with the Terms of Service, you are allowed to declare a taxi and update its location and status <em>only</em> within the context of the real-time journey of a real taxi driver: automation, replay and any other form of mass data gathering is expressly forbidden.</p>
+<p>Cette page est destinée aux opérateurs qui souhaitent s'intégrer à l'API <strong>le.taxi</strong>. En suivant cette documentation, vous saurez créer un taxi, mettre à jour sa géolocalisation, mettre à jour son statut et recevoir une course.</p>
 
-<h3 id="vehicle_create">Registering a vehicle</h3>
+<div class="block-info">
+  <h6>Prérequis</h6>
+  <ul>
+    <li>Prendre connaissance de la documentation d'<a href="{{ url_for('documentation.index') }}">introduction</a>.</li>
+    <li>Avoir un compte sur l'environnement de développement <a href="https://dev.api.taxi">dev.api.taxi</a>.</li>
+  </ul>
+</div>
 
-<p>Registering a vehicle is done through a <code>POST</code> request to the <em>vehicles</em> API. The structure of the required <code>vehicle</code> object is described in the  reference documentation.</p>
+<h2 id="create_taxi">Création d'un taxi</h2>
 
-<p>Calls to this API are idempotent: you can update a vehicle simply by submitting the updated <code>vehicle</code> object. If the <code>licence_plate</code> is different, a new vehicle will be created; if the <code>licence_plate</code> is unchanged, the vehicle will be updated.</p>
+<p>Pour l'API, un taxi est constitué de trois objets&nbsp;: un <a href="#create_driver">conducteur</a> (<i>driver</i>), un <a href="#create_vehicle">véhicule</a> (<i>vehicle</i>) et une <a href="#create_ads">autorisation de stationnement</a> (<i>ads</i>). Ces objets doivent être créés afin de <a href="#create_taxi_link">créer un nouveau taxi</a>.</p>
 
-<h3 id="driver_create">Registering a driver</h3>
+<p>Il est à votre charge de demander et vérifier les pièces justificatives permettant au taxi d'exercer&nbsp;:
 
-<p>Registering a driver is done through a <code>POST</code> request to the <em>drivers</em> API. The structure of the required <code>driver</code> object is described in the reference documentation.</p>
+  <ul>
+    <li>Permis de conduire et carte d'identité ou passeport.</li>
+    <li>Carte professionnelle du chauffeur.</li>
+    <li>Carte grise du véhicule.</li>
+    <li>Autorisation de stationnement.</li>
+  </ul>
+</p>
 
-<p>Calls to this API are idempotent: you can update a driver simply by submitting the updated <code>driver</code> object. If the <code>department</code> or <code>professional_licence</code> is different, a new driver will be created; if the <code>department</code> and <code>professional_licence</code> are unchanged, the driver will be updated.</p>
+<h4 id="create_driver">Création du conducteur</h4>
 
-<h3 id="ads_create">Registering a license (ADS)</h3>
+<p>L'endpoint <i>POST /drivers</i> est utilisé pour créer un nouveau conducteur.</p>
 
-<p>Registering a license (in French Autorisaton De Stationnement ADS) is done through a <code>POST</code> request to the <em>ads</em> API. The structure of the required <code>ads</code> object is described in the reference documentation.</p>
+<h6>Exemple d'appel</h6>
 
-<p>Calls to this API are idempotent: you can update a license (ADS) simply by submitting the updated <code>ads</code> object. If the <code>insee</code> or <code>numero</code> is different, a new license (ADS) will be created; if the <code>insee</code> and <code>numero</code> are unchanged, the license (ADS) will be updated.</p>
+<pre class="code">
+$> curl 'https://dev.api.taxi/drivers/' \
+      -X POST \
+      -H 'X-VERSION: 3' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'X-API-KEY: XXX' \
+      -d '
+{
+  "data": [{
+    "birth_date": "2020-03-05",
+    "departement": {
+      "nom": "string",
+      "numero": "string"
+    },
+    "first_name": "string",
+    "last_name": "string",
+    "professional_licence": "string"
+  }]
+}'
+</pre>
 
-<h3 id="taxi_create">Declaring a taxi</h3>
+<ul>
+  <li><i>birth_date</i>: date de naissance du conducteur, vous devez pouvoir la vérifier sur le justificatif fournit par le chauffeur de taxi.</li>
+  <li><i>first_name</i>: prénom du chauffeur.</li>
+  <li><i>last_name</i>: nom de famille du chauffeur.</li>
+  <li><i>departement</i>: département de délivrance de la carte professionnelle du chauffeur. Vous pouvez renseigner le nom ou le numéro du département.</li>
+  <li><i>professional_licence</i>: numéro de la carte professionnelle du chauffeur.</li>
+</ul>
 
-<p>Declaring a taxi is done through a <code>POST</code> request to the <em>taxis</em> API. The structure of the required <code>taxi</code> object is a minimalistic version of the one described in the reference documentation containing only the identifiers of the <code>vehicle</code>, <code>driver</code> and <code>ads</code> and the initial <code>status</code> of the taxi. The <code>vehicle</code>, <code>driver</code> and <code>ads</code> used to compose a <code>taxi</code> need to have been registered first through their respective API.</p>
+<h4 id="create_vehicle">Création du véhicule</h4>
 
-<h5>Taxi declaration</h5>
+<p>L'endpoint <i>POST /vehicles</i> permet de créer un nouveau véhicule.</p>
 
-<pre class="code">{
+<h6>Exemple d'appel</h6>
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/vehicles/' \
+      -X POST \
+      -H 'X-VERSION: 3' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'X-API-KEY: XXX' \
+      -d '
+{
   "data": [
     {
-      "vehicle": {
-         "licence_plate": "WM-220-VP"
-       },
-      "driver": {
-         "departement": "75",
-         "professional_licence": "091402"
-       },
+      "color": "string",
+      "pet_accepted": true,
+      "special_need_vehicle": true,
+      "cpam_conventionne": true,
+      "licence_plate": "string",
+      "model_year": 0,
+      "type_": "sedan",
+      "nb_seats": 0,
+      "constructor": "string",
+      "model": "string"
+    }
+  ]
+}'
+</pre>
+
+<p>Le seul paramètre requis est <i>licence_plate</i>. Les autres sont optionnels mais permettent au client de retrouver plus facilement le taxi.</p>
+
+
+<h4 id="create_ads">Création de l'ADS</h4>
+
+<p>L'endpoint <i>POST /ads</i> permet de créer une nouvelle autorisation de stationnement.</p>
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/ads/' \
+      -X POST \
+      -H 'X-VERSION: 3' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'X-API-KEY: XXX' \
+      -d '
+{
+  "data": [
+    {
+      "category": "string",
+      "vehicle_id": 0,
+      "insee": "string",
+      "numero": "string",
+      "owner_name": "string",
+      "owner_type": "company",
+      "doublage": true
+    }
+  ]
+}'
+</pre>
+
+<p>Paramètres&nbsp;:
+
+  <ul>
+    <li><i>category</i>: catégorie de l'ADS (perpétuité, cessible, incessible, annuelle).</li>
+    <li><i>insee</i>: code insee de la commune de l'ADS. Vous pouvez trouver ce code sur le <a href="https://www.insee.fr/fr/recherche/recherche-geographique?geo=COM-53130&debut=0">site de l'INSEE</a>.</li>
+    <li><i>numero</i>: numéro de l'ADS.</li>
+    <li><i>owner_name</i>: nom du propriétaire de l'ADS. S'il s'agit d'une entreprise, le nom de l'entreprise.</li>
+    <li><i>owner_type</i>: <i>individual</i> s'il s'agit d'une autorisation donnée à une personne, <i>company</i> s'il s'agit d'une autorisation donnée à une entreprise.</li>
+    <li><i>doublage</i>: booléen à <i>true</i> si l'ADS est doublée.</li>
+    <li><i>vehicle_id</i>: l'identifiant donnée lors du <i>POST /vehicles/</i>.</li>
+  </ul>
+</p>
+
+<h4 id="create_taxi_link">Création du taxi</h4>
+
+<p>Il est possible de créer un taxi en faisant un <i>POST /taxis</i> en fournissant les informations sur le chauffeur, le véhicule et l'autorisation de stationnement.</p>
+
+<h6>Exemple d'appel</h6>
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/taxis/' \
+      -X POST \
+      -H 'X-VERSION: 3' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'X-API-KEY: XXX' \
+      -d '
+{
+  "data": [
+    {
       "ads": {
-        "insee": "75056",
-        "numero": "20997"
+        "insee": "string",
+        "numero": "string"
       },
+      "driver": {
+        "departement": "string",
+        "professional_licence": "string"
+      },
+      "vehicle": {
+        "licence_plate": "string"
+      }
+    }
+  ]
+}'
+</pre>
+
+<p>L'identifiant retourné doit être conservé afin de mettre à jour la position et le statut du taxi.</p>
+
+
+<h2 id="geoloc">Géolocalisation</h2>
+
+<p>Lorsqu'un taxi est en maraude, vous devez envoyer sa géolocalisation toutes les 5 secondes sur le serveur <i>geoloc.dev.api.taxi</i> en UDP sur le port 80.</p>
+
+<p>La requête de mise à jour de la géolocalisation doit contenir un hash d'identification. Ce hash est un SHA1 de la concaténation des champs suivants, dans l'ordre, et sans séparateur&nbsp;: <i>timestamp</i>, <i>operator</i>, <i>taxi</i>, <i>lat</i>, <i>lon</i>, <i>device</i>, <i>status</i>, <i>version</i>, <i>api_key</i>.
+
+<p>Ci-dessous un exemple en python d'une fonction envoyant au serveur de geolocalisation la position d'un taxi.</p>
+
+<pre class="code">
+from hashlib import sha1
+from time import time
+import socket
+import json
+
+
+GEOTAXI_HOST = 'geoloc.dev.api.taxi'
+GEOTAXI_PORT = 80
+
+
+def send_position(lon, lat, taxi_id, operator, apikey):
+    payload = {
+        "timestamp": int(time()),
+        "operator": operator,
+        "taxi": taxi_id,
+        "lat": lat,
+        "lon": lon,
+        "device": "phone",
+        "status": "free",
+        "version":"2",
+    }
+    h = ''.join(
+        str(payload[k]) for k in ['timestamp', 'operator', 'taxi', 'lat', 'lon', 'device', 'status', 'version']
+    )
+    h += apikey
+    payload['hash'] = sha1(h.encode('utf-8')).hexdigest()
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.sendto(json.dumps(payload).encode(), (GEOTAXI_HOST, GEOTAXI_PORT))
+</pre>
+
+
+<h2 id="taxi_status">Statut du taxi</h2>
+
+<p>Le taxi doit avoir le statut <i>free</i> pour être vu par les clients. La mise à jour de ce statut se fait avec l'endpoint <i>PUT /taxis/:taxi_id</i>.</p>
+
+<h6>Exemple d'appel</h6>
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/taxis/:taxi_id/' \
+      -X POST \
+      -H 'X-VERSION: 3' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'X-API-KEY: XXX' \
+      -d '
+{
+  "data": [
+    {
       "status": "free"
     }
   ]
-}
+}'
 </pre>
 
-<p>If successful, the API returns the complete <code>taxi</code> object as described in the reference documentation, including the characteristics of the vehicle and most importantly the unique identifier <code>id</code> of the <code>taxi</code> that will be used for subsequent communications.</p>
+<p>Les statuts possibles sont:
 
-<p>Calls to this API are idempotent: if you resubmit the same triplet of <code>vehicle</code>, <code>driver</code> and <code>ads</code>, the <code>taxi</code> returned will have the same <code>id</code>.</p>
-
-
-<h3 id="taxi_location_update">Updating the location of a taxi</h3>
-
-<p>The location of the taxi is updated through a UDP datagram sent to the geolocation server (<code>geoloc</code> subdomain of this server) on port 80.</p>
-
-<p>The JSON payload of the UDP datagram should be as follows.</p>
-
-<pre class="code">{
-  "timestamp":"1430076493",
-  "operator":"neotaxi",
-  "taxi":"9cf0ebfa-dd37-45c4-8a80-60db584535d8",
-  "lat":"2.38852053",
-  "lon":"48.84394873",
-  "device":"phone",
-  "status":"0",
-  "version":"1",
-  "hash":"2fd4e1c67a2d28fced849ee1bb76e7391b93eb12"
-}
-</pre>
-
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Key</th>
-      <th scope="col">Value&nbsp;Type</th>
-      <th scope="col">Description</th>
-    </tr>
-  </thead>
-  <tbody>
-     <tr>
-       <td><code>timestamp</code></td>
-       <td>string</td>
-       <td><em>Exact time at which the location was determined, formatted as a Unix time (<a href="http://standards.ieee.org/findstds/standard/1003.1-2008.html" target="_blank">IEEE 1003.1-2008 POSIX</a>)<br>
-              Warning: as per the POSIX specification, this should be UTC time without any timezone information<br>
-              Warning: locations in the future (or too old in the past) will be silently discarded.</em></td>
-    </tr>
-    <tr>
-      <td><code>operator</code></td>
-      <td>string</td>
-      <td><em>login of the certified operator</em></td>
-    </tr>
-    <tr>
-      <td><code>taxi</code></td>
-      <td>string</td>
-      <td><em>The <code>id</code> of the taxi is the <code>id</code> that was sent back when the taxi was declared (see <a href="#post_taxi">Déclaring a taxi</a>)</em></td>
-    </tr>
-    <tr>
-      <td><code>lat</code></td>
-      <td>string</td>
-      <td><em>Latitude of the taxi<br>This should be in JavaScript double precision floating-point format, with decimal separator ".".<br>You can truncate the values to 6 decimal places if you want to keep the payload as short as possible (6 decimal       places is worth up to 10 cm).</em></td>
-    </tr>
-    <tr>
-      <td><code>lon</code></td>
-      <td>string</td>
-      <td><em>Longitude of the taxi<br>This should be in JavaScript double precision floating-point format, with decimal separator ".".<br>You can truncate the values to 6 decimal places if you want to keep the payload as short as possible (6 decimal places is worth up to 10 cm). </em></td>
-    </tr>
-    <tr>
-      <td><code>device</code></td>
-      <td>string</td>
-      <td><em><code>phone</code>, <code>tablet</code>, <code>taximeter</code> or <code>otherdevice</code></em></td>
-    </tr>
-    <tr>
-      <td><code>status</code></td>
-      <td>string</td>
-      <td><em>always "0" for now (reserved for future use)</em></td>
-    </tr>
-    <tr>
-      <td><code>version</code></td>
-      <td>string</td>
-      <td><em>either "1" or "2" for now (there is no difference concerning the geolocation between version 1 and 2 of the API)</em></td>
-    </tr>
-    <tr>
-      <td><code>hash</code></td>
-      <td>string</td>
-      <td><em>This field is the SHA-1 message digest of the concatenation (without any separator) of the values of the fields <code>timestamp</code>, <code>operator</code>, <code>taxi</code>, <code>lat</code>, <code>lon</code>, <code>device</code>, <code>status</code> and <code>version</code> (in that order) and the API key of the operator (the same API key used to authenticate the HTTPS REST requests).<br><code>sha1(concat(timestamp, operator, taxi, lat, lon, device, status, version, api_key))</code> </em></td>
-    </tr>
-  </tbody>
-</table>
-
-<h3 id="taxi_update">Updating the status of a taxi</h3>
-
-<p>In most cases, the status of the taxi is automaticaly set by the  <abbr title="Taxi Exchange Point">TXP</abbr> according to the status of a hail. Outside of the context of a hail, you still need to indicate if the taxi is <code>free</code> or <code>occupied</code> or <code>off</code>. This is done through a <code>PUT</code> request to the <em>/taxis/{taxi_id}/</em> API.</p>
-
-<h3 id="taxi_get">Querying the status and time of last location update of a taxi</h3>
-
-<p>In order to check that the updating of the status or location of the taxi worked properly, you can use a <code>GET</code> request to the <em>/taxis/{taxi_id}/</em> API.</p>
-
-<p>Warning: The <code>GET</code> <em>/taxis/{taxi_id}/</em> API will return the <code>status</code> and the <code>last_update</code> but the <code>lat</code> and <code>lon</code> will be nulled (for privacy reasons).</p>
-
-<p>Warning: in production, you should almost never need the <code>GET</code> <em>/taxis/{taxi_id}/</em> API. All necessary informations about taxis around a location are already in the response of the <code>GET</code> <em>/taxis</em> API and all necessary informations about the chosen taxi are already in the response of the <code>GET</code> <em>/hails/{hail_id}</em> API.
+  <ul>
+    <li><i>free</i></li>
+    <li><i>occupied</i></li>
+    <li><i>off</i></li>
+    <li><i>oncoming</i>: ce statut est aussi automatiquement donné au taxi lorsque celui-ci a reçu une course avec le statut <i>accepted_by_customer</i>. Référez-vous à la <a href="{{ url_for('documentation.search') }}">documentation des moteurs de recherche</a> pour plus d'informations.</li>
+  </ul>
 </p>
 
-<h3 id="hail_receive">Receiving a hail</h3>
 
-<p>In order to receive hails, <strong>operators</strong> need to implement an endpoint on their servers. The endpoint has to be able to receive <code>POST</code> requests from the <abbr title="Taxi Exchange Point">TXP</abbr>. This is the only endpoint that needs to be implemented on the <strong>operator</strong> side.</p>
+<h2 id="receive_trip">Recevoir une course</h2>
 
-<p>The <code>hail</code> JSON object which will be transmitted as the payload of the <code>POST</code> request is detailed in the reference documentation.</p>
+<p>Vous devez mettre en place une API REST acceptant les requêtes POST de la part de nos serveurs. Cette API recevra les demandes de courses au format JSON, et devra les faire parvenir au taxi concerné.</p>
 
-<p>Accredited <strong>operators</strong> can enter the <abbr title="Uniform Resource Locator">URL</abbr> of their <i>dev</i>, <i>test</i> and <i>prod</i> endpoints on the <a href="{{ url_for('profile.edit') }}">profile</a> page.</p>
+<p>Il y a deux méthodes pour faire parvenir la demande au taxi&nbsp;:
 
-<p>The endpoint should return one of the valid HTTP status code in the <code>2xx Success</code> range in case of success, and in the <code>4xx Client Error</code> or <code>5xx Server Error</code> in case of error. If the status code is in the  <code>2xx Success</code> range, the response payload can be a JSON <code>hail</code> object, in which case the hail will be updated on the  <abbr title="Taxi Exchange Point">TXP</abbr>. This response payload can for instance be used to transmit the <code>taxi_phone_number</code> to the  <abbr title="Taxi Exchange Point">TXP</abbr>.</p>
+  <ul>
+    <li>envoyer une notification push&nbsp;: votre serveur envoie une notification à l'application chauffeur.</li>
+    <li>faire du polling&nbsp;: l'application chauffeur demande à votre serveur si il a reçu une course, à interval régulier, par exemple toutes les secondes.</li>
+  </ul>
 
-<p>After the hail has been acknowledged by the operator to the  <abbr title="Taxi Exchange Point">TXP</abbr>, it should be communicated by the operator to the taxi driver ASAP.</p>
+Quelle que soit la méthode que vous choisissez, vous aurez un maximum de 10 secondes pour nous indiquer que le chauffeur a bien reçu la notification. Il aura alors 30 secondes pour accepter ou refuser la course. Référez-vous à la section <a href="#trip_status">statut de la course</a> pour plus d'informations.</li>
+</p>
 
- <h3 id="hail_get">Querying the status of a Hail</h3>
+<h6>Serveur d'exemple</h6>
 
- <p> In order to keep track of the status of the hail, you can do a <code>GET</code> request to the  <em>/hails/{hail_id}/</em> API. The list of all possible statuses is available in the reference documentation.</p>
+<pre class="code">
+from flask import Flask, request
+from flask_caching import Cache
+
+config = {
+    "DEBUG": True,
+    "CACHE_TYPE": "filesystem",
+    "CACHE_DEFAULT_TIMEOUT": 300,
+    "CACHE_DIR": "/tmp/server_cache"
+}
+
+app = Flask(__name__)
+app.config.from_mapping(config)
+cache = Cache(app)
+
+@app.route('/receive_hail', methods=['POST'])
+def receive_hail():
+    params = request.get_json()
+    hail_id = params['data'][0]['id']
+    taxi_id = params['data'][0]['taxi']['id']
+    cache.set('taxi_current_hail_{}'.format(taxi_id), hail_id)
+    return params
+
+@app.route('/current_hail/<taxi_id>')
+def current_hail(taxi_id):
+    return {
+        "hail_id": cache.get('taxi_current_hail_{}'.format(taxi_id))
+    }
+</pre>
+
+<h2 id="trip_status">Statut de la course</h2>
+
+<p>Ce schéma présente les différents statuts que peut prendre une course.</p>
+
+<p class="text-center"><img src="{{ url_for('static', filename='images/documentation/trip-status.png') }}" /></p>
+
+<p>Les mises à jour effectuables par un opérateur sont matérialisées par des flèches vertes. Faisons un zoom sur cette partie.</p>
+
+<p class="text-center"><img src="{{ url_for('static', filename='images/documentation/trip-status-operator.png') }}" /></p>
+
+<p>
+  Voici textuellement le déroulé de la course&nbsp;:
+
+  <ul>
+    <li>Un moteur de recherche fait parvenir une demande de course à l'API le.taxi.</li>
+    <li>Nous envoyons sur le serveur de l'opérateur —&nbsp;le votre&nbsp;— la demande de course. Si nous ne parvenons pas à joindre votre serveur, le statut de la course devient <i>failure</i>. Sinon, la course est au statut <i>received_by_operator</i>.</li>
+    <li>Vous envoyez la notification au taxi. Si au bout de 10 secondes la course n'est pas passée au statut <i>received_by_taxi</i>, nous la mettons au statut <i>failure</i>. <strong>Attention&nbsp;!</strong> Ne mettez le statut <i>received_by_taxi</i> que lorsque vous êtes certain que le taxi a reçu la notification.</li>
+  </ul>
+
+  Une fois que la course a le statut <i>received_by_taxi</i>, trois mises à jour sont possibles&nbsp;:
+
+  <ul>
+    <li><i>accepted_by_taxi</i>: la course est acceptée par le chauffeur. Il faut informer le chauffeur de l'évolution de la course. Le client doit valider sa demande.</li>
+    <li><i>declined_by_taxi</i>: le chauffeur ne peut pas prendre la course, il décline.</li>
+    <li><i>incident_taxi</i>: le chauffeur a un empêchement (accident, trafic…). Il peut annuler la course même après l'avoir acceptée, ou que le client l'ait acceptée.</li>
+  </ul>
+
+  Dans le cas où aucune mise à jour n'est effectuée en 30 secondes, la course passe au statut <i>timeout_taxi</i>.
+</p>
+
+<p>L'endpoint <i>PUT /hails/:hail_id</i> permet de mettre à jour le statut d'une course.</p>
+
+<h6>Exemple d'appel</h6>
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/hails/:hail_id/' \
+      -X POST \
+      -H 'X-VERSION: 3' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'X-API-KEY: XXX' \
+      -d '
+{
+  "data": [
+    {
+      "status": "received_by_taxi"
+    }
+  ]
+}'
+</pre>
+
+<h6>Cas partuclier pour le statut <i>accepted_by_taxi</i></h6>
+
+<p>
+  Lorsque le taxi accepte la course et que le statut est changé à <i>accepted_by_taxi</i>, il est nécessaire de fournir un numéro de téléphone sur lequel le taxi est joignable dans le champ <i>taxi_phone_number</i>.
+</p>
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/hails/:hail_id/' \
+      -X POST \
+      -H 'X-VERSION: 3' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'X-API-KEY: XXX' \
+      -d '
+      {
+  "data": [
+    {
+      "status": "accepted_by_taxi",
+      "taxi_phone_number": "+33422521010"
+    }
+  ]
+}'
+</pre>
+
+<h6>Changements de statut automatiques</h6>
+
+<p>Une fois la course acceptée, si le statut du taxi change pour <i>occupied</i> en utilisant l'endpoint <i>POST /taxis/:taxi_id</i>, le statut de la course passe automatiquement à <i>customer_on_board</i>. Si le taxi passe ensuite en <i>free</i> ou <i>off</i>, la course est considérée terminée et passe donc automatiquement en <i>finished</i>.
+
+<p class="text-center"><img src="{{ url_for('static', filename='images/documentation/trip-status-operator-accepted.png') }}" /></p>
 
 
- <h3 id="hail_update">Updating a Hail</h3>
+<h2 id="report_client">Signalement de client</h2>
 
- <p>In order to finalise the transaction, the taxi has to acknowledge the hail. It is done through a <code>PUT</code> request to the <em>/hails/{hail_id}/</em> API.</p>
+<p>
+  Un problème lors de la course peut être signalé en utilisant l'endpoint <i>PUT /hails/hail_id</i>, en fournissant le paramètre <i>reporting_customer</i> à <i>true</i> et le champ <i>reporting_customer_reason</i> à une des valeurs suivantes&nbsp;:
 
-<p>The status of the hail has to be <code>received_by_taxi</code> before the taxi driver is asked to confirm the ride. If you don't send a PUT request with either the <code>accepted_by_taxi</code> or the <code>declined_by_taxi</code> status in the next 30 seconds, the   hail will automatically be updated to <code>timeout_taxi</code> and the whole transaction be considered cancelled. You do have to   check when you do a PUT with the status <code>accepted_by_taxi</code> that the status in the response is <code>accepted_by_taxi</code> (the taxi is arriving) and not <code>timeout_taxi</code> (your reconfirmation arrived too late, the whole transaction had to be canceled).</p>
+  <ul>
+    <li><i>payment</i>: il y a eu un problème avec le paiement.</li>
+    <li><i>courtesy</i>: le client n'était pas courtois.</li>
+    <li><i>cleanliness</i>: le client n'était pas propre.</li>
+    <li><i>late</i>: le client était en retard.</li>
+    <li><i>aggressive</i>: le client était agressif.</li>
+    <li><i>no_show</i>: le client ne s'est pas présenté.</li>
+  </ul>
+</p>
+
 {% endblock %}

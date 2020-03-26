@@ -1,70 +1,104 @@
 {% extends "documentation/base.html" %}
 
+{% set submenus = [
+  ('#intro', 'Introduction'),
+  ('#requests', 'Requêtes'),
+] %}
+
 {% block main %}
+<h2 id="intro">Introduction</h2>
 
-<h2>Overview</h2>
+<p>Cette documentation technique détaille le fonctionnement de l'API <i>le.taxi</i>. Elle est destinée aux <i>opérateurs</i> ainsi qu'aux <i>moteurs de recherche</i> souhaitant se connecter sur l'API.</p>
 
-<p>
-  The French <em>"Registre Géolocalisé des Taxis"</em> is a <strong>Taxi Exchange Point</strong> (<strong>TXP</strong>) aiming to connect taxis and their clients. Clients can use taxis <strong>search engines</strong> to hail taxis geolocated by <strong>taxis operators</strong>. The RGT mediates between search engines and operators.
-</p>
+<div class="block-info">
+  <h6>Définitions</h6>
+  <ul>
+    <li><strong>Opérateur</strong> : acteur fournissant les informations de taxis et leurs géolocalisation en temps réel à l'API.</li>
+    <li><strong>Moteur de recherche</strong> : acteur proposant une application de mise en relation entre des utilisateurs et les taxis représentés sur l'API.</li>
+  </ul>
+</div>
 
-<p class="text-center">
-  <object type="image/svg+xml" data="/static/images/overview.svg">Your browser does not support SVG</object><br>
-</p>
+<p>Nous mettons à disposition un environnement de développement pour permettre de tester l'intégration de votre solution avec l'API. Cet environnement, disponible sur <a href="https://dev.api.taxi">dev.api.taxi</a>, nécessite d'être authentifié. La demande de création de compte se fait par email à <a href="mailto:equipe@le.taxi">equipe@le.taxi</a> où vous devrez préciser votre statut, et si vous souhaitez créer un <i>opérateur</i> ou un <i>moteur de recherche</i>.</p>
 
-<p>
-  In order to ensure maximum reliability, communication of the location and availability of taxis must be made directly from an on-board equipment in the taxi to the <abbr title="Taxi Exchange Point">TXP</abbr>. All other interactions with the <abbr title="Taxi Exchange Point">TXP</abbr> can be made from the central infrastructure of taxi operators (resp. search engines).
-</p>
+<h2 id="requests">Requêtes</h2>
 
-<h3 id="apis">APIs implementation</h3>
-
-<p>
-  This documentation provides an overview of the <abbr title="Taxi Exchange Point">TXP</abbr> REST APIs. REST APIs provide access to resources (data entities) via URI paths. To use a REST API, your application will make an HTTPS request and parse the response. Your methods will be the standard HTTP methods like <code>GET</code>, <code>PUT</code> and <code>POST</code>. REST APIs operate over HTTPS making it easy to use with any programming language or framework. The input and output format for the <abbr title="Taxi
-Exchange Point">TXP</abbr> REST APIs is <a href="http://www.json.org" target="_blank">JSON</a>.<br>
-</p>
-
-<h3 id="headers">Mandatory HTTP Headers</h3>
-
-<p>
-  The following HTTP Headers are mandatory for all requests to the <abbr title="Taxi Exchange Point">TXP</abbr> REST APIs:
-</p>
+<p>Tous les appels à l'API doivent se faire avec les headers HTTP suivants :<p>
 
 <table class="table">
   <thead>
     <tr>
-      <th scope="col">Name</th>
-      <th scope="col">Value</th>
-      <th scope="col">Description</th>
+      <th scope="col">Nom du header</th>
+      <th scope="col">Valeur</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><code>Accept</code></td>
-      <td><code>application/json</code></td>
-      <td><em>media types which are acceptable for the response</em></td>
+      <td>X-API-KEY</td>
+      <td><i>Clé d'API disponible sur la page <a href="{{ url_for('profile.edit') }}">Mon Compte</a></i></td>
     </tr>
     <tr>
-      <td><code>X-VERSION</code></td>
-      <td><code>2</code></td>
-      <td><em>Version of the API</em></td>
+      <td>X-Version</td>
+      <td>3</td>
     </tr>
     <tr>
-      <td><code>X-API-KEY</code></td>
-      <td>your API key</td>
-      <td><em>API Key</em></td>
+      <td>Acccept</td>
+      <td>application/json</td>
     </tr>
   </tbody>
 </table>
 
-<h3 id="authentication">Authentication</h3>
+<p>Les requêtes de modifications (<i>POST</i>, <i>PUT</i>, <i>PATCH</i>) nécessite de fournir le header suivant :</p>
 
-<p>
-Authentication of your application is done for each query to the <abbr title="Taxi Exchange Point">TXP</abbr> by including a HTTP header <code>X-API-KEY</code>. API keys are available for accredited developpers on the <a href="{{ url_for('profile.edit') }}">account page</a>.
-</p>
 
-<h3>Examples</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Nom du header</th>
+      <th scope="col">Valeur</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Content-Type</td>
+      <td>application/json</td>
+    </tr>
+  </tbody>
+</table>
 
-<p>
-  You can find useful examples of queries <a href="{{ url_for('documentation.examples') }}">here</a>.
-</p>
+<p>Toutes les réponses de l'API sont contenus dans le champ <i>data</i>. Par exemple :</p>
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/taxis/?lon=2.3500013351440434&lat=48.85999989664685' \
+      -H 'Accept: application/json' \
+      -H 'X-Version: 3' \
+      -H 'X-Api-Key: XXX' | jq .
+{
+  "data": [
+    {
+      "id": "..."
+    },
+    ...
+  ]
+}
+</pre>
+
+<p>Les requêtes de modifications (<i>POST</i>, <i>PUT</i>, <i>PATCH</i>) s'attendent à avoir les objets à modifier sous le champ <i>data</i>. Par exemple :</p>
+
+
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/taxis/XXX/' \
+      -X PUT \
+      -H 'Content-Type: application/json' \
+      -H 'X-Version: 3' \
+      -H 'X-Api-Key: XXX' \
+      -d '
+{
+  "data": [{
+    "status": "free"
+  }]
+}'
+</pre>
+
+<p>La <a href="{{ url_for('documentation.reference') }}">documentation de référence</a> vous permet de lister et tester simplement tous les endpoints de l'API.</p>
 {% endblock %}

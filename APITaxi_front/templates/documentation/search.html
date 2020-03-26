@@ -1,45 +1,176 @@
 {% extends "documentation/base.html" %}
 
+{% set submenus = [
+  ('#intro', 'Introduction'),
+  ('#list', 'Lister les taxis'),
+  ('#create', 'Créer une course'),
+  ('#trip', 'Déroulement de la course'),
+  ('#rating', 'Notation de la course'),
+] %}
+
 {% block main %}
-<h2>Search engine</h2>
+<h2 id="intro">Introduction</h2>
 
-<p>There are two main interactions between <strong>Taxis Search Engines</strong> and the <strong>Taxi Exchange Point (TXP)</strong>: looking for taxis around a client, and hailing a taxi for a client.</p>
+<p>Cette page est destinée aux moteurs de recherche qui souhaitent s'intégrer à l'API <strong>le.taxi</strong>. En suivant cette documentation, vous saurez lister les taxis d'une zone, puis les réserver.</p>
 
-<p><strong>Warning:</strong> in accordance with the Terms of Service, you are allowed to look for a taxi or hail one <em>only</em> within the context of a real-time interactive demand of a real customer: automation, replay and any other form of mass data gathering is expressly forbidden.</p>
+<div class="block-info">
+  <h6>Prérequis</h6>
+  <ul>
+    <li>Prendre connaissance de la documentation d'<a href="{{ url_for('documentation.index') }}">introduction</a>.</li>
+    <li>Avoir un compte sur l'environnement de développement <a href="https://dev.api.taxi">dev.api.taxi</a>.</li>
+  </ul>
+</div>
 
-<h3 id="search">Looking for taxis around a client</h3>
+<h2 id="list">Lister les taxis</h2>
 
-<p>In order to obtain the list of all taxis available around a client, your application does an <code>GET</code> request on the <em>taxis</em> API.</p>
+<p>L'endpoint <i>GET /taxis</i> permet de lister les taxis autour d'une coordonnée géographique. Les paramètres attendus sont&nbsp;:</p>
 
-<p>That API sends back all the available taxis around the  <code>{lon,lat}</code> location of the client with all their characteristics. Only the taxis that are available and can be hailed by the client are returned (the list is already filtered according to the French taxis regulation).</p>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Nom du paramètre</th>
+      <th scope="col">Valeur</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>lon <i>(requis)</i></td>
+      <td>longitude autour de laquelle rechercher un taxi</td>
+    </tr>
+    <tr>
+      <td>lat <i>(requis)</i></td>
+      <td>latitude autour de laquelle rechercher un taxi</td>
+    </tr>
 
-<h5>Favorite operator</h5>
+    <tr>
+      <td>count <i>(opt)</i></td>
+      <td>nombre maximum de taxis à retourner</td>
+    </tr>
+    <tr>
+      <td>favorite_operator <i>(opt)</i></td>
+      <td>si un taxi a plusieurs opérateurs actifs, l'opérateur renseigné sera préféré</td>
+    </tr>
+  </tbody>
+</table>
 
-<p>The optional <code>favorite_operator</code> parameter allows to specify a preferred operator. It is useful for taxis geolocated by several operators at the same time (which is expressly allowed by the French law).</p>
+<h6>Exemple d'appel</h6>
 
-<p>In that case, it is the description of the taxi and the location recently updated by that <code>favorite_operator</code> that will be returned. If no recent position has been updated by the <code>favorite_operator</code>, or if no <code>favorite_operator</code> is specified in the request, the description of the taxi and location returned are those of the operator who updated the position of the taxi most recently.</p>
+<pre class="code">
+$> curl 'https://dev.api.taxi/taxis/?lon=2.35&lat=48.85' \
+      -H 'Accept: application/json' \
+      -H 'X-Version: 3' \
+      -H 'X-API-KEY: XXX'
+</pre>
 
-<h3 id="hail_create">Hailing a taxi</h3>
+<p>Aucun taxi ne sera retourné si aucun taxi n'est libre autour de ce point.</p>
 
-<p>Once you have received the list of all taxis available around a client, you can hail one of those taxis. That Hail is created by doing a <code>POST</code> request to the <em>hails</em> API.</p>
+<h2 id="create">Créer une course</h2>
 
-<p>The JSON object <code>hail</code> to be created has to be in the data section of the request. The initial status of the Hail should be set to <code>emitted</code>.</p>
+<p>L'endpoint <i>POST /hails</i> permet de créer une course&nbsp;:</p>
 
-<p>In case of success, the response contains the newly created JSON object <code>hail</code>including its newly created <em>id</em> which will then be used to query and update the status of the hail.</p>
+<pre class="code">
+$> curl 'https://dev.api.taxi/hails/' \
+      -X POST \
+      -H "X-VERSION: 3" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -H "X-API-KEY: XXX \" \
+      -d '
+{
+  "data": [
+    {
+      "customer_lat": 48.85,
+      "customer_lon": 2.35,
+      "customer_address": "52 boulevard Saint-Germain, Paris 75005",
+      "taxi_id": "taxi_id",
+      "customer_phone_number": "0673457191",
+      "operateur": "neotaxi",
+      "customer_id": "internal_customer_id"
+    }
+  ]
+}'
+</pre>
 
-<h3 id="hail_get">Querying the status of a Hail</h3>
+<p>Ces points sont à noter&nbsp;:</p>
 
-<p>In order to keep track of the status of the hail, you can do a <code>GET</code> request to the  <em>hails</em> API</a>.</p>
+<ul>
+  <li><i>taxi_id</i> est retourné par l'endpoint <i>GET /taxis</i>.</li>
+  <li>Les paramètres <i>customer_lon</i> et <i>customer_lat</i> doivent correspondre à ceux utilisés pour obtenir la liste des taxis.</li>
+  <li>L'adresse <i>customer_address</i> sera montée au taxi une fois la course acceptée par celui-ci.</li>
+  <li>Vous <strong>devez</strong> vérifier la validité du <i>customer_phone_number</i>, que ce soit par un SMS de confirmation ou par un appel.</li>
+  <li><i>customer_id</i> est votre identifiant pour ce client. Il doit être unique pour chaque client.</li>
+</ul>
 
-<p>The identifier of the hail is the <em>id</em> that was returned in the response of the <code>POST</code> request used to create the hail (see <a href="#post_hail">Hailing a taxi</a>).</p>
 
-<p>The list of all possible statuses is available in the reference documentation.</p>
+<h2 id="trip">Déroulement de la course</h2>
 
+<p>Le suivi d'une course se fait par des appels successifs à l'endpoint <i>GET /hails/:hail_id</i>. Le schéma ci-dessous montre les différents statuts d'une course, et leurs enchainements possibles.</p>
 
-<h3 id="hail_update">Updating a Hail</h3>
+<p class="text-center"><img src="{{ url_for('static', filename='images/documentation/trip-status.png') }}" /></p>
 
-<p>In order to finalise the transaction, the client has to reconfirm the hail after it is acknowledged by the taxi. It is done through a call of the <code>PUT</code> request to the  <em>hails</em> API.</p>
+<p>Il est nécessaire de faire des requêtes régulièrement sur l'endpoint <i>GET /hails/:hail_id</i> afin d'informer votre client de l'évolution de la course, de lui permettre de passer au statut suivant lorsque c'est nécessaire, ou de l'informer d'une erreur. Faisons un zoom sur les actions que vous devez exécuter&nbsp;:</p>
 
-<p>The status of the hail has to be <code>accepted_by_taxi</code> before the client is asked to reconfirm. If you don't send a PUT request with either the <code>accepted_by_customer</code> or the <code>declined_by_customer</code> status in the next 30 seconds, the hail will automatically be updated to <code>timeout_customer</code> and the whole transaction be considered cancelled. You do have to check when you do a PUT with the status <code>accepted_by_customer</code> that the status in the response is indeed <code>accepted_by_customer</code> (you reconfirmed and the taxi is arriving) and not <code>timeout_customer</code> (your reconfirmation arrived too late, the whole transaction had to be canceled).</p>
+<p class="text-center"><img src="{{ url_for('static', filename='images/documentation/trip-status-search.png') }}" /></p>
 
+<p>Lorsque l'API reçoit une demande de course, celle-ci est transmise à l'opérateur du taxi. Dans le cas où le taxi accepte la course, vous avez une vingtaine de secondes pour demander à votre client de confirmer une dernière fois la course. Deux statuts sont alors disponibles&nbsp;:</p>
+
+<ul>
+  <li><i>declined_by_customer</i>: le client ne souhaite pas confirmer la course et en informe le taxi.</li>
+  <li><i>accepted_by_customer</i>: le client confirme la course, le taxi vient le chercher.</li>
+</ul>
+
+<p>Vous devez à tout moment permettre au client d'annuler la course en passant au statut <i>incident_customer</i>.</p>
+
+<h6>Exemple d'appel</h6>
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/hails/:hail_id/' \
+      -X PUT \
+      -H 'X-VERSION: 3' \
+      -H 'Content-Type: application/json' \
+      -H "Accept: application/json" \
+      -H 'X-API-KEY: XXX' \
+      -d '
+{
+  "data": [
+    {
+      "status": "accepted_by_customer"
+    }
+  ]
+}'
+</pre>
+
+<h2 id="rating">Notation de la course</h2>
+
+<p>Un client a la possibilité d'attribuer une note comprise entre 1 et 5 à la course en fournissant le paramètre <i>rating_ride</i> à l'endpoint <i>PUT /hails/:id</i>. Le paramètre optionnel <i>rating_ride_reason</i> peut aussi être renseigné, et doit avoir une des valeurs suivantes&nbsp;:</p>
+
+<ul>
+  <li><strong>payment</strong>: le paiement a été une mauvaise expérience pour le client.</li>
+  <li><strong>courtesy</strong>: le chauffeur ne s'est pas bien comporté.</li>
+  <li><strong>cleanliness</strong>: La propreté du taxi n'a pas convenu au client.</li>
+  <li><strong>late</strong>: le taxi est arrivé tard.</li>
+  <li><strong>no_credit_card</strong>: pas de paiement en carte bancaire possible.</li>
+  <li><strong>bad_itinerary</strong>: le taxi n'a pas utilisé le meilleur itinéraire.</li>
+</ul>
+
+<h6>Exemple d'appel</h6>
+
+<pre class="code">
+$> curl 'https://dev.api.taxi/hails/:hail_id/'
+      \ -X PUT \
+      -H 'X-VERSION: 3' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'X-API-KEY: XXX" \
+      -d '
+{
+  "data": [
+    {
+      "rating_ride": 1,
+      "rating_ride_reason": "no_credit_card"
+    }
+  ]
+}'
+
+</pre>
 {% endblock %}

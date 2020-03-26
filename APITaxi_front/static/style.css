@@ -132,6 +132,15 @@ footer img:hover {
   padding: 10px;
 }
 
+.page-sidebar .block-info {
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-top: 1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+  background-color: rgba(127, 127, 0, 0.08);
+}
+
 /*
  * Thumbnails groups
  */
