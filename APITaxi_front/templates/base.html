@@ -21,7 +21,6 @@
       <small class="text-danger">(Connecté en tant que {{ current_user.commercial_name or "" }} / {{ current_user.email or "" }})</small>
       {% endif %}
 
-      {% if current_user.is_authenticated %}
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -33,14 +32,18 @@
                 <a class="nav-link{% if url_for('admin.index') in request.path %} active{% endif %}" href="{{ url_for('admin.index') }}">Administration</a>
             </li>
             {% endif %}
+
+            {% if current_user.is_authenticated %}
             <li class="nav-item">
                 <a class="nav-link{% if url_for('dashboards.index') in request.path %} active{% endif %}" href="{{ url_for('dashboards.index') }}">Tableaux de bord</a>
             </li>
+            {% endif %}
 
             <li class="nav-item">
               <a class="nav-link{% if url_for('documentation.index') in request.path %} active{% endif %}" href="{{ url_for('documentation.index') }}">Documentation</a>
             </li>
 
+            {% if current_user.is_authenticated %}
             <li class="nav-item">
               <a class="nav-link{% if url_for('profile.edit') in request.path %} active{% endif %}" href="{{ url_for('profile.edit') }}">Mon compte</a>
             </li>
@@ -48,9 +51,9 @@
             <li class="nav-item">
                 <a class="nav-link{% if url_for('admin.logas_logout') in request.path %} active{% endif %}" href="{{ url_for('admin.logas_logout') }}">Déconnexion</a>
             </li>
+            {% endif %}
           </ul>
         </div>
-      {% endif %}
     </nav>
 
     {% with messages = get_flashed_messages() %}
