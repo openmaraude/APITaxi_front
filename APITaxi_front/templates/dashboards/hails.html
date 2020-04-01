@@ -95,7 +95,11 @@ var table = $('#table').DataTable({
   language: {
     emptyTable: 'Aucune course',
     loadingRecords: 'Chargement en cours...',
-    zeroRecords: 'Aucun résultat trouvé'
+    zeroRecords: 'Aucun résultat trouvé',
+    paginate: {
+      previous: '&lt;',
+      next: '&gt;'
+    }
   },
   // Remove sorting.
   bSort: false,
