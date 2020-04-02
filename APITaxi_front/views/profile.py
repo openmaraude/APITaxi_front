@@ -11,11 +11,10 @@ from flask import (
 from flask_security import login_required, current_user
 
 from flask_wtf import FlaskForm
-from wtforms import StringField
+from wtforms import StringField, ValidationError, validators
 
 from APITaxi_models import db
 
-from wtforms import ValidationError, validators
 
 
 blueprint = Blueprint('profile', __name__)
