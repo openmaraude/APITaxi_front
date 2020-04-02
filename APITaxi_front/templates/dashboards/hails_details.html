@@ -27,7 +27,7 @@
         <th>Payload</th>
         <td>
           <a data-toggle="collapse" href="#payload{{ loop.index }}" role="button">Cliquer pour voir</a>
-          <div id="payload{{ loop.index }}" class="collapse"><pre class="code">{{ data.payload|json }}</pre></div>
+          <div id="payload{{ loop.index }}" class="collapse"><pre class="code">{{ data.get('payload', 'null')|json }}</pre></div>
         </td>
       </tr>
 
@@ -40,7 +40,7 @@
         <th>Payload de retour</th>
         <td>
           <a data-toggle="collapse" href="#return{{ loop.index }}" role="button">Cliquer pour voir</a>
-          <div id="return{{ loop.index }}" class="collapse"><pre class="code">{{ data.return|json }}</pre></div>
+          <div id="return{{ loop.index }}" class="collapse"><pre class="code">{{ data.get('return', 'null')|json }}</pre></div>
         </td>
       </tr>
 
