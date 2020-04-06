@@ -1,0 +1,83 @@
+{% extends "tester/base.html" %}
+
+{% block main %}
+<h3>Aide pour l'intégration — opérateur</h3>
+
+<p>Cette page liste des taxis de test et vous permet de simuler simplement un <i>opérateur</i>. Elle vous sera donc utile dans le cas où vous souhaitez développer un <i>moteur de recherche</i>. Accédez à la page de détails d'un taxi pour changer son statut ou sa géolocalisation.</p>
+
+<p>La <a href="{{ url_for('documentation.index') }}">documentation</a> est disponible pour vous guider sur le développement de votre application.</p>
+
+<table id="table" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Id taxi</th>
+      <th>Date création</th>
+      <th>Immatriculation</th>
+      <th>ZUPC</th>
+      <th>Chauffeur</th>
+    </tr>
+  </thead>
+</table>
+
+<hr />
+
+<p>Cliquez sur le bouton ci-dessous pour créer un nouveau taxi de test.</p>
+
+<form method="post" novalidate autocomplete="off">
+  {% if taxi_create_form.errors %}
+  <p class="text-danger">Formulaire invalide. Veuillez soumettre de nouveau.</p>
+  {% endif %}
+
+  {{ taxi_create_form.hidden_tag() }}
+  <button type="submit" class="btn btn-primary {% if taxi_create_form.errors %}btn-danger{% else %}btn-dark{% endif %}">Créer un taxi de test</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+var table = $('#table').DataTable({
+  language: {
+    emptyTable: 'Aucun taxi',
+    loadingRecords: 'Chargement en cours...',
+    zeroRecords: 'Aucun résultat trouvé',
+    paginate: {
+      previous: '&lt;',
+      next: '&gt;'
+    }
+  },
+  // Remove sorting.
+  bSort: false,
+  // Number of items per page.
+  pageLength: 50,
+  // Do not filter or paginate client side, send query for each draw.
+  serverSide: true,
+  // Elements to display for the table. Reference: https://datatables.net/reference/option/dom
+  // tp: display 't'able and 'p'agination. Other default items (info, search
+  // input, ...) are not displayed.
+  sDom: 'tp',
+  // API endpoint called.
+  ajax: {
+    url: "{{ url_for('api.taxis') }}?tester",
+    dataSrc: 'data'
+  },
+  // Mapping between API response and columns.
+  columns: [
+    {
+      name: 'taxi_id',
+      data: 'id',
+      render: function (data, type, row) {
+        var url = "{{ url_for('tester.operator_taxi_details', taxi_id='TAXI_ID') }}".replace('TAXI_ID', data);
+        return '<a href="' + url + '">' + data + '</a>';
+      }
+    },
+    {
+      data: 'added_at',
+      render: function (data, type, row) {
+        return moment(data).format('DD/MM/YYYY HH:mm:ss');
+      }
+    },
+    {name: 'licence_plate', data: 'vehicle.licence_plate'},
+    {data: 'ads.zupc.name'},
+    {data: 'driver.fullname'},
+  ]
+});
+{% endblock %}

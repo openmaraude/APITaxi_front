@@ -6,7 +6,7 @@ import functools
 import math
 import re
 
-from flask import Blueprint, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, jsonify, redirect, render_template, request, url_for
 from flask_security import current_user, login_required, roles_accepted
 
 from sqlalchemy import func, or_
@@ -19,6 +19,8 @@ from geopy.distance import vincenty
 
 from APITaxi_models import db, Hail, Taxi, Vehicle
 from APITaxi_models.security import User
+
+from .tester import get_tester_user
 
 
 blueprint = Blueprint('api', __name__)
@@ -170,14 +172,19 @@ def users(length, start, draw, columns=None):
 @check_datatables_arguments
 def hails(length, start, draw, columns=None):
     """List taxis of operateur."""
+    owner = current_user
+
+    if 'tester' in request.args and current_app.config.get('TESTER_ENABLED', False):
+        owner = get_tester_user(User.id)
+
     UserOperateur = aliased(User)
     UserMoteur = aliased(User)
 
     query = Hail.query.with_entities(
         Hail, UserOperateur, UserMoteur
     ).filter(
-        or_(Hail.operateur_id == current_user.id,
-            Hail.added_by == current_user.id)
+        or_(Hail.operateur_id == owner.id,
+            Hail.added_by == owner.id)
     ).join(
         UserOperateur, Hail.operateur_id == UserOperateur.id
     ).join(
@@ -229,8 +236,15 @@ def hails(length, start, draw, columns=None):
 @check_datatables_arguments
 def taxis(length, start, draw, columns=None):
     """List taxis of operateur."""
+    owner = current_user
+
+    # This view is called by the "tester" feature to list taxis of the test account. If tester is set, list taxis from
+    # the tester account instead of taxis from the current account.
+    if 'tester' in request.args and current_app.config.get('TESTER_ENABLED', False):
+        owner = get_tester_user(User.id)
+
     query = Taxi.query.join(Vehicle).filter(
-        Taxi.added_by == current_user.id
+        Taxi.added_by == owner.id
     ).order_by(
         Taxi.added_at.desc()
     )

@@ -1,3 +1,17 @@
+# If True, front is running in "tester" mode is enabled and a menu is added to
+# create taxis and hail them.
+TESTER_ENABLED = False
+
+# Account used by "tester" feature to query APITaxi.
+TESTER_ACCOUNT_EMAIL = None
+
+# Geotaxi is used by the "tester" feature to update the position of a taxi.
+GEOTAXI_HOST = None
+GEOTAXI_PORT = None
+
+# Used by "tester" features..
+API_TAXI_URL = None
+
 DEBUG = True
 ENV = 'DEV'
 SECRET_KEY = 'super-secret'

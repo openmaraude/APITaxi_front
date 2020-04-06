@@ -1,0 +1,131 @@
+{% extends "tester/base.html" %}
+
+{% block main %}
+<h3>Détails du taxi de test {{ taxi.id }}</h3>
+
+<h5>Localisation</h5>
+
+<p>La mise à jour de la géolocalisation d'un taxi peut prendre plusieurs secondes. Si la position n'est pas correcte, tentez de rafraichir la page.</p>
+
+{% if not last_location %}
+<p class="alert alert-warning">Aucune donnée de localisation n'est disponible pour ce taxi</p>
+{% else %}
+<ul>
+  <li><strong>Dernière mise à jour</strong> : {{ last_location.date.strftime('le %d/%m/%Y à %H:%M:%S') }}</li>
+  <li><strong>Longitude</strong> : {{ last_location.lon|round(6) }}</li>
+  <li><strong>Latitude</strong> : {{ last_location.lat|round(6) }}</li>
+</ul>
+{% endif %}
+
+<h5>Mise à jour de la localisation</h5>
+
+<p>Renseignez les coordonnées vers lesquelles vous souhaitez déplacer le taxi. Une fois la modification effectuée, le taxi sera considéré comme libre et vous pourrez le voir sur la carte.</p>
+
+<form class="mb-3" method="POST" novalidate autocomplete="off">
+  <div class="form-row">
+    <div class="col">
+      <input name="{{ update_location_form.lon.name }}" type="text" class="form-control" placeholder="Longitude">
+      {% if update_location_form.errors.lon %}
+      <span class="text-danger">{{ update_location_form.errors.lon|join(' ') }}</span>
+      {% endif %}
+    </div>
+    <div class="col">
+      <input name="{{ update_location_form.lat.name }}" type="text" class="form-control" placeholder="Latitude">
+      {% if update_location_form.errors.lat %}
+      <span class="text-danger">{{ update_location_form.errors.lat|join(' ') }}</span>
+      {% endif %}
+    </div>
+    <div class="col">
+      <button type="submit" class="btn btn-primary {% if update_location_form.errors %}btn-danger{% else %}btn-dark{% endif %}">Modifier</button>
+    </div>
+  </div>
+  {{ update_location_form.hidden_tag() }}
+</form>
+
+<p class="text-info"><strong>Attention !</strong> L'autorisation de stationnement de ce taxi est limitée à la ZUPC de {{ taxi.ads.zupc.nom }}. Si vous déplacez le taxi en dehors de cette zone, il ne sera pas visible sur la carte.</p>
+
+<h5>Liste des courses du taxi</h5>
+
+<table id="table" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Id course</th>
+      <th>Date</th>
+      <th>Operateur</th>
+      <th>Moteur de recherche</th>
+      <th>Id taxi</th>
+      <th>Status final</th>
+      <th>Distance client/taxi</th>
+    </tr>
+  </thead>
+</table>
+{% endblock %}
+
+{% block scripts %}
+var table = $('#table').DataTable({
+  language: {
+    emptyTable: 'Aucune course',
+    loadingRecords: 'Chargement en cours...',
+    zeroRecords: 'Aucun résultat trouvé',
+    paginate: {
+      previous: '&lt;',
+      next: '&gt;'
+    }
+  },
+  // Remove sorting.
+  bSort: false,
+  // Number of items per page.
+  pageLength: 50,
+  // Do not filter or paginate client side, send query for each draw.
+  serverSide: true,
+  // Elements to display for the table. Reference: https://datatables.net/reference/option/dom
+  // tp: display 't'able and 'p'agination. Other default items (info, search
+  // input, ...) are not displayed.
+  sDom: 'tp',
+  // API endpoint called.
+  ajax: {
+    url: "{{ url_for('api.hails') }}?tester",
+    dataSrc: 'data'
+  },
+  // Mapping between API response and columns.
+  columns: [
+    {data: 'id'},
+    {
+      data: 'added_at',
+      render: function (data, type, row) {
+        return moment(data).format('DD/MM/YYYY HH:mm:ss');
+      }
+    },
+    {
+      render: function (data, type, row) {
+        return row.operateur.commercial_name || '<i>' + row.operateur.id + '</i>';
+      }
+    },
+    {
+      render: function (data, type, row) {
+        return row.moteur.commercial_name || '<i>' + row.moteur.id + '</i>';
+      }
+    },
+    {name: 'taxi_id', data: 'taxi.id'},
+    {data: 'status'},
+    {
+      data: 'distance',
+      render: function (data, type, row) {
+        return data + ' mètres';
+      }
+    },
+  ],
+  // aoSearchCols defines the filters that are set when the table is loaded.
+  // Since this page displays the details of a taxi, let's filter on the taxi
+  // id.
+  aoSearchCols: [
+    null,
+    null,
+    null,
+    null,
+    {sSearch: '{{ taxi.id }}'},
+    null,
+    null
+  ]
+});
+{% endblock %}

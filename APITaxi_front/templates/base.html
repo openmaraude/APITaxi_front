@@ -43,6 +43,12 @@
               <a class="nav-link{% if url_for('documentation.index') in request.path %} active{% endif %}" href="{{ url_for('documentation.index') }}">Documentation</a>
             </li>
 
+            {% if config.TESTER_ENABLED %}
+            <li class="nav-item">
+              <a class="nav-link{% if url_for('tester.index') in request.path %} active{% endif %}" href="{{ url_for('tester.index') }}">Intégration</a>
+            </li>
+            {% endif %}
+
             {% if current_user.is_authenticated %}
             <li class="nav-item">
               <a class="nav-link{% if url_for('profile.edit') in request.path %} active{% endif %}" href="{{ url_for('profile.edit') }}">Mon compte</a>
