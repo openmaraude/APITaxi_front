@@ -24,22 +24,22 @@
 <form class="mb-3" method="POST" novalidate autocomplete="off">
   <div class="form-row">
     <div class="col">
-      <input name="{{ update_location_form.lon.name }}" type="text" class="form-control" placeholder="Longitude">
-      {% if update_location_form.errors.lon %}
-      <span class="text-danger">{{ update_location_form.errors.lon|join(' ') }}</span>
+      <input name="{{ location_form.lon.name }}" type="text" class="form-control" placeholder="Longitude"{% if location_form.lon.data %} value="{{ location_form.lon.data }}"{% elif last_location %} value="{{ last_location.lon|round(6) }}"{%endif %}>
+      {% if location_form.errors.lon %}
+      <span class="text-danger">{{ location_form.errors.lon|join(' ') }}</span>
       {% endif %}
     </div>
     <div class="col">
-      <input name="{{ update_location_form.lat.name }}" type="text" class="form-control" placeholder="Latitude">
-      {% if update_location_form.errors.lat %}
-      <span class="text-danger">{{ update_location_form.errors.lat|join(' ') }}</span>
+      <input name="{{ location_form.lat.name }}" type="text" class="form-control" placeholder="Latitude"{% if location_form.lat.data %} value="{{ location_form.lat.data }}"{% elif last_location %} value="{{ last_location.lat|round(6) }}"{%endif %}>
+      {% if location_form.errors.lat %}
+      <span class="text-danger">{{ location_form.errors.lat|join(' ') }}</span>
       {% endif %}
     </div>
     <div class="col">
-      <button type="submit" class="btn btn-primary {% if update_location_form.errors %}btn-danger{% else %}btn-dark{% endif %}">Modifier</button>
+      <button type="submit" class="btn btn-primary {% if location_form.errors %}btn-danger{% else %}btn-dark{% endif %}">Modifier</button>
     </div>
   </div>
-  {{ update_location_form.hidden_tag() }}
+  {{ location_form.hidden_tag() }}
 </form>
 
 <p class="text-info"><strong>Attention !</strong> L'autorisation de stationnement de ce taxi est limitée à la ZUPC de {{ taxi.ads.zupc.nom }}. Si vous déplacez le taxi en dehors de cette zone, il ne sera pas visible sur la carte.</p>

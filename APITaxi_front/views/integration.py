@@ -145,7 +145,7 @@ class ValidateFloat:
             raise ValidationError('Valeur invalide.')
 
 
-class TaxiUpdateLocationForm(FlaskForm):
+class TaxiLocationForm(FlaskForm):
     lon = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
     lat = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
 
@@ -197,13 +197,13 @@ def operator_taxi_details(taxi_id):
     except NoResultFound:
         abort(404, 'Unknown taxi id')
 
-    update_location_form = TaxiUpdateLocationForm()
-    if update_location_form.validate_on_submit():
+    location_form = TaxiLocationForm()
+    if location_form.validate_on_submit():
         update_taxi_position(
             integration_user,
             taxi_id,
-            update_location_form.lon.data,
-            update_location_form.lat.data
+            location_form.lon.data,
+            location_form.lat.data
         )
         return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
 
