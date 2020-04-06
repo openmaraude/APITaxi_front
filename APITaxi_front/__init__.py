@@ -66,7 +66,14 @@ def create_app():
     ):
         module = importlib.import_module(modname)
         blueprint = getattr(module, 'blueprint', None)
+
+        # blueprint_enabled is a function which can be set by the view to tell
+        # whether the blueprint should be active or not. By default, blueprint
+        # is active.
+        blueprint_enabled = getattr(module, 'blueprint_enabled', None)
+
         if blueprint:
-            app.register_blueprint(blueprint)
+            if not blueprint_enabled or blueprint_enabled(app):
+                app.register_blueprint(blueprint)
 
     return app
