@@ -234,7 +234,7 @@ def send_position(lon, lat, taxi_id, operator, apikey):
 
 <pre class="code">
 $> curl 'https://dev.api.taxi/taxis/:taxi_id/' \
-      -X POST \
+      -X PUT \
       -H 'X-VERSION: 3' \
       -H 'Content-Type: application/json' \
       -H 'Accept: application/json' \
@@ -383,7 +383,7 @@ $> curl 'https://dev.api.taxi/hails/:hail_id/' \
 
 <h6>Changements de statut automatiques</h6>
 
-<p>Une fois la course acceptée, si le statut du taxi change pour <i>occupied</i> en utilisant l'endpoint <i>POST /taxis/:taxi_id</i>, le statut de la course passe automatiquement à <i>customer_on_board</i>. Si le taxi passe ensuite en <i>free</i> ou <i>off</i>, la course est considérée terminée et passe donc automatiquement en <i>finished</i>.
+<p>Une fois la course acceptée, si le statut du taxi change pour <i>occupied</i> en utilisant l'endpoint <i>PUT /taxis/:taxi_id</i>, le statut de la course passe automatiquement à <i>customer_on_board</i>. Si le taxi passe ensuite en <i>free</i> ou <i>off</i>, la course est considérée terminée et passe donc automatiquement en <i>finished</i>.
 
 <p class="text-center"><img src="{{ url_for('static', filename='images/documentation/trip-status-operator-accepted.png') }}" /></p>
 
