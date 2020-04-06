@@ -20,7 +20,7 @@ from geopy.distance import vincenty
 from APITaxi_models import db, Hail, Taxi, Vehicle
 from APITaxi_models.security import User
 
-from .tester import get_tester_user
+from .integration import get_integration_user
 
 
 blueprint = Blueprint('api', __name__)
@@ -174,8 +174,8 @@ def hails(length, start, draw, columns=None):
     """List taxis of operateur."""
     owner = current_user
 
-    if 'tester' in request.args and current_app.config.get('TESTER_ENABLED', False):
-        owner = get_tester_user(User.id)
+    if 'integration' in request.args and current_app.config.get('TESTER_ENABLED', False):
+        owner = get_integration_user(User.id)
 
     UserOperateur = aliased(User)
     UserMoteur = aliased(User)
@@ -238,10 +238,11 @@ def taxis(length, start, draw, columns=None):
     """List taxis of operateur."""
     owner = current_user
 
-    # This view is called by the "tester" feature to list taxis of the test account. If tester is set, list taxis from
-    # the tester account instead of taxis from the current account.
-    if 'tester' in request.args and current_app.config.get('TESTER_ENABLED', False):
-        owner = get_tester_user(User.id)
+    # This view is called by the integration feature to list taxis of the test
+    # account. If integration is set, list taxis from the integration account
+    # instead of taxis from the current account.
+    if 'integration' in request.args and current_app.config.get('TESTER_ENABLED', False):
+        owner = get_integration_user(User.id)
 
     query = Taxi.query.join(Vehicle).filter(
         Taxi.added_by == owner.id

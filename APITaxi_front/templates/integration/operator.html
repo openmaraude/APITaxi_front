@@ -1,4 +1,4 @@
-{% extends "tester/base.html" %}
+{% extends "integration/base.html" %}
 
 {% block main %}
 <h3>Aide pour l'intégration — opérateur</h3>
@@ -6,6 +6,8 @@
 <p>Cette page liste des taxis de test et vous permet de simuler simplement un <i>opérateur</i>. Elle vous sera donc utile dans le cas où vous souhaitez développer un <i>moteur de recherche</i>. Accédez à la page de détails d'un taxi pour changer son statut ou sa géolocalisation.</p>
 
 <p>La <a href="{{ url_for('documentation.index') }}">documentation</a> est disponible pour vous guider sur le développement de votre application.</p>
+
+<h5>Liste des taxis de test</h5>
 
 <table id="table" class="table table-striped">
   <thead>
@@ -56,7 +58,7 @@ var table = $('#table').DataTable({
   sDom: 'tp',
   // API endpoint called.
   ajax: {
-    url: "{{ url_for('api.taxis') }}?tester",
+    url: "{{ url_for('api.taxis') }}?integration",
     dataSrc: 'data'
   },
   // Mapping between API response and columns.
@@ -65,7 +67,7 @@ var table = $('#table').DataTable({
       name: 'taxi_id',
       data: 'id',
       render: function (data, type, row) {
-        var url = "{{ url_for('tester.operator_taxi_details', taxi_id='TAXI_ID') }}".replace('TAXI_ID', data);
+        var url = "{{ url_for('integration.operator_taxi_details', taxi_id='TAXI_ID') }}".replace('TAXI_ID', data);
         return '<a href="' + url + '">' + data + '</a>';
       }
     },

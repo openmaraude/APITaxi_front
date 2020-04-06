@@ -1,4 +1,4 @@
-{% extends "tester/base.html" %}
+{% extends "integration/base.html" %}
 
 {% block main %}
 <h3>Détails du taxi de test {{ taxi.id }}</h3>
@@ -84,7 +84,7 @@ var table = $('#table').DataTable({
   sDom: 'tp',
   // API endpoint called.
   ajax: {
-    url: "{{ url_for('api.hails') }}?tester",
+    url: "{{ url_for('api.hails') }}?integration",
     dataSrc: 'data'
   },
   // Mapping between API response and columns.

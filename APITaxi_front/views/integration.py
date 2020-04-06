@@ -24,7 +24,7 @@ from APITaxi_models.security import User
 from .. import redis_client
 
 
-blueprint = Blueprint('tester', __name__)
+blueprint = Blueprint('integration', __name__)
 
 
 def blueprint_enabled(app):
@@ -34,8 +34,8 @@ def blueprint_enabled(app):
     return app.config['TESTER_ENABLED']
 
 
-def get_tester_user(*fields):
-    """Get the User object of the tester account as specified by the configuration."""
+def get_integration_user(*fields):
+    """Get the User object of the integration account as specified by the configuration."""
     try:
         return User.query.with_entities(*fields) \
                          .filter_by(email=current_app.config['TESTER_ACCOUNT_EMAIL']) \
@@ -48,7 +48,7 @@ class APITaxiTesterClient:
     """Wrapper to call APITaxi using credentials from settings."""
     def __init__(self):
         self.api_url = current_app.config['API_TAXI_URL']
-        self.api_key = get_tester_user(User.apikey).apikey
+        self.api_key = get_integration_user(User.apikey).apikey
 
     def post(self, endpoint, data):
         url = urljoin(self.api_url, endpoint)
@@ -70,11 +70,11 @@ class APITaxiTesterClient:
         return resp.json()['data'][0]
 
 
-@blueprint.route('/tester')
+@blueprint.route('/integration')
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def index():
-    return render_template('tester/index.html')
+    return render_template('integration/index.html')
 
 
 class TaxiCreateForm(FlaskForm):
@@ -82,14 +82,14 @@ class TaxiCreateForm(FlaskForm):
     pass
 
 
-@blueprint.route('/tester/operator/', methods=['GET', 'POST'])
+@blueprint.route('/integration/operator/', methods=['GET', 'POST'])
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def operator():
     taxi_create_form = TaxiCreateForm()
 
     if not taxi_create_form.validate_on_submit():
-        return render_template('tester/operator.html', taxi_create_form=taxi_create_form)
+        return render_template('integration/operator.html', taxi_create_form=taxi_create_form)
 
     faker = Faker('fr_FR')
     firstname, lastname = faker.first_name(), faker.last_name()
@@ -134,7 +134,7 @@ def operator():
             'licence_plate': vehicle['licence_plate']
         }
     })
-    return redirect(url_for('tester.operator'))
+    return redirect(url_for('integration.operator'))
 
 
 class ValidateFloat:
@@ -150,11 +150,11 @@ class TaxiUpdateLocationForm(FlaskForm):
     lat = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
 
 
-def update_taxi_position(tester_user, taxi_id, lon, lat):
+def update_taxi_position(integration_user, taxi_id, lon, lat):
     """Query geotaxi to update the position of taxi_id."""
     payload = {
         'timestamp': int(time.time()),
-        'operator': tester_user.email,
+        'operator': integration_user.email,
         'taxi': taxi_id,
         'lon': lon,
         'lat': lat,
@@ -173,7 +173,7 @@ def update_taxi_position(tester_user, taxi_id, lon, lat):
         'status',
         'version'
     ])
-    h += tester_user.apikey
+    h += integration_user.apikey
     payload['hash'] = hashlib.sha1(h.encode('utf8')).hexdigest()
     # Send udpate request to geotaxi
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -183,16 +183,16 @@ def update_taxi_position(tester_user, taxi_id, lon, lat):
     )
 
 
-@blueprint.route('/tester/operator/taxis/<string:taxi_id>', methods=['GET', 'POST'])
+@blueprint.route('/integration/operator/taxis/<string:taxi_id>', methods=['GET', 'POST'])
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def operator_taxi_details(taxi_id):
-    tester_user = get_tester_user(User.id, User.email, User.apikey)
+    integration_user = get_integration_user(User.id, User.email, User.apikey)
 
     try:
         taxi = Taxi.query.filter(
             Taxi.id == taxi_id,
-            Taxi.added_by == tester_user.id
+            Taxi.added_by == integration_user.id
         ).one()
     except NoResultFound:
         abort(404, 'Unknown taxi id')
@@ -200,15 +200,15 @@ def operator_taxi_details(taxi_id):
     update_location_form = TaxiUpdateLocationForm()
     if update_location_form.validate_on_submit():
         update_taxi_position(
-            tester_user,
+            integration_user,
             taxi_id,
             update_location_form.lon.data,
             update_location_form.lat.data
         )
-        return redirect(url_for('tester.operator_taxi_details', taxi_id=taxi_id))
+        return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
 
     # Retrieve last known taxi location
-    redis_data = redis_client.hget('taxi:%s' % taxi.id, tester_user.email)
+    redis_data = redis_client.hget('taxi:%s' % taxi.id, integration_user.email)
     last_location = None
     if redis_data:
         try:
@@ -222,15 +222,15 @@ def operator_taxi_details(taxi_id):
             pass
 
     return render_template(
-        'tester/operator_taxi_details.html',
+        'integration/operator_taxi_details.html',
         taxi=taxi,
         update_location_form=update_location_form,
         last_location=last_location
     )
 
 
-@blueprint.route('/tester/search')
+@blueprint.route('/integration/search')
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def search():
-    return render_template('tester/search.html')
+    return render_template('integration/search.html')
