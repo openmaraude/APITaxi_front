@@ -32,6 +32,8 @@
   {{ location_form.hidden_tag() }}
 </form>
 
+<p class="text-info">Seuls les taxis ayant mis à jour leur géolocalisation récemment (moins de deux minutes) sont affichés.</p>
+
 {% if taxis is not none %}
 <h5>Taxis autour de la longitude {{ location_form.lon.data }} et latitude {{ location_form.lat.data }}</h5>
 
