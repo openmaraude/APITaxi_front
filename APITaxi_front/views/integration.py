@@ -46,9 +46,12 @@ def get_integration_user(*fields):
 
 class APITaxiIntegrationClient:
     """Wrapper to call APITaxi using credentials from settings."""
-    def __init__(self):
+    def __init__(self, user=None):
         self.api_url = current_app.config['API_TAXI_URL']
-        self.api_key = get_integration_user(User.apikey).apikey
+        if user:
+            self.api_key = user.apikey
+        else:
+            self.api_key = get_integration_user(User.apikey).apikey
         self.headers = {
             'X-Api-Key': self.api_key,
             'X-Version': '3',
@@ -60,9 +63,10 @@ class APITaxiIntegrationClient:
             }.items())
         )
 
-    def post(self, endpoint, data):
+    def _modify_request(self, verb, endpoint, data):
+        """Helper for POST, PUT, PATCH requests."""
         url = urljoin(self.api_url, endpoint)
-        resp = requests.post(
+        resp = verb(
             url,
             data=json.dumps({
                 'data': [
@@ -73,6 +77,12 @@ class APITaxiIntegrationClient:
         )
         resp.raise_for_status()
         return resp.json()['data'][0]
+
+    def post(self, endpoint, data):
+        return self._modify_request(requests.post, endpoint, data)
+
+    def put(self, endpoint, data):
+        return self._modify_request(requests.put, endpoint, data)
 
     def get(self, endpoint, **kwargs):
         url = urljoin(self.api_url, endpoint)
@@ -216,6 +226,10 @@ def operator_taxi_details(taxi_id):
             location_form.lon.data,
             location_form.lat.data
         )
+
+        api = APITaxiIntegrationClient()
+        api.put('/taxis/%s' % taxi.id, {'status': 'free'})
+
         return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
 
     # Retrieve last known taxi location
