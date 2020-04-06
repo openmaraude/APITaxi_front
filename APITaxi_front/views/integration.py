@@ -44,11 +44,21 @@ def get_integration_user(*fields):
         raise RuntimeError('%s account does not exist' % current_app.config['TESTER_ACCOUNT_EMAIL'])
 
 
-class APITaxiTesterClient:
+class APITaxiIntegrationClient:
     """Wrapper to call APITaxi using credentials from settings."""
     def __init__(self):
         self.api_url = current_app.config['API_TAXI_URL']
         self.api_key = get_integration_user(User.apikey).apikey
+        self.headers = {
+            'X-Api-Key': self.api_key,
+            'X-Version': '3',
+            'Accept': 'application/json'
+        }
+        self.post_headers = dict(
+            list(self.headers.items()) + list({
+                'Content-Type': 'application/json'
+            }.items())
+        )
 
     def post(self, endpoint, data):
         url = urljoin(self.api_url, endpoint)
@@ -59,15 +69,16 @@ class APITaxiTesterClient:
                     data
                 ]
             }),
-            headers={
-                'X-Api-Key': self.api_key,
-                'X-Version': '3',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
+            headers=self.post_headers
         )
         resp.raise_for_status()
         return resp.json()['data'][0]
+
+    def get(self, endpoint, **kwargs):
+        url = urljoin(self.api_url, endpoint)
+        resp = requests.get(url, params=kwargs, headers=self.headers)
+        resp.raise_for_status()
+        return resp.json()['data']
 
 
 @blueprint.route('/integration')
@@ -94,7 +105,7 @@ def operator():
     faker = Faker('fr_FR')
     firstname, lastname = faker.first_name(), faker.last_name()
 
-    api = APITaxiTesterClient()
+    api = APITaxiIntegrationClient()
 
     driver = api.post('/drivers', {
         'first_name': faker.first_name(),
@@ -224,13 +235,21 @@ def operator_taxi_details(taxi_id):
     return render_template(
         'integration/operator_taxi_details.html',
         taxi=taxi,
-        update_location_form=update_location_form,
+        location_form=location_form,
         last_location=last_location
     )
 
 
-@blueprint.route('/integration/search')
+@blueprint.route('/integration/search', methods=['GET', 'POST'])
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def search():
-    return render_template('integration/search.html')
+    location_form = TaxiLocationForm()
+
+    taxis = None
+
+    if location_form.validate_on_submit():
+        api = APITaxiIntegrationClient()
+        taxis = api.get('/taxis', lon=location_form.lon.data, lat=location_form.lat.data)
+
+    return render_template('integration/search.html', location_form=location_form, taxis=taxis)

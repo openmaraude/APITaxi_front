@@ -6,4 +6,65 @@
 <p>Cette page vous permet de simuler simplement un <i>moteur de recherche</i>. Elle vous sera donc utile dans le cas où vous souhaitez développer un <i>opérateur</i>.</p>
 
 <p>La <a href="{{ url_for('documentation.index') }}">documentation</a> est disponible pour vous guider sur le développement de votre application.</p>
+
+<h5>Taxis de test</h5>
+
+<p>Renseignez des coordonnées pour lister les taxis autour de ce point.</p>
+
+<form class="mb-3" method="POST" novalidate autocomplete="off">
+  <div class="form-row">
+    <div class="col">
+      <input name="{{ location_form.lon.name }}" type="text" class="form-control" placeholder="Longitude"{% if location_form.lon.data %} value="{{ location_form.lon.data }}"{%endif %}>
+      {% if location_form.errors.lon %}
+      <span class="text-danger">{{ location_form.errors.lon|join(' ') }}</span>
+      {% endif %}
+    </div>
+    <div class="col">
+      <input name="{{ location_form.lat.name }}" type="text" class="form-control" placeholder="Latitude"{% if location_form.lat.data %} value="{{ location_form.lat.data }}"{%endif %}>
+      {% if location_form.errors.lat %}
+      <span class="text-danger">{{ location_form.errors.lat|join(' ') }}</span>
+      {% endif %}
+    </div>
+    <div class="col">
+      <button type="submit" class="btn btn-primary {% if location_form.errors %}btn-danger{% else %}btn-dark{% endif %}">Lister les taxis</button>
+    </div>
+  </div>
+  {{ location_form.hidden_tag() }}
+</form>
+
+{% if taxis is not none %}
+<h5>Taxis autour de la longitude {{ location_form.lon.data }} et latitude {{ location_form.lat.data }}</h5>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Id taxi</th>
+      <th>Opérateur</th>
+      <th>Longitude</th>
+      <th>Latitude</th>
+      <th>Distance</th>
+      <th>Plaque d'immat.</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for taxi in taxis %}
+    <tr>
+      <td>{{ taxi.id }}</td>
+      <td>{{ taxi.operator }}</td>
+      <td>{{ taxi.position.lon|round(6) }}</td>
+      <td>{{ taxi.position.lat|round(6) }}</td>
+      <td>{{ taxi.crowfly_distance|int }} mètres</td>
+      <td>{{ taxi.vehicle.licence_plate }}</td>
+      <td>{{ taxi.status }}</td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="7">Aucun résultat trouvé</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
 {% endblock %}
