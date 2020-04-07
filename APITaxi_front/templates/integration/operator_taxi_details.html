@@ -5,22 +5,7 @@
 
 <h5>Statut du taxi</h5>
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Opérateur</th>
-      <th>Statut</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for description in taxi.vehicle.descriptions %}
-    <tr>
-      <td>{{ operators_names[description.added_by] }}</td>
-      <td>{{ description.status }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+{% include "integration/partial/taxi_status_table.html" %}
 
 <p>Vous pouvez changer le statut du taxi. Seuls les taxis avec le statut <i>free</i> dont la géolocalisation a été mise à jour il y a moins de deux minutes sont visibles sur la carte et peuvent recevoir des courses.</p>
 
@@ -46,17 +31,7 @@
 
 <h5>Localisation</h5>
 
-<p>La mise à jour de la géolocalisation d'un taxi peut prendre plusieurs secondes. Si la position n'est pas correcte, tentez de rafraichir la page.</p>
-
-{% if not last_location %}
-<p class="alert alert-warning">Aucune donnée de localisation n'est disponible pour ce taxi</p>
-{% else %}
-<ul>
-  <li><strong>Dernière mise à jour</strong> : {{ last_location.date.strftime('le %d/%m/%Y à %H:%M:%S') }}</li>
-  <li><strong>Longitude</strong> : {{ last_location.lon|round(6) }}</li>
-  <li><strong>Latitude</strong> : {{ last_location.lat|round(6) }}</li>
-</ul>
-{% endif %}
+{% include "integration/partial/taxi_last_location.html" %}
 
 <h5>Mise à jour de la localisation</h5>
 

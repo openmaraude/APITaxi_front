@@ -6,25 +6,126 @@
 
 <h5>Statut du taxi</h5>
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Opérateur</th>
-      <th>Statut</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for description in taxi.vehicle.descriptions %}
-    <tr>
-      <td>{{ operators_names[description.added_by] }}</td>
-      <td>{{ description.status }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+{% include "integration/partial/taxi_status_table.html" %}
+
+<h5>Localisation</h5>
+
+{% include "integration/partial/taxi_last_location.html" %}
 
 <h5>Course</h5>
 
-<p>Si le taxi est disponible, vous pouvez effectuer une demande de course.</p>
+{% if create_hail_msg %}
+<p class="alert {% if create_hail_error %}alert-danger{% else %}alert-warning{% endif %}">{{ create_hail_msg }}</p>
+{% endif %}
+
+<p>Si le taxi est disponible, vous pouvez effectuer une demande de course. Vous pouvez modifier les paramètres par défaut.</p>
+
+
+<div class="page-form container">
+  <form method="POST" novalidate autocomplete="off">
+    <div class="d-flex align-items-center">
+      <!-- Customer lon -->
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ create_hail_form.customer_lon.id }}">Longitude du client</label>
+          <input name="{{ create_hail_form.customer_lon.name }}" type="text" class="form-control{% if create_hail_form.customer_lon.errors %} is-invalid{% endif %}" id="{{ create_hail_form.customer_lon.id }}" value="{{ create_hail_form.customer_lon.data or (last_location and last_location.lon) or "" }}" />
+          {% for error in create_hail_form.customer_lon.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+      </div>
+    </div>
+
+    <!-- Customer lat -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ create_hail_form.customer_lat.id }}">Latitude du client</label>
+          <input name="{{ create_hail_form.customer_lat.name }}" type="text" class="form-control{% if create_hail_form.customer_lat.errors %} is-invalid{% endif %}" id="{{ create_hail_form.customer_lat.id }}" value="{{ create_hail_form.customer_lat.data or (last_location and last_location.lat) or "" }}" />
+          {% for error in create_hail_form.customer_lat.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+      </div>
+    </div>
+
+    <!-- Customer address -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ create_hail_form.customer_address.id }}">Adresse du client</label>
+          <input name="{{ create_hail_form.customer_address.name }}" type="text" class="form-control{% if create_hail_form.customer_address.errors %} is-invalid{% endif %}" id="{{ create_hail_form.customer_address.id }}" value="{{ create_hail_form.customer_address.data or "20 Avenue de Ségur, 75007 Paris" }}" />
+          {% for error in create_hail_form.customer_address.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        À des fins de tests, l'adresse ne doit pas forcément correspondre à la longitude et à la latitude renseignée.
+      </div>
+    </div>
+
+    <!-- Customer phone number -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ create_hail_form.customer_phone_number.id }}">Numéro de téléphone du client</label>
+          <input name="{{ create_hail_form.customer_phone_number.name }}" type="text" class="form-control{% if create_hail_form.customer_phone_number.errors %} is-invalid{% endif %}" id="{{ create_hail_form.customer_phone_number.id }}" value="{{ create_hail_form.customer_phone_number.data or "0607080910" }}" />
+          {% for error in create_hail_form.customer_phone_number.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+      </div>
+    </div>
+
+    <!-- Taxi operator -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ create_hail_form.taxi_operator.id }}">Opérateur du taxi à qui demander la course</label>
+          <select name="{{ create_hail_form.taxi_operator.name }}" class="custom-select" required>
+            {% for value, display in create_hail_form.taxi_operator.choices %}
+            <option value="{{ value }}">{{ display }}</option>
+            {% endfor %}
+          </select>
+
+          {% for error in create_hail_form.taxi_operator.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+      </div>
+    </div>
+
+    <!-- Customer internal id -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ create_hail_form.customer_internal_id.id }}">Identifiant du client</label>
+          <input name="{{ create_hail_form.customer_internal_id.name }}" type="text" class="form-control{% if create_hail_form.customer_internal_id.errors %} is-invalid{% endif %}" id="{{ create_hail_form.customer_internal_id.id }}" value="{{ create_hail_form.customer_internal_id.data or range(1,100000000)|random }}" />
+          {% for error in create_hail_form.customer_internal_id.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+        Identifiant opaque défini par le moteur de recherche, permettant d'identifier le client de manière unique. Laissez la valeur par défaut.
+      </div>
+    </div>
+
+    <!-- Submit -->
+    {{ create_hail_form.hidden_tag() }}
+    <button type="submit" class="btn btn-primary {% if create_hail_form.errors %}btn-danger{% else %}btn-dark{% endif %}" name="{{ create_hail_form.submit_create_hail.name }}" value="submit">Envoyer une demande de course</button>
+
+  </form>
+</div>
+
 
 {% endblock %}

@@ -76,7 +76,6 @@ class APITaxiIntegrationClient:
             }),
             headers=self.post_headers
         )
-        print(resp.json())
         resp.raise_for_status()
         return resp.json()['data'][0]
 
@@ -217,10 +216,12 @@ class TaxiStatusForm(FlaskForm):
     submit_taxi_status = SubmitField()
 
 
-@blueprint.route('/integration/operator/taxis/<string:taxi_id>', methods=['GET', 'POST'])
-@login_required
-@roles_accepted('admin', 'moteur', 'operateur')
-def operator_taxi_details(taxi_id):
+def _get_taxi_details(taxi_id):
+    """Helper function used in operator_taxi_details and search_taxi_details.
+
+    Return the integration user, the taxi object and its last location, and
+    operator names of the taxi.
+    """
     integration_user = get_integration_user(User.id, User.email, User.apikey)
 
     try:
@@ -230,26 +231,6 @@ def operator_taxi_details(taxi_id):
         ).one()
     except NoResultFound:
         abort(404, 'Unknown taxi id')
-
-    status_form = TaxiStatusForm()
-    if status_form.submit_taxi_status.data and status_form.validate_on_submit():
-        api = APITaxiIntegrationClient()
-        api.put('/taxis/%s' % taxi.id, {'status': status_form.status.data})
-        return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
-
-    location_form = TaxiLocationForm()
-    if location_form.submit_taxi_location.data and location_form.validate_on_submit():
-        update_taxi_position(
-            integration_user,
-            taxi_id,
-            location_form.lon.data,
-            location_form.lat.data
-        )
-
-        api = APITaxiIntegrationClient()
-        api.put('/taxis/%s' % taxi.id, {'status': 'free'})
-
-        return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
 
     # Retrieve last known taxi location
     redis_data = redis_client.hget('taxi:%s' % taxi.id, integration_user.email)
@@ -293,6 +274,35 @@ def operator_taxi_details(taxi_id):
         for description in taxi.vehicle.descriptions
     }
 
+    return integration_user, taxi, last_location, operators_names
+
+
+@blueprint.route('/integration/operator/taxis/<string:taxi_id>', methods=['GET', 'POST'])
+@login_required
+@roles_accepted('admin', 'moteur', 'operateur')
+def operator_taxi_details(taxi_id):
+    integration_user, taxi, last_location, operators_names = _get_taxi_details(taxi_id)
+
+    status_form = TaxiStatusForm()
+    if status_form.submit_taxi_status.data and status_form.validate_on_submit():
+        api = APITaxiIntegrationClient()
+        api.put('/taxis/%s' % taxi.id, {'status': status_form.status.data})
+        return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
+
+    location_form = TaxiLocationForm()
+    if location_form.submit_taxi_location.data and location_form.validate_on_submit():
+        update_taxi_position(
+            integration_user,
+            taxi_id,
+            location_form.lon.data,
+            location_form.lat.data
+        )
+
+        api = APITaxiIntegrationClient()
+        api.put('/taxis/%s' % taxi.id, {'status': 'free'})
+
+        return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
+
     return render_template(
         'integration/operator_taxi_details.html',
         taxi=taxi,
@@ -318,29 +328,54 @@ def search():
     return render_template('integration/search.html', location_form=location_form, taxis=taxis)
 
 
+class CreateHailForm(FlaskForm):
+    customer_lon = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
+    customer_lat = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
+    customer_address = StringField(validators=[validators.Required('Champ requis.')])
+    customer_phone_number = StringField(validators=[validators.Required('Champ requis.')])
+    taxi_operator = SelectField()
+    customer_internal_id = StringField(validators=[validators.Required('Champ requis.')])
+
+    submit_create_hail = SubmitField()
+
+
 @blueprint.route('/integration/search/taxis/<string:taxi_id>', methods=['GET', 'POST'])
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def search_taxi_details(taxi_id):
-    integration_user = get_integration_user(User.id, User.email, User.apikey)
+    integration_user, taxi, last_location, operators_names = _get_taxi_details(taxi_id)
 
-    try:
-        taxi = Taxi.query.filter(
-            Taxi.id == taxi_id,
-            or_(Taxi.added_by == integration_user.id, Taxi.added_by == current_user.id)
-        ).one()
-    except NoResultFound:
-        abort(404, 'Unknown taxi id')
+    create_hail_form = CreateHailForm()
+    create_hail_form.taxi_operator.choices = [
+        (name, name) for name in operators_names.values()
+    ]
 
-    operators_names = {
-        description.added_by: User.query.with_entities(User.email).filter_by(
-            id=description.added_by
-        ).one().email
-        for description in taxi.vehicle.descriptions
-    }
+    create_hail_error, create_hail_msg = False, None
+
+    if create_hail_form.validate_on_submit():
+        api = APITaxiIntegrationClient(user=integration_user)
+        try:
+            api.post('/hails', {
+                'customer_lon': create_hail_form.customer_lon.data,
+                'customer_lat': create_hail_form.customer_lat.data,
+                'customer_address': create_hail_form.customer_address.data,
+                'taxi_id': taxi_id,
+                'customer_phone_number': create_hail_form.customer_phone_number.data,
+                'operateur': create_hail_form.taxi_operator.data,
+                'customer_id': create_hail_form.customer_internal_id.data
+            })
+            create_hail_msg = "Demande de course envoyée à l'opérateur du taxi."
+        except requests.exceptions.HTTPError as exc:
+            create_hail_error = True
+            create_hail_msg = "Erreur lors de la demande de course. L'API a retourné le message " \
+                              "suivant : %s" % exc.response.json()['message']
 
     return render_template(
         'integration/search_taxi_details.html',
         taxi=taxi,
-        operators_names=operators_names
+        last_location=last_location,
+        operators_names=operators_names,
+        create_hail_form=create_hail_form,
+        create_hail_error=create_hail_error,
+        create_hail_msg=create_hail_msg
     )

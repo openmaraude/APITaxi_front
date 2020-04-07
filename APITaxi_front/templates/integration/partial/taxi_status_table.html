@@ -1,0 +1,16 @@
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Opérateur</th>
+      <th>Statut</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for description in taxi.vehicle.descriptions %}
+    <tr>
+      <td>{{ operators_names[description.added_by] }}</td>
+      <td>{{ description.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
