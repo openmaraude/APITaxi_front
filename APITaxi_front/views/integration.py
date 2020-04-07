@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 import requests
 
+from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 
 from flask import abort, Blueprint, current_app, redirect, render_template, url_for
@@ -315,3 +316,31 @@ def search():
         taxis = api.get('/taxis', lon=location_form.lon.data, lat=location_form.lat.data)
 
     return render_template('integration/search.html', location_form=location_form, taxis=taxis)
+
+
+@blueprint.route('/integration/search/taxis/<string:taxi_id>', methods=['GET', 'POST'])
+@login_required
+@roles_accepted('admin', 'moteur', 'operateur')
+def search_taxi_details(taxi_id):
+    integration_user = get_integration_user(User.id, User.email, User.apikey)
+
+    try:
+        taxi = Taxi.query.filter(
+            Taxi.id == taxi_id,
+            Taxi.added_by == integration_user.id
+        ).one()
+    except NoResultFound:
+        abort(404, 'Unknown taxi id')
+
+    operators_names = {
+        description.added_by: User.query.with_entities(User.email).filter_by(
+            id=description.added_by
+        ).one().email
+        for description in taxi.vehicle.descriptions
+    }
+
+    return render_template(
+        'integration/search_taxi_details.html',
+        taxi=taxi,
+        operators_names=operators_names
+    )

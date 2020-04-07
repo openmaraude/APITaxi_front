@@ -37,6 +37,10 @@
 {% if taxis is not none %}
 <h5>Taxis autour de la longitude {{ location_form.lon.data }} et latitude {{ location_form.lat.data }}</h5>
 
+{% if taxis %}
+<p>Cliquez sur un taxi pour effectuer une demande de course.</p>
+{% endif %}
+
 <table class="table table-striped">
   <thead>
     <tr>
@@ -52,7 +56,7 @@
   <tbody>
     {% for taxi in taxis %}
     <tr>
-      <td>{{ taxi.id }}</td>
+      <td><a href="{{ url_for('integration.search_taxi_details', taxi_id=taxi.id) }}">{{ taxi.id }}</a></td>
       <td>{{ taxi.operator }}</td>
       <td>{{ taxi.position.lon|round(6) }}</td>
       <td>{{ taxi.position.lat|round(6) }}</td>

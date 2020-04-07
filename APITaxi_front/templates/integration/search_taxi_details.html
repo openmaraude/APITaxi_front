@@ -1,0 +1,30 @@
+{% extends "integration/base.html" %}
+
+{% block main %}
+
+<h3>Détails du taxi {{ taxi.id }}</h3>
+
+<h5>Statut du taxi</h5>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Opérateur</th>
+      <th>Statut</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for description in taxi.vehicle.descriptions %}
+    <tr>
+      <td>{{ operators_names[description.added_by] }}</td>
+      <td>{{ description.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h5>Course</h5>
+
+<p>Si le taxi est disponible, vous pouvez effectuer une demande de course.</p>
+
+{% endblock %}
