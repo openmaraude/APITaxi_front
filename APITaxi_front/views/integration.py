@@ -12,7 +12,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 
 from flask import abort, Blueprint, current_app, redirect, render_template, url_for
-from flask_security import login_required, roles_accepted
+from flask_security import current_user, login_required, roles_accepted
 from flask_wtf import FlaskForm
 
 from wtforms import SelectField, StringField, SubmitField, ValidationError, validators
@@ -226,7 +226,7 @@ def operator_taxi_details(taxi_id):
     try:
         taxi = Taxi.query.filter(
             Taxi.id == taxi_id,
-            Taxi.added_by == integration_user.id
+            or_(Taxi.added_by == integration_user.id, Taxi.added_by == current_user.id)
         ).one()
     except NoResultFound:
         abort(404, 'Unknown taxi id')
@@ -327,7 +327,7 @@ def search_taxi_details(taxi_id):
     try:
         taxi = Taxi.query.filter(
             Taxi.id == taxi_id,
-            Taxi.added_by == integration_user.id
+            or_(Taxi.added_by == integration_user.id, Taxi.added_by == current_user.id)
         ).one()
     except NoResultFound:
         abort(404, 'Unknown taxi id')
