@@ -14,7 +14,7 @@ from flask import abort, Blueprint, current_app, redirect, render_template, url_
 from flask_security import login_required, roles_accepted
 from flask_wtf import FlaskForm
 
-from wtforms import StringField, ValidationError, validators
+from wtforms import SelectField, StringField, SubmitField, ValidationError, validators
 
 from faker import Faker
 
@@ -75,6 +75,7 @@ class APITaxiIntegrationClient:
             }),
             headers=self.post_headers
         )
+        print(resp.json())
         resp.raise_for_status()
         return resp.json()['data'][0]
 
@@ -169,6 +170,7 @@ class ValidateFloat:
 class TaxiLocationForm(FlaskForm):
     lon = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
     lat = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
+    submit_taxi_location = SubmitField()
 
 
 def update_taxi_position(integration_user, taxi_id, lon, lat):
@@ -204,6 +206,16 @@ def update_taxi_position(integration_user, taxi_id, lon, lat):
     )
 
 
+class TaxiStatusForm(FlaskForm):
+    status = SelectField(choices=[
+        ('free', 'free'),
+        ('occupied', 'occupied'),
+        ('oncoming', 'oncoming'),
+        ('off', 'off'),
+    ])
+    submit_taxi_status = SubmitField()
+
+
 @blueprint.route('/integration/operator/taxis/<string:taxi_id>', methods=['GET', 'POST'])
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
@@ -218,8 +230,14 @@ def operator_taxi_details(taxi_id):
     except NoResultFound:
         abort(404, 'Unknown taxi id')
 
+    status_form = TaxiStatusForm()
+    if status_form.submit_taxi_status.data and status_form.validate_on_submit():
+        api = APITaxiIntegrationClient()
+        api.put('/taxis/%s' % taxi.id, {'status': status_form.status.data})
+        return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
+
     location_form = TaxiLocationForm()
-    if location_form.validate_on_submit():
+    if location_form.submit_taxi_location.data and location_form.validate_on_submit():
         update_taxi_position(
             integration_user,
             taxi_id,
@@ -277,6 +295,7 @@ def operator_taxi_details(taxi_id):
     return render_template(
         'integration/operator_taxi_details.html',
         taxi=taxi,
+        status_form=status_form,
         location_form=location_form,
         last_location=last_location,
         operators_names=operators_names

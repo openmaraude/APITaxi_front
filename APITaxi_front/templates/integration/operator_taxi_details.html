@@ -22,6 +22,28 @@
   </tbody>
 </table>
 
+<p>Vous pouvez changer le statut du taxi. Seuls les taxis avec le statut <i>free</i> dont la géolocalisation a été mise à jour il y a moins de deux minutes sont visibles sur la carte et peuvent recevoir des courses.</p>
+
+<form class="mb-3" method="POST" novalidate autocomplete="off">
+  <div class="form-row">
+    <div class="col">
+      <select name="{{ status_form.status.name }}" class="custom-select" required>
+        {% for value, display in status_form.status.choices %}
+        <option value="{{ value }}">{{ display }}</option>
+        {% endfor %}
+      </select>
+
+      {% if status_form.errors.status %}
+      <span class="text-danger">{{ status_form.errors.status|join(' ') }}</span>
+      {% endif %}
+    </div>
+    <div class="col">
+      <button type="submit" class="btn btn-primary {% if status_form.errors %}btn-danger{% else %}btn-dark{% endif %}" name="{{ status_form.submit_taxi_status.name }}" value="submit">Modifier</button>
+    </div>
+  </div>
+  {{ status_form.hidden_tag() }}
+</form>
+
 <h5>Localisation</h5>
 
 <p>La mise à jour de la géolocalisation d'un taxi peut prendre plusieurs secondes. Si la position n'est pas correcte, tentez de rafraichir la page.</p>
@@ -55,13 +77,13 @@
       {% endif %}
     </div>
     <div class="col">
-      <button type="submit" class="btn btn-primary {% if location_form.errors %}btn-danger{% else %}btn-dark{% endif %}">Modifier</button>
+      <button type="submit" class="btn btn-primary {% if location_form.errors %}btn-danger{% else %}btn-dark{% endif %}" name="{{ location_form.submit_taxi_location.name }}" value="submit">Modifier</button>
     </div>
   </div>
   {{ location_form.hidden_tag() }}
 </form>
 
-<p class="text-info"><strong>Attention !</strong> L'autorisation de stationnement de ce taxi est limitée à la ZUPC de {{ taxi.ads.zupc.nom }}. Si vous déplacez le taxi en dehors de cette zone, il ne sera pas visible sur la carte.</p>
+<p class="text-info"><strong>Attention !</strong> L'autorisation de stationnement de ce taxi est limitée à la ZUPC de <strong>{{ taxi.ads.zupc.nom }}</strong>. Si vous déplacez le taxi en dehors de cette zone, il ne sera pas visible sur la carte.</p>
 
 <h5>Liste des courses du taxi</h5>
 
