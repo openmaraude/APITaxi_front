@@ -3,6 +3,25 @@
 {% block main %}
 <h3>Détails du taxi de test {{ taxi.id }}</h3>
 
+<h5>Statut du taxi</h5>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Opérateur</th>
+      <th>Statut</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for description in taxi.vehicle.descriptions %}
+    <tr>
+      <td>{{ operators_names[description.added_by] }}</td>
+      <td>{{ description.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
 <h5>Localisation</h5>
 
 <p>La mise à jour de la géolocalisation d'un taxi peut prendre plusieurs secondes. Si la position n'est pas correcte, tentez de rafraichir la page.</p>

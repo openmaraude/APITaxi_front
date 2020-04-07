@@ -241,16 +241,45 @@ def operator_taxi_details(taxi_id):
             last_location = {
                 'date': datetime.fromtimestamp(int(timestamp)),
                 'lat': float(lat),
-                'lon': float(lon)
+                'lon': float(lon),
+                'status': status,
             }
         except ValueError:  # Bad redis format
             pass
+
+    # Taxis can be registered with several operators. In the case has a taxi
+    # uses, let's say, three applications, the database objects created will
+    # be:
+    # - one taxi object (linked to one ADS, one driver, one vehicle)
+    # - one vehicle object
+    # - one vehicle_description object per operator.
+    #
+    # The VehicleDescription.added_by SQLAlchemy field from APITaxi_models doesn't
+    # have a relationship to a User object, so we can't easily get the name of
+    # the operator from a VehicleDescription.
+    #
+    # Below, we build a dictionary where keys are user ids from the fields
+    # added_by of the VehicleDescription objects, and the values are the names
+    # of the operators.
+    #
+    # Note: integration taxis are created with only one operator, we could also
+    # remote this part and only display the first VehicleDescription in the
+    # UI. I prefer not to and display all operators as it could make debug
+    # easier if we attempt to make integration tests with more complex cases
+    # someday.
+    operators_names = {
+        description.added_by: User.query.with_entities(User.email).filter_by(
+            id=description.added_by
+        ).one().email
+        for description in taxi.vehicle.descriptions
+    }
 
     return render_template(
         'integration/operator_taxi_details.html',
         taxi=taxi,
         location_form=location_form,
-        last_location=last_location
+        last_location=last_location,
+        operators_names=operators_names
     )
 
 
