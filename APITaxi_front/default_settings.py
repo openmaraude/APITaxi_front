@@ -12,6 +12,8 @@ GEOTAXI_PORT = None
 # Used by integration features.
 API_TAXI_URL = None
 
+AUTOMATIC_RATING_ACTIVATED = True
+
 DEBUG = True
 ENV = 'DEV'
 SECRET_KEY = 'super-secret'
