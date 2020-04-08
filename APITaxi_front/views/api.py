@@ -232,10 +232,14 @@ def hails(length, start, draw, columns=None):
 
 @blueprint.route('/api/taxis', methods=['GET'])
 @login_required
-@roles_accepted('admin', 'operateur')
+@roles_accepted('admin', 'operateur', 'moteur')
 @check_datatables_arguments
 def taxis(length, start, draw, columns=None):
-    """List taxis of operateur."""
+    """List taxis of operateur.
+
+    This API endpoint is used by the taxis dashboard and by the integration
+    feature.
+    """
     owner = current_user
 
     # This view is called by the integration feature to list taxis of the test
