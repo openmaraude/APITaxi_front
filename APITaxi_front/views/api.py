@@ -209,7 +209,7 @@ def hails(length, start, draw, columns=None):
         'recordsFiltered': records_filtered,
         'data': [{
             'id': hail.id,
-            'status': hail._status,
+            'status': hail.status,
             'taxi': {
                 'id': hail.taxi_id,
             },
