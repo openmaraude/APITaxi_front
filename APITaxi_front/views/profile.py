@@ -57,12 +57,12 @@ class ProfileOperatorForm(ProfileForm):
     """
     hail_endpoint_production = StringField(validators=[
         validators.Optional(),
-        validators.URL('URL invalide.')
+        validators.URL(require_tld=False, message='URL invalide.')
     ])
 
     hail_endpoint_testing = StringField(validators=[
         validators.Optional(),
-        validators.URL('URL invalide.')
+        validators.URL(require_tld=False, message='URL invalide.')
     ])
 
     operator_header_name = StringField(validators=[
