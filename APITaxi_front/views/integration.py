@@ -385,7 +385,6 @@ class HailStatusForm(FlaskForm):
         ('declined_by_customer', 'declined_by_customer'),
         ('incident_customer', 'incident_customer'),
     ])
-    submit_hail_status = SubmitField()
 
 
 @blueprint.route('/integration/search/hails/<string:hail_id>', methods=['GET', 'POST'])
