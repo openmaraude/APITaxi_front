@@ -42,4 +42,71 @@
   </tr>
 </table>
 
+<h3>Changer le statut de la course</h3>
+
+<p class="alert alert-warning">La mise à jour du statut n'est pas immédiate. Rafraichissez la page pour avoir le dernier statut à jour.</p>
+
+{% if hail.status == 'received_by_taxi' %}
+<p>La demande de course a été transmise au taxi qui ne l'a pas encore acceptée. Vous devez attendre que celui-ci l'accepte pour pouvoir confirmer la demande. Vous pouvez néanmoins déclarer un incident pour annuler la course.</p>
+
+<div class="d-flex justify-content-between">
+  <div>
+    <form method="POST">
+      <input type="hidden" name="{{ status_form.status.name }}" value="incident_customer" />
+      {{ status_form.hidden_tag() }}
+      <button type="submit" class="btn btn-primary {% if status_form.status.data == 'incident_customer' and status_form.errors %}btn-danger{% else %}btn-dark{% endif %}" value="submit">Declarer un incident</button>
+    </form>
+  </div>
+</div>
+
+{% elif hail.status == 'accepted_by_taxi' %}
+<p>La course a actuellement le statut <strong>{{ hail.status }}</strong> : le taxi a vu et accepté la course. Le client doit confirmer qu'il souhaite effectuer la course ou l'annuler. Si la confirmation n'est pas envoyée avant 2 minutes, la course sera annulée automatiquement.</p>
+
+<p>Vous pouvez à tout moment déclarer un incident pour terminer la demande de course.</p>
+
+<div class="d-flex justify-content-between">
+  <div>
+    <form method="POST">
+      <input type="hidden" name="{{ status_form.status.name }}" value="accepted_by_customer" />
+      {{ status_form.hidden_tag() }}
+      <button type="submit" class="btn btn-primary {% if status_form.status.data == 'accepted_by_customer' and status_form.errors %}btn-danger{% else %}btn-dark{% endif %}" value="submit">Accepter la course</button>
+    </form>
+  </div>
+
+  <div>
+    <form method="POST">
+      <input type="hidden" name="{{ status_form.status.name }}" value="declined_by_customer" />
+      {{ status_form.hidden_tag() }}
+      <button type="submit" class="btn btn-primary {% if status_form.status.data == 'declined_by_customer' and status_form.errors %}btn-danger{% else %}btn-dark{% endif %}" value="submit">Refuser la course</button>
+    </form>
+  </div>
+
+  <div>
+    <form method="POST">
+      <input type="hidden" name="{{ status_form.status.name }}" value="incident_customer" />
+      {{ status_form.hidden_tag() }}
+      <button type="submit" class="btn btn-primary {% if status_form.status.data == 'incident_customer' and status_form.errors %}btn-danger{% else %}btn-dark{% endif %}" value="submit">Declarer un incident</button>
+    </form>
+  </div>
+</div>
+
+{% elif hail.status == 'accepted_by_customer' %}
+<p>Vous avez accepté la course. Le taxi est en route vers le client. Vous pouvez à tout moment déclarer un incident pour terminer la course.</p>
+
+<div class="d-flex justify-content-between">
+  <div>
+    <form method="POST">
+      <input type="hidden" name="{{ status_form.status.name }}" value="incident_customer" />
+      {{ status_form.hidden_tag() }}
+      <button type="submit" class="btn btn-primary {% if status_form.status.data == 'incident_customer' and status_form.errors %}btn-danger{% else %}btn-dark{% endif %}" value="submit">Declarer un incident</button>
+    </form>
+  </div>
+</div>
+
+{% else %}
+
+<p>La course a le statut <strong>{{ hail.status }}</strong>. Il n'est pas possible de changer son statut. Consultez la <a href="{{ url_for('documentation.index') }}">documentation</a> pour plus d'informations.</p>
+
+{% endif %}
+
 {% endblock %}

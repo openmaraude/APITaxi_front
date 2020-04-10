@@ -379,11 +379,20 @@ def search_taxi_details(taxi_id):
     )
 
 
-@blueprint.route('/integration/search/hails/<string:hail_id>', methods=['GET'])
+class HailStatusForm(FlaskForm):
+    status = SelectField(choices=[
+        ('accepted_by_customer', 'accepted_by_customer'),
+        ('declined_by_customer', 'declined_by_customer'),
+        ('incident_customer', 'incident_customer'),
+    ])
+    submit_hail_status = SubmitField()
+
+
+@blueprint.route('/integration/search/hails/<string:hail_id>', methods=['GET', 'POST'])
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def search_hail_details(hail_id):
-    integration_user = get_integration_user(User.id)
+    integration_user = get_integration_user(User.id, User.apikey)
     try:
         hail = Hail.query.filter(
             Hail.id == hail_id,
@@ -391,4 +400,11 @@ def search_hail_details(hail_id):
         ).one()
     except NoResultFound:
         abort(404, 'Unknown taxi id')
-    return render_template('integration/search_hail_details.html', hail=hail)
+
+    status_form = HailStatusForm()
+    if status_form.validate_on_submit():
+        api = APITaxiIntegrationClient(user=integration_user)
+        api.put('/hails/%s' % hail_id, {'status': status_form.status.data})
+        return redirect(url_for('integration.search_hail_details', hail_id=hail_id))
+
+    return render_template('integration/search_hail_details.html', hail=hail, status_form=status_form)
