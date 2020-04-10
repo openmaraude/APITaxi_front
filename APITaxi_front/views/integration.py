@@ -19,7 +19,7 @@ from wtforms import SelectField, StringField, SubmitField, ValidationError, vali
 
 from faker import Faker
 
-from APITaxi_models import Taxi
+from APITaxi_models import Hail, Taxi
 from APITaxi_models.security import User
 
 from .. import redis_client
@@ -350,12 +350,12 @@ def search_taxi_details(taxi_id):
         (name, name) for name in operators_names.values()
     ]
 
-    create_hail_error, create_hail_msg = False, None
+    api_error_msg = None
 
     if create_hail_form.validate_on_submit():
         api = APITaxiIntegrationClient(user=integration_user)
         try:
-            api.post('/hails', {
+            resp = api.post('/hails', {
                 'customer_lon': create_hail_form.customer_lon.data,
                 'customer_lat': create_hail_form.customer_lat.data,
                 'customer_address': create_hail_form.customer_address.data,
@@ -364,11 +364,10 @@ def search_taxi_details(taxi_id):
                 'operateur': create_hail_form.taxi_operator.data,
                 'customer_id': create_hail_form.customer_internal_id.data
             })
-            create_hail_msg = "Demande de course envoyée à l'opérateur du taxi."
+            return redirect(url_for('integration.search_hail_details', hail_id=resp['id']))
         except requests.exceptions.HTTPError as exc:
-            create_hail_error = True
-            create_hail_msg = "Erreur lors de la demande de course. L'API a retourné le message " \
-                              "suivant : %s" % exc.response.json()['message']
+            api_error_msg = "Erreur lors de la demande de course. L'API a retourné le message " \
+                            "suivant : %s" % exc.response.json()['message']
 
     return render_template(
         'integration/search_taxi_details.html',
@@ -376,6 +375,20 @@ def search_taxi_details(taxi_id):
         last_location=last_location,
         operators_names=operators_names,
         create_hail_form=create_hail_form,
-        create_hail_error=create_hail_error,
-        create_hail_msg=create_hail_msg
+        api_error_msg=api_error_msg
     )
+
+
+@blueprint.route('/integration/search/hails/<string:hail_id>', methods=['GET'])
+@login_required
+@roles_accepted('admin', 'moteur', 'operateur')
+def search_hail_details(hail_id):
+    integration_user = get_integration_user(User.id)
+    try:
+        hail = Hail.query.filter(
+            Hail.id == hail_id,
+            or_(Hail.added_by == integration_user.id, Hail.added_by == current_user.id)
+        ).one()
+    except NoResultFound:
+        abort(404, 'Unknown taxi id')
+    return render_template('integration/search_hail_details.html', hail=hail)

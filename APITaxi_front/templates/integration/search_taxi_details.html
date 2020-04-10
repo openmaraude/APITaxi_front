@@ -14,8 +14,8 @@
 
 <h5>Course</h5>
 
-{% if create_hail_msg %}
-<p class="alert {% if create_hail_error %}alert-danger{% else %}alert-warning{% endif %}">{{ create_hail_msg }}</p>
+{% if api_error_msg %}
+<p class="alert alert-danger">{{ api_error_msg }}</p>
 {% endif %}
 
 <p>Si le taxi est disponible, vous pouvez effectuer une demande de course. Vous pouvez modifier les paramètres par défaut.</p>

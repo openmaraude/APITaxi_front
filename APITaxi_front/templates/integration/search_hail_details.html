@@ -1,0 +1,45 @@
+{% extends "integration/base.html" %}
+
+{% block main %}
+<h3>Taxi <a href="{{ url_for('integration.search_taxi_details', taxi_id=hail.taxi_id) }}">{{ hail.taxi_id }}</a> > Hail {{ hail.id }}</h3>
+
+<table class="table table-striped">
+  <tr>
+    <th>Date de la course</th>
+    <td>{{ hail.added_at.strftime('Le %d/%m/%Y à %H:%M:%S') }}</td>
+  </tr>
+  <tr>
+    <th>Statut de la course</th>
+    <td>{{ hail.status }}</td>
+  </tr>
+  <tr>
+    <th>Longitude du client</th>
+    <td>{{ hail.customer_lon|round(6) }}</td>
+  </tr>
+  <tr>
+    <th>Latitude du client</th>
+    <td>{{ hail.customer_lat|round(6) }}</td>
+  </tr>
+  <tr>
+    <th>Adresse du client</th>
+    <td>{{ hail.customer_address or "" }}</td>
+  </tr>
+  <tr>
+    <th>Latitude du taxi lors de la demande</th>
+    <td>{{ hail.initial_taxi_lon|round(6) }}</td>
+  </tr>
+  <tr>
+    <th>Longitude du taxi lors de la demande</th>
+    <td>{{ hail.initial_taxi_lat|round(6) }}</td>
+  </tr>
+  <tr>
+    <th>Numéro tél. client</th>
+    <td>{{ hail.customer_phone_number or "" }}</td>
+  </tr>
+  <tr>
+    <th>Numéro tél. taxi</th>
+    <td>{{ hail.taxi_phone_number or "" }}</td>
+  </tr>
+</table>
+
+{% endblock %}
