@@ -11,7 +11,7 @@ import requests
 from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 
-from flask import abort, Blueprint, current_app, redirect, render_template, url_for
+from flask import abort, Blueprint, current_app, redirect, render_template, request, url_for
 from flask_security import current_user, login_required, roles_accepted
 from flask_wtf import FlaskForm
 
@@ -108,6 +108,7 @@ class TaxiCreateForm(FlaskForm):
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def operator():
+    """List taxis of the test operator."""
     taxi_create_form = TaxiCreateForm()
 
     if not taxi_create_form.validate_on_submit():
@@ -160,6 +161,7 @@ def operator():
 
 
 class ValidateFloat:
+    """FlaskForm validator to check a longitude or latitude."""
     def __call__(self, form, field):
         try:
             float(field.data)
@@ -168,6 +170,7 @@ class ValidateFloat:
 
 
 class TaxiLocationForm(FlaskForm):
+    """FlaskForm to provide new location."""
     lon = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
     lat = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
     submit_taxi_location = SubmitField()
@@ -207,6 +210,7 @@ def update_taxi_position(integration_user, taxi_id, lon, lat):
 
 
 class TaxiStatusForm(FlaskForm):
+    """FlaskForm to update the taxi status."""
     status = SelectField(choices=[
         ('free', 'free'),
         ('occupied', 'occupied'),
@@ -281,6 +285,8 @@ def _get_taxi_details(taxi_id):
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def operator_taxi_details(taxi_id):
+    """Display taxi details: status, location and list of hails. Allows to
+    update the status and the location."""
     integration_user, taxi, last_location, operators_names = _get_taxi_details(taxi_id)
 
     status_form = TaxiStatusForm()
@@ -317,6 +323,7 @@ def operator_taxi_details(taxi_id):
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def search():
+    """Page to call api.taxi to list taxis around a location."""
     location_form = TaxiLocationForm()
 
     taxis = None
@@ -343,6 +350,7 @@ class CreateHailForm(FlaskForm):
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def search_taxi_details(taxi_id):
+    """Page to display the details of a taxi, and send a hail request."""
     integration_user, taxi, last_location, operators_names = _get_taxi_details(taxi_id)
 
     create_hail_form = CreateHailForm()
@@ -379,7 +387,8 @@ def search_taxi_details(taxi_id):
     )
 
 
-class HailStatusForm(FlaskForm):
+class SearchHailStatusForm(FlaskForm):
+    """Possible hail status changes for a search provider."""
     status = SelectField(choices=[
         ('accepted_by_customer', 'accepted_by_customer'),
         ('declined_by_customer', 'declined_by_customer'),
@@ -387,10 +396,30 @@ class HailStatusForm(FlaskForm):
     ])
 
 
-@blueprint.route('/integration/search/hails/<string:hail_id>', methods=['GET', 'POST'])
+class OperatorHailStatusForm(FlaskForm):
+    """Possible hail status changes for an operator."""
+    status = SelectField(choices=[
+        ('received_by_taxi', 'received_by_taxi'),
+        ('declined_by_taxi', 'declined_by_taxi'),
+        ('incident_taxi', 'incident_taxi'),
+        ('accepted_by_taxi', 'accepted_by_taxi'),
+        ('customer_on_board', 'customer_on_board'),
+        ('finished', 'finished'),
+    ])
+
+
+# The same view is used for /integration/search/hails and /integration/operator/hails, since the only difference is the
+# template to render.
+@blueprint.route('/integration/search/hails/<string:hail_id>',
+                 methods=['GET', 'POST'],
+                 endpoint='search_hail_details')
+@blueprint.route('/integration/operator/hails/<string:hail_id>',
+                 methods=['GET', 'POST'],
+                 endpoint='operator_hail_details')
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def search_hail_details(hail_id):
+    """Page to display the status of a hail, and change the status."""
     integration_user = get_integration_user(User.id, User.apikey)
     try:
         hail = Hail.query.filter(
@@ -400,10 +429,16 @@ def search_hail_details(hail_id):
     except NoResultFound:
         abort(404, 'Unknown taxi id')
 
-    status_form = HailStatusForm()
+    if request.endpoint == 'integration.search_hail_details':
+        template = 'integration/search_hail_details.html'
+        status_form = SearchHailStatusForm()
+    else:
+        template = 'integration/operator_hail_details.html'
+        status_form = OperatorHailStatusForm()
+
     if status_form.validate_on_submit():
         api = APITaxiIntegrationClient(user=integration_user)
-        api.put('/hails/%s' % hail_id, {'status': status_form.status.data})
-        return redirect(url_for('integration.search_hail_details', hail_id=hail_id))
+        resp = api.put('/hails/%s' % hail_id, {'status': status_form.status.data})
+        return redirect(url_for(request.endpoint, hail_id=hail_id))
 
-    return render_template('integration/search_hail_details.html', hail=hail, status_form=status_form)
+    return render_template(template, hail=hail, status_form=status_form)
