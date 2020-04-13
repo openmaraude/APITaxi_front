@@ -2,8 +2,6 @@
 
 {% block main %}
 
-coucou
-
 <h3>Taxi <a href="{{ url_for('integration.operator_taxi_details', taxi_id=hail.taxi_id) }}">{{ hail.taxi_id }}</a> > Hail {{ hail.id }}</h3>
 
 <table class="table table-striped">
@@ -137,6 +135,10 @@ coucou
     </form>
   </div>
 </div>
+
+{% elif hail.status == 'finished' %}
+
+<p>La course est terminée.</p>
 {% endif %}
 
 {% endblock %}
