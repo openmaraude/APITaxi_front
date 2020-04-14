@@ -108,7 +108,7 @@ class TaxiCreateForm(FlaskForm):
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
 def operator():
-    """List taxis of the test operator."""
+    """List taxis of the test operator, and allow to create a test taxi."""
     taxi_create_form = TaxiCreateForm()
 
     if not taxi_create_form.validate_on_submit():
