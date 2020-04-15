@@ -52,17 +52,26 @@ class ProfileForm(FlaskForm):
     ])
 
 
+class ValidateURL:
+    def __call__(self, form, field):
+        """wtforms URL validator refuses underscores, which we use in
+        production."""
+        if field.data.startswith('http://') or field.data.startswith('https://'):
+            return
+        raise ValidationError('URL invalide.')
+
+
 class ProfileOperatorForm(ProfileForm):
     """Similar to ProfileForm, but with fields to store API endpoints.
     """
     hail_endpoint_production = StringField(validators=[
         validators.Optional(),
-        validators.URL(require_tld=False, message='URL invalide.')
+        ValidateURL()
     ])
 
     hail_endpoint_testing = StringField(validators=[
         validators.Optional(),
-        validators.URL(require_tld=False, message='URL invalide.')
+        ValidateURL()
     ])
 
     operator_header_name = StringField(validators=[
