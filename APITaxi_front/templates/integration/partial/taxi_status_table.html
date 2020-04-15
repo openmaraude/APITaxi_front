@@ -8,7 +8,7 @@
   <tbody>
     {% for description in taxi.vehicle.descriptions %}
     <tr>
-      <td>{{ operators_names[description.added_by] }}</td>
+      <td>{{ operators_names[description.added_by] or ('<i>' + description.added_by|string + '</i>')|safe }}</td>
       <td>{{ description.status }}</td>
     </tr>
     {% endfor %}

@@ -272,9 +272,9 @@ def _get_taxi_details(taxi_id):
     # easier if we attempt to make integration tests with more complex cases
     # someday.
     operators_names = {
-        description.added_by: User.query.with_entities(User.email).filter_by(
+        description.added_by: User.query.with_entities(User.commercial_name).filter_by(
             id=description.added_by
-        ).one().email
+        ).one().commercial_name
         for description in taxi.vehicle.descriptions
     }
 
@@ -427,7 +427,7 @@ def search_hail_details(hail_id):
             or_(Hail.added_by == integration_user.id, Hail.added_by == current_user.id)
         ).one()
     except NoResultFound:
-        abort(404, 'Unknown taxi id')
+        abort(404, 'Unknown hail id')
 
     if request.endpoint == 'integration.search_hail_details':
         template = 'integration/search_hail_details.html'

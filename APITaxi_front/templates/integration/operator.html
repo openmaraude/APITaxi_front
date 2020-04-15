@@ -13,6 +13,7 @@
   <thead>
     <tr>
       <th>Id taxi</th>
+      <th>Opérateur</th>
       <th>Date création</th>
       <th>Immatriculation</th>
       <th>ZUPC</th>
@@ -69,6 +70,12 @@ var table = $('#table').DataTable({
       render: function (data, type, row) {
         var url = "{{ url_for('integration.operator_taxi_details', taxi_id='TAXI_ID') }}".replace('TAXI_ID', data);
         return '<a href="' + url + '">' + data + '</a>';
+      }
+    },
+    {
+      data: 'operator',
+      render: function (data, type, row) {
+      return data.commercial_name || '<i>' + data.id + '</i>';
       }
     },
     {
