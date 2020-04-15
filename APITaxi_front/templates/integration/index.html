@@ -3,10 +3,14 @@
 {% block main %}
 <h3>Aide pour l'intégration</h3>
 
-<p>Nous mettons à votre disposition des outils pour vous aider dans l'intégration de vos applications.</p>
+<p>Nous mettons à votre disposition des outils pour vous aider dans l'intégration de vos applications. Il est recommandé avant toute chose de prendre connaissance de la <a href="{{ url_for('documentation.index') }}">documentation</a>.</p>
 
-<ul>
-  <li>Si vous êtes un <i>moteur de recherche</i>, vous aurez besoin de lister les taxis disponibles sur une zone, et à défaut en créer. Le menu <a href="{{ url_for('integration.operator') }}">opérateur</a> vous permet d'effectuer ces actions.</li>
-  <li>Si vous êtes un <i>opérateur</i>, vous aurez besoin de recevoir une demande de course de la part d'un client. Cliquez alors sur le menu <a href="{{ url_for('integration.search') }}">moteur de recherche</a>.</li>
-</ul>
+<h5>Vous souhaitez créer un moteur de recherche</h5>
+
+<p>Le menu <a href="{{ url_for('integration.operator') }}">opérateur</a> vous permet de créer des taxis de test, de changer leur localisation, d'accepter des courses et de changer les statuts de celles-ci. Vous pouvez ainsi développer votre application moteur de recherche, et mettre en relation vos usagers avec les taxis de l'API.</p>
+
+<h5>Vous souhaitez créer une applicaiton opérateur</h5>
+
+<p>Le menu <a href="{{ url_for('integration.search') }}">moteur de recherche</a> vous permet de lister les taxis autour d'un point, d'effectuer une demande de course et de confirmer cette demande. Vous pouvez ainsi développer votre application opérateur, et donner les informations des taxis connectés à votre plateforme au registre.</p>
+
 {% endblock %}
