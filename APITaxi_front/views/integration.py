@@ -369,7 +369,7 @@ def search_taxi_details(taxi_id):
                 'customer_address': create_hail_form.customer_address.data,
                 'taxi_id': taxi_id,
                 'customer_phone_number': create_hail_form.customer_phone_number.data,
-                'operateur': create_hail_form.taxi_operator.data,
+                'operateur': integration_user.email,
                 'customer_id': create_hail_form.customer_internal_id.data
             })
             return redirect(url_for('integration.search_hail_details', hail_id=resp['id']))
