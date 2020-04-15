@@ -1,9 +1,9 @@
 # If True, front is running with the integration mode enabled and a menu is
 # added to create taxis and hail them.
-TESTER_ENABLED = False
+INTEGRATION_ENABLED = False
 
 # Account used by the integration feature to query APITaxi.
-TESTER_ACCOUNT_EMAIL = None
+INTEGRATION_ACCOUNT_EMAIL = None
 
 # Geotaxi is used by the integration feature to update the position of a taxi.
 GEOTAXI_HOST = None

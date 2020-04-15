@@ -29,20 +29,20 @@ blueprint = Blueprint('integration', __name__)
 
 
 def blueprint_enabled(app):
-    """This blueprint should only be enabled if TESTER_ENABLED is set, which is only True on
-    https://dev.api.taxi and on local setup."""
-    assert 'TESTER_ENABLED' in app.config
-    return app.config['TESTER_ENABLED']
+    """This blueprint should only be enabled if INTEGRATION_ENABLED is set,
+    which is only True on https://dev.api.taxi and on local setup."""
+    assert 'INTEGRATION_ENABLED' in app.config
+    return app.config['INTEGRATION_ENABLED']
 
 
 def get_integration_user(*fields):
     """Get the User object of the integration account as specified by the configuration."""
     try:
         return User.query.with_entities(*fields) \
-                         .filter_by(email=current_app.config['TESTER_ACCOUNT_EMAIL']) \
+                         .filter_by(email=current_app.config['INTEGRATION_ACCOUNT_EMAIL']) \
                          .one()
     except NoResultFound:
-        raise RuntimeError('%s account does not exist' % current_app.config['TESTER_ACCOUNT_EMAIL'])
+        raise RuntimeError('%s account does not exist' % current_app.config['INTEGRATION_ACCOUNT_EMAIL'])
 
 
 class APITaxiIntegrationClient:

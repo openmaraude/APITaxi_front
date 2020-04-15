@@ -174,7 +174,7 @@ def hails(length, start, draw, columns=None):
     """List taxis of operateur."""
     owner = current_user
 
-    if 'integration' in request.args and current_app.config.get('TESTER_ENABLED', False):
+    if 'integration' in request.args and current_app.config.get('INTEGRATION_ENABLED', False):
         owner = get_integration_user(User.id)
 
     UserOperateur = aliased(User)
@@ -251,7 +251,7 @@ def taxis(length, start, draw, columns=None):
     # This view is called by the integration feature to list taxis of the test
     # account. If integration is set, list taxis from the integration account
     # instead of taxis from the current account.
-    if 'integration' in request.args and current_app.config.get('TESTER_ENABLED', False):
+    if 'integration' in request.args and current_app.config.get('INTEGRATION_ENABLED', False):
         owner = get_integration_user(User.id)
         integration_user = get_integration_user(User.id, User.commercial_name)
         operator_names[integration_user.id] = integration_user.commercial_name

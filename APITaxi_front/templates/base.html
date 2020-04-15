@@ -43,7 +43,7 @@
               <a class="nav-link{% if url_for('documentation.index') in request.path %} active{% endif %}" href="{{ url_for('documentation.index') }}">Documentation</a>
             </li>
 
-            {% if config.TESTER_ENABLED %}
+            {% if config.INTEGRATION_ENABLED %}
             <li class="nav-item">
               <a class="nav-link{% if url_for('integration.index') in request.path %} active{% endif %}" href="{{ url_for('integration.index') }}">Intégration</a>
             </li>
