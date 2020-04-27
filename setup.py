@@ -16,6 +16,7 @@ DEPENDENCIES = [
     'psycopg2',
     'marshmallow',
     'flask-redis',
+    'email-validator',
     # flask-restplus is unmaintained. Latest versions of werkzeug fail to
     # import werkzeug.cached_property. We should get rid of flask-restplus.
     'Werkzeug==0.16.1',
