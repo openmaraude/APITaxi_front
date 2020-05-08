@@ -44,6 +44,38 @@
       </div>
     </div>
 
+    <!-- Password -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.password.id }}">Mot de passe</label>
+          <input name="{{ form.password.name }}" type="password" class="form-control{% if form.password.errors %} is-invalid{% endif %}" id="{{ form.password.id }}" value="{{ form.password.data or "" }}" />
+          {% for error in form.password.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+          Laissez vide pour garder votre mot de passe actuel.
+      </div>
+    </div>
+
+    <!-- Password Confirm -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label for="{{ form.password_confirm.id }}">Confirmation du mot de passe</label>
+          <input name="{{ form.password_confirm.name }}" type="password" class="form-control{% if form.password_confirm.errors %} is-invalid{% endif %}" id="{{ form.password_confirm.id }}" value="{{ form.password_confirm.data or "" }}" />
+          {% for error in form.password_confirm.errors %}
+          <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+          Pour changer le mot de passe, spécifier le même que celui ci-dessus.
+      </div>
+    </div>
+
     {% if user.has_role('operateur') %}
     <h6>API</h6>
 

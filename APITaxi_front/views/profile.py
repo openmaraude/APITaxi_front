@@ -6,12 +6,14 @@ from flask import (
     Blueprint,
     redirect,
     render_template,
+    request,
     url_for,
 )
 from flask_security import login_required, current_user
+from flask_security.utils import hash_password
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, ValidationError, validators
+from wtforms import PasswordField, StringField, ValidationError, validators
 
 from APITaxi_models import db
 
@@ -27,6 +29,16 @@ class ValidatePhoneNumber:
 
 
 class ProfileForm(FlaskForm):
+
+    password = PasswordField(validators=[
+        validators.EqualTo(
+            'password_confirm',
+            message='Le mot de passe et la confirmation ne correspondent pas.'
+        )
+    ])
+
+    password_confirm = PasswordField()
+
     commercial_name = StringField(validators=[
         validators.Optional()
     ])
@@ -91,8 +103,23 @@ def edit():
     else:
         form = ProfileForm(obj=current_user)
 
+    # For POST requests, form.data is the password previously submitted.
+    # For GET requests, do not fill with the current value, which is the hashed
+    # password.
+    if request.method != 'POST':
+        form.password.data = ''
+        form.password_confirm.data = ''
+
     if form.validate_on_submit():
+        # If password is not provided, do not use the field to populate_obj.
+        if not form.password.data:
+            del form.password
+            del form.password_confirm
+        else:
+            form.password.data = hash_password(form.password.data)
+
         form.populate_obj(current_user)
+
         db.session.commit()
         return redirect(url_for('profile.edit'))
 
