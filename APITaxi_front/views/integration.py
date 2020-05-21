@@ -438,7 +438,12 @@ def search_hail_details(hail_id):
 
     if status_form.validate_on_submit():
         api = APITaxiIntegrationClient(user=integration_user)
-        resp = api.put('/hails/%s' % hail_id, {'status': status_form.status.data})
+        payload = {'status': status_form.status.data}
+        # taxi_phone_number is required to accept the request. Let's hardcode
+        # one.
+        if status_form.status.data == 'accepted_by_taxi':
+            payload['taxi_phone_number'] = '+33600000000'
+        resp = api.put('/hails/%s' % hail_id, payload)
         return redirect(url_for(request.endpoint, hail_id=hail_id))
 
     return render_template(template, hail=hail, status_form=status_form)
