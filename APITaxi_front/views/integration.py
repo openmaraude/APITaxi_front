@@ -214,7 +214,6 @@ class TaxiStatusForm(FlaskForm):
     status = SelectField(choices=[
         ('free', 'free'),
         ('occupied', 'occupied'),
-        ('oncoming', 'oncoming'),
         ('off', 'off'),
     ])
     submit_taxi_status = SubmitField()
