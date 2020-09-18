@@ -373,8 +373,7 @@ def search_taxi_details(taxi_id):
             })
             return redirect(url_for('integration.search_hail_details', hail_id=resp['id']))
         except requests.exceptions.HTTPError as exc:
-            api_error_msg = "Erreur lors de la demande de course. L'API a retourné le message " \
-                            "suivant : %s" % exc.response.json()['message']
+            api_error_msg = json.dumps(exc.response.json(), indent=2)
 
     return render_template(
         'integration/search_taxi_details.html',

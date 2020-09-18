@@ -15,7 +15,10 @@
 <h5>Course</h5>
 
 {% if api_error_msg %}
-<p class="alert alert-danger">{{ api_error_msg }}</p>
+<p class="alert alert-danger">
+    L'API a retourné l'erreur suivante :
+    <pre class="alert alert-danger">{{ api_error_msg }}</pre>
+</p>
 {% endif %}
 
 <p>Si le taxi est disponible, vous pouvez effectuer une demande de course. Vous pouvez modifier les paramètres par défaut.</p>
