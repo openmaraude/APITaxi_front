@@ -262,22 +262,14 @@ def _get_taxi_details(taxi_id):
     # the operator from a VehicleDescription.
     #
     # Below, we build a dictionary where keys are user ids from the fields
-    # added_by of the VehicleDescription objects, and the values are the names
-    # of the operators.
-    #
-    # Note: integration taxis are created with only one operator, we could also
-    # remote this part and only display the first VehicleDescription in the
-    # UI. I prefer not to and display all operators as it could make debug
-    # easier if we attempt to make integration tests with more complex cases
-    # someday.
-    operators_names = {
-        description.added_by: User.query.with_entities(User.commercial_name).filter_by(
-            id=description.added_by
-        ).one().commercial_name
+    # added_by of the VehicleDescription objects, and the values are the
+    # operators' User objects
+    operators = {
+        description.added_by: User.query.filter_by(id=description.added_by).one()
         for description in taxi.vehicle.descriptions
     }
 
-    return integration_user, taxi, last_location, operators_names
+    return integration_user, taxi, last_location, operators
 
 
 @blueprint.route('/integration/operator/taxis/<string:taxi_id>', methods=['GET', 'POST'])
@@ -286,7 +278,7 @@ def _get_taxi_details(taxi_id):
 def operator_taxi_details(taxi_id):
     """Display taxi details: status, location and list of hails. Allows to
     update the status and the location."""
-    integration_user, taxi, last_location, operators_names = _get_taxi_details(taxi_id)
+    integration_user, taxi, last_location, operators = _get_taxi_details(taxi_id)
 
     status_form = TaxiStatusForm()
     if status_form.submit_taxi_status.data and status_form.validate_on_submit():
@@ -314,7 +306,7 @@ def operator_taxi_details(taxi_id):
         status_form=status_form,
         location_form=location_form,
         last_location=last_location,
-        operators_names=operators_names
+        operators=operators
     )
 
 
@@ -350,11 +342,11 @@ class CreateHailForm(FlaskForm):
 @roles_accepted('admin', 'moteur', 'operateur')
 def search_taxi_details(taxi_id):
     """Page to display the details of a taxi, and send a hail request."""
-    integration_user, taxi, last_location, operators_names = _get_taxi_details(taxi_id)
+    integration_user, taxi, last_location, operators = _get_taxi_details(taxi_id)
 
     create_hail_form = CreateHailForm()
     create_hail_form.taxi_operator.choices = [
-        (name, name) for name in operators_names.values()
+        (user.email, user.commercial_name or user.email) for user in operators.values()
     ]
 
     api_error_msg = None
@@ -368,7 +360,7 @@ def search_taxi_details(taxi_id):
                 'customer_address': create_hail_form.customer_address.data,
                 'taxi_id': taxi_id,
                 'customer_phone_number': create_hail_form.customer_phone_number.data,
-                'operateur': integration_user.email,
+                'operateur': create_hail_form.taxi_operator.data,
                 'customer_id': create_hail_form.customer_internal_id.data
             })
             return redirect(url_for('integration.search_hail_details', hail_id=resp['id']))
@@ -379,7 +371,7 @@ def search_taxi_details(taxi_id):
         'integration/search_taxi_details.html',
         taxi=taxi,
         last_location=last_location,
-        operators_names=operators_names,
+        operators=operators,
         create_hail_form=create_hail_form,
         api_error_msg=api_error_msg
     )
