@@ -15,7 +15,7 @@ from sqlalchemy.orm import aliased
 from marshmallow import fields, EXCLUDE, pre_load, Schema, ValidationError
 from marshmallow.validate import Range
 
-from geopy.distance import vincenty
+from geopy.distance import geodesic
 
 from APITaxi_models import db, Hail, Taxi, Vehicle
 from APITaxi_models.security import User
@@ -222,7 +222,7 @@ def hails(length, start, draw, columns=None):
                 'commercial_name': moteur.commercial_name,
             },
             'added_at': hail.added_at.isoformat(),
-            'distance': math.trunc(vincenty(
+            'distance': math.trunc(geodesic(
                 (hail.customer_lat, hail.customer_lon),
                 (hail.initial_taxi_lat, hail.initial_taxi_lon)
             ).meters)
