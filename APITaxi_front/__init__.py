@@ -29,7 +29,11 @@ redis_client = FlaskRedis()
 
 def jinja2_json_filter(value, indent=2):
     """Jinja template filter to render a JSON string with nice indentation."""
-    return json.dumps(json.loads(value), indent=indent)
+    try:
+        content = json.loads(value)
+    except json.decoder.JSONDecodeError:
+        return value
+    return json.dumps(content, indent=indent)
 
 
 def jinja2_str_to_datetime_filter(value):
