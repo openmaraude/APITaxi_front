@@ -16,6 +16,7 @@ pre.code {
   font-size: 0.8rem;
   background-color: rgba(255, 0, 0, 0.05);
   padding: 20px;
+  white-space: pre-wrap;
 }
 
 .secret {
