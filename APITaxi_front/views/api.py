@@ -10,15 +10,14 @@ from flask import Blueprint, current_app, jsonify, redirect, render_template, re
 from flask_security import current_user, login_required, roles_accepted
 
 from sqlalchemy import func, or_
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, joinedload
 
 from marshmallow import fields, EXCLUDE, pre_load, Schema, ValidationError
 from marshmallow.validate import Range
 
 from geopy.distance import geodesic
 
-from APITaxi_models import db, Hail, Taxi, Vehicle
-from APITaxi_models.security import User
+from APITaxi_models2 import ADS, Hail, Taxi, User, Vehicle
 
 from .integration import get_integration_user
 
@@ -184,11 +183,11 @@ def hails(length, start, draw, columns=None):
         Hail, UserOperateur, UserMoteur
     ).filter(
         or_(Hail.operateur_id == owner.id,
-            Hail.added_by == owner.id)
+            Hail.added_by_id == owner.id)
     ).join(
         UserOperateur, Hail.operateur_id == UserOperateur.id
     ).join(
-        UserMoteur, Hail.added_by == UserMoteur.id
+        UserMoteur, Hail.added_by_id == UserMoteur.id
     ).order_by(
         Hail.added_at.desc()
     )
@@ -241,12 +240,6 @@ def taxis(length, start, draw, columns=None):
     feature.
     """
     owner = current_user
-    # There is no relationship between a Taxi and User. We don't want to modify
-    # too much APITaxi_models for now, so let's store the operator name in a
-    # dictionary.
-    operator_names = {
-        current_user.id: current_user.commercial_name
-    }
 
     # This view is called by the integration feature to list taxis of the test
     # account. If integration is set, list taxis from the integration account
@@ -254,10 +247,18 @@ def taxis(length, start, draw, columns=None):
     if 'integration' in request.args and current_app.config.get('INTEGRATION_ENABLED', False):
         owner = get_integration_user(User.id)
         integration_user = get_integration_user(User.id, User.commercial_name)
-        operator_names[integration_user.id] = integration_user.commercial_name
 
-    query = Taxi.query.join(Vehicle).filter(
-        Taxi.added_by == owner.id
+    query = Taxi.query.options(
+        joinedload(Taxi.vehicle)
+    ).options(
+        joinedload(Taxi.driver)
+    ).options(
+        joinedload(Taxi.ads)
+        .joinedload(ADS.zupc)
+    ).options(
+        joinedload(Taxi.added_by)
+    ).join(Vehicle).filter(
+        Taxi.added_by_id == owner.id
     ).order_by(
         Taxi.added_at.desc()
     )
@@ -296,8 +297,8 @@ def taxis(length, start, draw, columns=None):
                 }
             },
             'operator': {
-                'id': taxi.added_by,
-                'commercial_name': operator_names.get(taxi.added_by)
+                'id': taxi.added_by_id,
+                'commercial_name': taxi.added_by.commercial_name
             }
         } for taxi in taxis]
     })

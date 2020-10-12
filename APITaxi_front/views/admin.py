@@ -7,7 +7,7 @@ from flask_security import current_user, login_required, roles_accepted
 from flask_wtf import FlaskForm
 from wtforms import IntegerField
 
-from APITaxi_models.security import User
+from APITaxi_models2 import User
 
 
 blueprint = Blueprint('admin', __name__)

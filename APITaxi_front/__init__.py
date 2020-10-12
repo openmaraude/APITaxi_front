@@ -11,8 +11,7 @@ from flask import Flask
 from flask_redis import FlaskRedis
 from flask_security import Security, SQLAlchemyUserDatastore
 
-from APITaxi_models import db
-from APITaxi_models.security import User, Role
+from APITaxi_models2 import db, Role, User
 
 from . import views
 

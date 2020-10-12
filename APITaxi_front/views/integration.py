@@ -9,6 +9,7 @@ from urllib.parse import urljoin
 import requests
 
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from flask import abort, Blueprint, current_app, redirect, render_template, request, url_for
@@ -19,8 +20,7 @@ from wtforms import SelectField, StringField, SubmitField, ValidationError, vali
 
 from faker import Faker
 
-from APITaxi_models import Hail, Taxi
-from APITaxi_models.security import User
+from APITaxi_models2 import ADS, Hail, Taxi, User, Vehicle, VehicleDescription
 
 from .. import redis_client
 
@@ -222,15 +222,21 @@ class TaxiStatusForm(FlaskForm):
 def _get_taxi_details(taxi_id):
     """Helper function used in operator_taxi_details and search_taxi_details.
 
-    Return the integration user, the taxi object and its last location, and
-    operator names of the taxi.
+    Return the integration user, the taxi object and its last location.
     """
     integration_user = get_integration_user(User.id, User.email, User.apikey)
 
     try:
-        taxi = Taxi.query.filter(
+        taxi = Taxi.query.options(
+            joinedload(Taxi.vehicle)
+            .joinedload(Vehicle.descriptions)
+            .joinedload(VehicleDescription.added_by)
+        ).options(
+            joinedload(Taxi.ads)
+            .joinedload(ADS.zupc)
+        ).filter(
             Taxi.id == taxi_id,
-            or_(Taxi.added_by == integration_user.id, Taxi.added_by == current_user.id)
+            or_(Taxi.added_by_id == integration_user.id, Taxi.added_by_id == current_user.id)
         ).one()
     except NoResultFound:
         abort(404, 'Unknown taxi id')
@@ -250,26 +256,7 @@ def _get_taxi_details(taxi_id):
         except ValueError:  # Bad redis format
             pass
 
-    # Taxis can be registered with several operators. In the case has a taxi
-    # uses, let's say, three applications, the database objects created will
-    # be:
-    # - one taxi object (linked to one ADS, one driver, one vehicle)
-    # - one vehicle object
-    # - one vehicle_description object per operator.
-    #
-    # The VehicleDescription.added_by SQLAlchemy field from APITaxi_models doesn't
-    # have a relationship to a User object, so we can't easily get the name of
-    # the operator from a VehicleDescription.
-    #
-    # Below, we build a dictionary where keys are user ids from the fields
-    # added_by of the VehicleDescription objects, and the values are the
-    # operators' User objects
-    operators = {
-        description.added_by: User.query.filter_by(id=description.added_by).one()
-        for description in taxi.vehicle.descriptions
-    }
-
-    return integration_user, taxi, last_location, operators
+    return integration_user, taxi, last_location
 
 
 @blueprint.route('/integration/operator/taxis/<string:taxi_id>', methods=['GET', 'POST'])
@@ -278,7 +265,7 @@ def _get_taxi_details(taxi_id):
 def operator_taxi_details(taxi_id):
     """Display taxi details: status, location and list of hails. Allows to
     update the status and the location."""
-    integration_user, taxi, last_location, operators = _get_taxi_details(taxi_id)
+    integration_user, taxi, last_location = _get_taxi_details(taxi_id)
 
     status_form = TaxiStatusForm()
     if status_form.submit_taxi_status.data and status_form.validate_on_submit():
@@ -305,8 +292,7 @@ def operator_taxi_details(taxi_id):
         taxi=taxi,
         status_form=status_form,
         location_form=location_form,
-        last_location=last_location,
-        operators=operators
+        last_location=last_location
     )
 
 
@@ -342,11 +328,12 @@ class CreateHailForm(FlaskForm):
 @roles_accepted('admin', 'moteur', 'operateur')
 def search_taxi_details(taxi_id):
     """Page to display the details of a taxi, and send a hail request."""
-    integration_user, taxi, last_location, operators = _get_taxi_details(taxi_id)
+    integration_user, taxi, last_location = _get_taxi_details(taxi_id)
 
     create_hail_form = CreateHailForm()
     create_hail_form.taxi_operator.choices = [
-        (user.email, user.commercial_name or user.email) for user in operators.values()
+        (vehicle_description.added_by.email, vehicle_description.added_by.commercial_name)
+        for vehicle_description in taxi.vehicle.descriptions
     ]
 
     api_error_msg = None
@@ -371,7 +358,6 @@ def search_taxi_details(taxi_id):
         'integration/search_taxi_details.html',
         taxi=taxi,
         last_location=last_location,
-        operators=operators,
         create_hail_form=create_hail_form,
         api_error_msg=api_error_msg
     )
@@ -414,7 +400,7 @@ def search_hail_details(hail_id):
     try:
         hail = Hail.query.filter(
             Hail.id == hail_id,
-            or_(Hail.added_by == integration_user.id, Hail.added_by == current_user.id)
+            or_(Hail.added_by_id == integration_user.id, Hail.added_by_id == current_user.id)
         ).one()
     except NoResultFound:
         abort(404, 'Unknown hail id')

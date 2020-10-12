@@ -14,8 +14,7 @@ from sqlalchemy.dialects.postgresql import aggregate_order_by
 
 import redis
 
-from APITaxi_models import db, Hail
-from APITaxi_models.security import User
+from APITaxi_models2 import db, Hail, User
 
 from .. import redis_client
 
@@ -47,18 +46,18 @@ def hails():
     # Result: one row per date/status
     query = db.session.query(
         cast(dates.c.date, Date).label('date'),
-        Hail._status,
+        Hail.status,
         func.COUNT(Hail.id).label('count')
     ).outerjoin(
         Hail, and_(
             cast(Hail.added_at, Date) == cast(dates.c.date, Date),
             or_(Hail.id.is_(None),
                 Hail.operateur_id == current_user.id,
-                Hail.added_by == current_user.id)
+                Hail.added_by_id == current_user.id)
         )
     ).group_by(
         cast(dates.c.date, Date),
-        Hail._status
+        Hail.status
     ).order_by(
         cast(dates.c.date, Date)
     )
@@ -74,8 +73,8 @@ def hails():
     #  }
     stats = {
         date: {
-            row._status: row.count
-            for row in groups if row._status
+            row.status: row.count
+            for row in groups if row.status
         }
         for date, groups in itertools.groupby(query.all(), lambda row: row.date)
     }
