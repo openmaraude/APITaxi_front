@@ -42,8 +42,8 @@
           <ul class="list-unstyled">
             <li><strong>Taxi:</strong> {{ hail.taxi_id }}</li>
             <li>
-              <a data-toggle="collapse" href="#{{ hail.id }}" role="button">...</a>
-              <div id="{{ hail.id }}" class="collapse thumbnail-content-details">
+              <a data-toggle="collapse" href="#hail-{{ hail.id }}" role="button">...</a>
+              <div id="hail-{{ hail.id }}" class="collapse thumbnail-content-details">
                 <ul class="list-unstyled">
                 {% for key, value in hail.items() %}
                   <li><strong>{{ key }}:</strong> {{ value }}</li>
