@@ -33,6 +33,10 @@ def jinja2_json_filter(value, indent=2):
         content = json.loads(value)
     except json.decoder.JSONDecodeError:
         return value
+    # If value is not a string (for example if it is a dict), silently pass the
+    # json.loads().
+    except TypeError:
+        content = value
     return json.dumps(content, indent=indent)
 
 
