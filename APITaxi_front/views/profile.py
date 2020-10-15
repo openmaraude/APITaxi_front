@@ -15,7 +15,7 @@ from flask_security.utils import hash_password
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, ValidationError, validators
 
-from APITaxi_models import db
+from APITaxi_models2 import db
 
 
 
