@@ -8,7 +8,11 @@
   <tbody>
     {% for description in taxi.vehicle.descriptions %}
     <tr>
-      <td>{{ operators[description.added_by].commercial_name or ('<i>' + description.added_by|string + '</i>')|safe }}</td>
+      {% if description.added_by.commercial_name %}
+      <td>{{ description.added_by.commercial_name }}</td>
+      {% else %}
+      <td><i>{{ description.added_by_id }}</i></td>
+      {% endif %}
       <td>{{ description.status }}</td>
     </tr>
     {% endfor %}
