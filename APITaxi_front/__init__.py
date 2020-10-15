@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import dateutil
+import dateutil.parser
 import os
 import importlib
 import inspect
