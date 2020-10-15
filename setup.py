@@ -17,6 +17,7 @@ DEPENDENCIES = [
     'email-validator',
     # Used by integration feature.
     'faker',
+    'requests',
 ]
 
 
