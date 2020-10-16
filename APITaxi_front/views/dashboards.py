@@ -91,7 +91,7 @@ def hails():
 def hails_details(hail_id):
     hail = Hail.query.get(hail_id)
 
-    if not (current_user.has_role('admin') or current_user.id in (hail.operateur_id, hail.added_by)):
+    if not (current_user.has_role('admin') or current_user.id in (hail.operateur_id, hail.added_by_id)):
         abort(403)
 
     try:
