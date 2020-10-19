@@ -292,7 +292,8 @@ def operator_taxi_details(taxi_id):
         taxi=taxi,
         status_form=status_form,
         location_form=location_form,
-        last_location=last_location
+        last_location=last_location,
+        integration_user=integration_user
     )
 
 

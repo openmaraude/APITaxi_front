@@ -7,7 +7,7 @@
 
 {% include "integration/partial/taxi_status_table.html" %}
 
-<p>Vous pouvez changer le statut du taxi. Seuls les taxis avec le statut <i>free</i> dont la géolocalisation a été mise à jour il y a moins de deux minutes sont visibles sur la carte et peuvent recevoir des courses.</p>
+<p>Vous pouvez changer le statut du taxi avec l'opérateur <i>{{ integration_user.commercial_name or integration_user.email }}</i>. Seuls les taxis avec le statut <i>free</i> dont la géolocalisation a été mise à jour il y a moins de deux minutes sont visibles sur la carte et peuvent recevoir des courses.</p>
 
 <form class="mb-3" method="POST" novalidate autocomplete="off">
   <div class="form-row">
@@ -35,7 +35,7 @@
 
 <h5>Mise à jour de la localisation</h5>
 
-<p>Renseignez les coordonnées vers lesquelles vous souhaitez déplacer le taxi. Une fois la modification effectuée, le taxi sera considéré comme libre et vous pourrez le voir sur la carte.</p>
+<p>Renseignez les coordonnées vers lesquelles vous souhaitez déplacer le taxi avec l'opérateur <i>{{ integration_user.commercial_name or integration_user.email }}</i>. Une fois la modification effectuée, le taxi sera considéré comme libre et vous pourrez le voir sur la carte.</p>
 
 <form class="mb-3" method="POST" novalidate autocomplete="off">
   <div class="form-row">
