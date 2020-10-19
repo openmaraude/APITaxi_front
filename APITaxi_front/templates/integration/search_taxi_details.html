@@ -10,7 +10,7 @@
 
 <h5>Localisation</h5>
 
-{% include "integration/partial/taxi_last_location.html" %}
+{% include "integration/partial/taxi_last_locations.html" %}
 
 <h5>Course</h5>
 
@@ -31,7 +31,7 @@
       <div class="flex-even">
         <div class="form-group">
           <label for="{{ create_hail_form.customer_lon.id }}">Longitude du client</label>
-          <input name="{{ create_hail_form.customer_lon.name }}" type="text" class="form-control{% if create_hail_form.customer_lon.errors %} is-invalid{% endif %}" id="{{ create_hail_form.customer_lon.id }}" value="{{ create_hail_form.customer_lon.data or (last_location and last_location.lon) or "" }}" />
+          <input name="{{ create_hail_form.customer_lon.name }}" type="text" class="form-control{% if create_hail_form.customer_lon.errors %} is-invalid{% endif %}" id="{{ create_hail_form.customer_lon.id }}" value="{{ create_hail_form.customer_lon.data or (last_locations and (last_locations.values()|first).lon) or "" }}" />
           {% for error in create_hail_form.customer_lon.errors %}
           <small class="text-danger">{{ error }}</small>
           {% endfor %}
@@ -46,7 +46,7 @@
       <div class="flex-even">
         <div class="form-group">
           <label for="{{ create_hail_form.customer_lat.id }}">Latitude du client</label>
-          <input name="{{ create_hail_form.customer_lat.name }}" type="text" class="form-control{% if create_hail_form.customer_lat.errors %} is-invalid{% endif %}" id="{{ create_hail_form.customer_lat.id }}" value="{{ create_hail_form.customer_lat.data or (last_location and last_location.lat) or "" }}" />
+          <input name="{{ create_hail_form.customer_lat.name }}" type="text" class="form-control{% if create_hail_form.customer_lat.errors %} is-invalid{% endif %}" id="{{ create_hail_form.customer_lat.id }}" value="{{ create_hail_form.customer_lat.data or (last_locations and (last_locations.values()|first).lat) or "" }}" />
           {% for error in create_hail_form.customer_lat.errors %}
           <small class="text-danger">{{ error }}</small>
           {% endfor %}

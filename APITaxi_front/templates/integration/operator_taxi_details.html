@@ -31,7 +31,7 @@
 
 <h5>Localisation</h5>
 
-{% include "integration/partial/taxi_last_location.html" %}
+{% include "integration/partial/taxi_last_locations.html" %}
 
 <h5>Mise à jour de la localisation</h5>
 
@@ -40,13 +40,13 @@
 <form class="mb-3" method="POST" novalidate autocomplete="off">
   <div class="form-row">
     <div class="col">
-      <input name="{{ location_form.lon.name }}" type="text" class="form-control" placeholder="Longitude"{% if location_form.lon.data %} value="{{ location_form.lon.data }}"{% elif last_location %} value="{{ last_location.lon|round(6) }}"{%endif %}>
+      <input name="{{ location_form.lon.name }}" type="text" class="form-control" placeholder="Longitude"{% if location_form.lon.data %} value="{{ location_form.lon.data }}"{% elif last_locations %} value="{{ (last_locations.values()|first).lon|round(6) }}"{%endif %}>
       {% if location_form.errors.lon %}
       <span class="text-danger">{{ location_form.errors.lon|join(' ') }}</span>
       {% endif %}
     </div>
     <div class="col">
-      <input name="{{ location_form.lat.name }}" type="text" class="form-control" placeholder="Latitude"{% if location_form.lat.data %} value="{{ location_form.lat.data }}"{% elif last_location %} value="{{ last_location.lat|round(6) }}"{%endif %}>
+      <input name="{{ location_form.lat.name }}" type="text" class="form-control" placeholder="Latitude"{% if location_form.lat.data %} value="{{ location_form.lat.data }}"{% elif last_locations %} value="{{ (last_locations.values()|first).lat|round(6) }}"{%endif %}>
       {% if location_form.errors.lat %}
       <span class="text-danger">{{ location_form.errors.lat|join(' ') }}</span>
       {% endif %}

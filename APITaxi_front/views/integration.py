@@ -222,7 +222,7 @@ class TaxiStatusForm(FlaskForm):
 def _get_taxi_details(taxi_id):
     """Helper function used in operator_taxi_details and search_taxi_details.
 
-    Return the integration user, the taxi object and its last location.
+    Return the integration user, the taxi object and its last locations.
     """
     integration_user = get_integration_user(User.id, User.email, User.apikey)
 
@@ -242,21 +242,24 @@ def _get_taxi_details(taxi_id):
         abort(404, 'Unknown taxi id')
 
     # Retrieve last known taxi location
-    redis_data = redis_client.hget('taxi:%s' % taxi.id, integration_user.email)
-    last_location = None
-    if redis_data:
+    last_locations = {}
+    for user in (integration_user, current_user):
+        redis_data = redis_client.hget('taxi:%s' % taxi.id, user.email)
+        if not redis_data:
+            continue
+
         try:
             timestamp, lat, lon, status, device, version = redis_data.decode('utf8').split()
-            last_location = {
+            last_locations[user] = {
                 'date': datetime.fromtimestamp(int(timestamp)),
                 'lat': float(lat),
                 'lon': float(lon),
                 'status': status,
             }
-        except ValueError:  # Bad redis format
+        except ValueError:  # Bad redis format. Should not happen.
             pass
 
-    return integration_user, taxi, last_location
+    return integration_user, taxi, last_locations
 
 
 @blueprint.route('/integration/operator/taxis/<string:taxi_id>', methods=['GET', 'POST'])
@@ -265,7 +268,7 @@ def _get_taxi_details(taxi_id):
 def operator_taxi_details(taxi_id):
     """Display taxi details: status, location and list of hails. Allows to
     update the status and the location."""
-    integration_user, taxi, last_location = _get_taxi_details(taxi_id)
+    integration_user, taxi, last_locations = _get_taxi_details(taxi_id)
 
     status_form = TaxiStatusForm()
     if status_form.submit_taxi_status.data and status_form.validate_on_submit():
@@ -292,7 +295,7 @@ def operator_taxi_details(taxi_id):
         taxi=taxi,
         status_form=status_form,
         location_form=location_form,
-        last_location=last_location,
+        last_locations=last_locations,
         integration_user=integration_user
     )
 
@@ -329,7 +332,7 @@ class CreateHailForm(FlaskForm):
 @roles_accepted('admin', 'moteur', 'operateur')
 def search_taxi_details(taxi_id):
     """Page to display the details of a taxi, and send a hail request."""
-    integration_user, taxi, last_location = _get_taxi_details(taxi_id)
+    integration_user, taxi, last_locations = _get_taxi_details(taxi_id)
 
     create_hail_form = CreateHailForm()
     create_hail_form.taxi_operator.choices = [
@@ -358,7 +361,7 @@ def search_taxi_details(taxi_id):
     return render_template(
         'integration/search_taxi_details.html',
         taxi=taxi,
-        last_location=last_location,
+        last_locations=last_locations,
         create_hail_form=create_hail_form,
         api_error_msg=api_error_msg
     )
