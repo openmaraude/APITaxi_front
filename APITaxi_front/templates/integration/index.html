@@ -5,12 +5,19 @@
 
 <p>Nous mettons à votre disposition des outils pour vous aider dans l'intégration de vos applications. Il est recommandé avant toute chose de prendre connaissance de la <a href="{{ url_for('documentation.index') }}">documentation</a>.</p>
 
-<h5>Vous souhaitez créer un moteur de recherche</h5>
+<div class="d-flex">
+  <div>
+    <h5 class="text-center">Vous souhaitez créer un moteur de recherche</h5>
 
-<p>Le menu <a href="{{ url_for('integration.operator') }}">opérateur</a> vous permet de créer des taxis de test, de changer leur localisation, d'accepter des courses et de changer les statuts de celles-ci. Vous pouvez ainsi développer votre application moteur de recherche, et mettre en relation vos usagers avec les taxis de l'API.</p>
+    <p>Le menu <a href="{{ url_for('integration.operator') }}">opérateur</a> vous permet de créer des taxis de test, de changer leur localisation, d'accepter des courses et de changer les statuts de celles-ci. Vous pouvez ainsi développer votre application moteur de recherche en simulant un opérateur de taxis, et mettre en relation vos usagers avec les taxis de l'API.</p>
 
-<h5>Vous souhaitez créer une applicaiton opérateur</h5>
+  </div>
 
-<p>Le menu <a href="{{ url_for('integration.search') }}">moteur de recherche</a> vous permet de lister les taxis autour d'un point, d'effectuer une demande de course et de confirmer cette demande. Vous pouvez ainsi développer votre application opérateur, et donner les informations des taxis connectés à votre plateforme au registre.</p>
+  <div>
+    <h5 class="text-center">Vous souhaitez créer une application opérateur</h5>
+
+    <p>Le menu <a href="{{ url_for('integration.search') }}">moteur de recherche</a> vous permet de lister les taxis autour d'un point, d'effectuer une demande de course et de confirmer cette demande. Vous pouvez ainsi développer votre application opérateur en simulant une application moteur de recherche.</p>
+  </div>
+</div>
 
 {% endblock %}
