@@ -22,8 +22,6 @@ from faker import Faker
 
 from APITaxi_models2 import ADS, Hail, Taxi, User, Vehicle, VehicleDescription
 
-from .. import redis_client
-
 
 blueprint = Blueprint('integration', __name__)
 
@@ -244,7 +242,7 @@ def _get_taxi_details(taxi_id):
     # Retrieve last known taxi location
     last_locations = {}
     for user in (integration_user, current_user):
-        redis_data = redis_client.hget('taxi:%s' % taxi.id, user.email)
+        redis_data = current_app.redis.hget('taxi:%s' % taxi.id, user.email)
         if not redis_data:
             continue
 

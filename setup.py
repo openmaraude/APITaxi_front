@@ -18,6 +18,13 @@ DEPENDENCIES = [
     # Used by integration feature.
     'faker',
     'requests',
+    'dataclasses',  # for Python3.6
+]
+
+TEST_DEPENDENCIES = [
+    'pytest',
+    'pytest-factoryboy',
+    'testing.postgresql',
 ]
 
 
@@ -56,6 +63,9 @@ setup(
         'Intended Audience :: Developpers',
         'Programming Language :: Python :: 3'
     ],
+    extras_require={
+        'tests': TEST_DEPENDENCIES,
+    },
     keywords='taxi transportation',
     packages=find_packages(),
     install_requires=DEPENDENCIES

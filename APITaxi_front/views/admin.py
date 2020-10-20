@@ -54,9 +54,15 @@ def logas():
 
 @blueprint.route('/logas/logout')
 def logas_logout():
-    """Logout user. This endpoint should be called instead of flask_security.views.logout.
+    """Logout user. This endpoint should be called instead of
+    flask_security.views.logout.
 
-    If the user is logged with the "logas" feature, we attempt to reconnect the user back to his previous session.
+    If the user is logged with the "logas" feature, we attempt to reconnect the
+    user back to his previous session.
+
+    XXX: for security purpose, this should be a POST endpoint. Since it is a
+    GET endpoint, there is no CSRF validation and an attacker can redirect a
+    logged-in user to force him to logout.
     """
     logas_api_key = request.cookies.get('logas_real_api_key')
 

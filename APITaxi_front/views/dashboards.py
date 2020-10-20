@@ -6,7 +6,7 @@ import json
 
 import dateutil
 
-from flask import abort, Blueprint, flash, redirect, render_template, request, url_for
+from flask import abort, Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_security import current_user, login_required, roles_accepted
 
 from sqlalchemy import and_, cast, Date, func, literal_column, or_
@@ -15,8 +15,6 @@ from sqlalchemy.dialects.postgresql import aggregate_order_by
 import redis
 
 from APITaxi_models2 import db, Hail, User
-
-from .. import redis_client
 
 
 blueprint = Blueprint('dashboards', __name__)
@@ -95,7 +93,7 @@ def hails_details(hail_id):
         abort(403)
 
     try:
-        resp = redis_client.zrangebyscore('hail:%s' % hail_id, '-inf', '+inf', withscores=True)
+        resp = current_app.redis.zrangebyscore('hail:%s' % hail_id, '-inf', '+inf', withscores=True)
     except redis.exceptions.ConnectionError:
         redis_error = True
         logs = []

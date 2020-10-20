@@ -23,9 +23,6 @@ __version__ = '0.1.0'
 __doc__ = 'Frontend of api.taxi'
 
 
-redis_client = FlaskRedis()
-
-
 def jinja2_json_filter(value, indent=2):
     """Jinja template filter to render a JSON string with nice indentation."""
     try:
@@ -60,7 +57,7 @@ def create_app():
 
     db.init_app(app)
 
-    redis_client.init_app(app)
+    app.redis = FlaskRedis(app)
 
     # Setup flask-security
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
