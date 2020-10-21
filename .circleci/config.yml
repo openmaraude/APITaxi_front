@@ -1,0 +1,23 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: circleci/python:3-buster
+    steps:
+      - checkout
+      - run:
+          name: Install system dependencies
+          command: |
+            sudo apt-get install -y postgis redis-server
+            pip install tox
+      - run:
+          name: Run unittests
+          command: |
+            tox
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test

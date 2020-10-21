@@ -15,6 +15,8 @@ DEPENDENCIES = [
     'marshmallow',
     'flask-redis',
     'email-validator',
+    'Flask-Migrate',
+    'flask-influxdb',
     # Used by integration feature.
     'faker',
     'requests',
