@@ -188,3 +188,14 @@ footer img:hover {
 .thumbnail-content {
   padding: 10px;
 }
+
+/*
+ * Two columns section.
+ */
+.two-columns {
+  display: flex;
+}
+
+.two-columns > * > * {
+  padding-right: 10px;
+}
