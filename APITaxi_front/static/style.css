@@ -36,6 +36,10 @@ table.descriptionTable tbody th {
   white-space: nowrap;
 }
 
+table.descriptionTable {
+  margin-bottom: 30px;
+}
+
 /*
  * Header
  */
