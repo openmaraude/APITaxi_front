@@ -168,8 +168,8 @@ class ValidateFloat:
 
 class TaxiLocationForm(FlaskForm):
     """FlaskForm to provide new location."""
-    lon = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
-    lat = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
+    lon = StringField(validators=[validators.DataRequired('Champ requis.'), ValidateFloat()])
+    lat = StringField(validators=[validators.DataRequired('Champ requis.'), ValidateFloat()])
     submit_taxi_location = SubmitField()
 
 
@@ -314,12 +314,12 @@ def search():
 
 
 class CreateHailForm(FlaskForm):
-    customer_lon = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
-    customer_lat = StringField(validators=[validators.Required('Champ requis.'), ValidateFloat()])
-    customer_address = StringField(validators=[validators.Required('Champ requis.')])
-    customer_phone_number = StringField(validators=[validators.Required('Champ requis.')])
+    customer_lon = StringField(validators=[validators.DataRequired('Champ requis.'), ValidateFloat()])
+    customer_lat = StringField(validators=[validators.DataRequired('Champ requis.'), ValidateFloat()])
+    customer_address = StringField(validators=[validators.DataRequired('Champ requis.')])
+    customer_phone_number = StringField(validators=[validators.DataRequired('Champ requis.')])
     taxi_operator = SelectField()
-    customer_internal_id = StringField(validators=[validators.Required('Champ requis.')])
+    customer_internal_id = StringField(validators=[validators.DataRequired('Champ requis.')])
 
     submit_create_hail = SubmitField()
 
