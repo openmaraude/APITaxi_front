@@ -30,6 +30,7 @@ def app(tmp_path, postgresql, postgresql_empty, redis_server):
 SQLALCHEMY_DATABASE_URI = '%(database)s'
 REDIS_URL = '%(redis)s'
 WTF_CSRF_ENABLED = False
+INTEGRATION_ENABLED = True
 ''' % {
         'database': postgresql.url(),
         'redis': 'unix://%s' % redis_server
