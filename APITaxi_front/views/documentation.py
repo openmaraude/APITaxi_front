@@ -1,7 +1,6 @@
 from urllib.parse import urljoin
 
 from flask import Blueprint, current_app, redirect, render_template
-from flask_security import login_required
 
 
 blueprint = Blueprint('documentation', __name__)

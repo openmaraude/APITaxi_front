@@ -6,7 +6,7 @@ import json
 
 import dateutil
 
-from flask import abort, Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import abort, Blueprint, current_app, flash, render_template, request
 from flask_security import current_user, login_required, roles_accepted
 
 from sqlalchemy import and_, cast, Date, func, literal_column, or_

@@ -18,7 +18,6 @@ from wtforms import PasswordField, StringField, ValidationError, validators
 from APITaxi_models2 import db
 
 
-
 blueprint = Blueprint('profile', __name__)
 
 

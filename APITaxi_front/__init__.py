@@ -3,7 +3,6 @@
 import dateutil.parser
 import os
 import importlib
-import inspect
 import json
 import pkgutil
 

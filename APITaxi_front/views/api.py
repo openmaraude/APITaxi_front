@@ -6,7 +6,7 @@ import functools
 import math
 import re
 
-from flask import Blueprint, current_app, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, jsonify, request
 from flask_security import current_user, login_required, roles_accepted
 
 from sqlalchemy import func, or_
@@ -246,7 +246,6 @@ def taxis(length, start, draw, columns=None):
     # instead of taxis from the current account.
     if 'integration' in request.args and current_app.config.get('INTEGRATION_ENABLED', False):
         owner = get_integration_user(User.id)
-        integration_user = get_integration_user(User.id, User.commercial_name)
 
     query = Taxi.query.options(
         joinedload(Taxi.vehicle)

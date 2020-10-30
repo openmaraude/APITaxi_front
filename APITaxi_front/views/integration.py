@@ -113,7 +113,6 @@ def operator():
         return render_template('integration/operator.html', taxi_create_form=taxi_create_form)
 
     faker = Faker('fr_FR')
-    firstname, lastname = faker.first_name(), faker.last_name()
 
     api = APITaxiIntegrationClient()
 
@@ -142,7 +141,7 @@ def operator():
         'doublage': False
     })
 
-    taxi = api.post('/taxis', {
+    api.post('/taxis', {
         'ads': {
             'insee': '75101',
             'numero': ads['numero']
@@ -184,7 +183,7 @@ def update_taxi_position(integration_user, taxi_id, lon, lat):
         'lat': lat,
         'device': 'phone',
         'status': 'free',
-        'version':'2',
+        'version': '2',
     }
     # Build hash to identify the request
     h = ''.join(str(payload[key]) for key in [
@@ -421,7 +420,7 @@ def search_hail_details(hail_id):
         # one.
         if status_form.status.data == 'accepted_by_taxi':
             payload['taxi_phone_number'] = '+33600000000'
-        resp = api.put('/hails/%s' % hail_id, payload)
+        api.put('/hails/%s' % hail_id, payload)
         return redirect(url_for(request.endpoint, hail_id=hail_id))
 
     return render_template(template, hail=hail, status_form=status_form)
