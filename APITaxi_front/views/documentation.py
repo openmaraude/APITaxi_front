@@ -23,7 +23,13 @@ def operator():
 
 @blueprint.route('/documentation/reference')
 def reference():
-    api_url = current_app.config.get('API_TAXI_URL', '')
+    # In production, swagger is available https://api.taxi/doc or
+    # https://dev.api.taxi/doc.
+    # When developing locally, SWAGGER_URL should be set in settings.py.
+    api_url = current_app.config.get(
+        'SWAGGER_URL',
+        current_app.config.get('API_TAXI_URL', '')
+    )
     redirect_url = urljoin(api_url, 'doc/')
     return redirect(redirect_url)
 
