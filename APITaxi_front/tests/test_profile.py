@@ -22,7 +22,6 @@ def test_profile(operateur):
         'phone_number_customer': '+338234822342',
         'email_customer': 'cust@email.com',
         'hail_endpoint_production': 'http://xxx',
-        'hail_endpoint_testing': 'http://yyy',
         'operator_header_name': 'X-Header',
         'operator_api_key': 'MyApiKey'
     })
@@ -36,6 +35,5 @@ def test_profile(operateur):
     assert operateur.user.email_customer == 'cust@email.com'
 
     assert operateur.user.hail_endpoint_production == 'http://xxx'
-    assert operateur.user.hail_endpoint_testing == 'http://yyy'
     assert operateur.user.operator_header_name == 'X-Header'
     assert operateur.user.operator_api_key == 'MyApiKey'

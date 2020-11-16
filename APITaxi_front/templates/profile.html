@@ -83,7 +83,7 @@
     <div class="d-flex align-items-center">
       <div class="flex-even">
         <div class="form-group">
-          <label for="{{ form.hail_endpoint_production.id }}">Endpoint hails de <strong>production</strong></label>
+          <label for="{{ form.hail_endpoint_production.id }}">URL de l'endpoint hails</label>
           <input name="{{ form.hail_endpoint_production.name }}" type="url" class="form-control{% if form.hail_endpoint_production.errors %} is-invalid{% endif %}" id="{{ form.hail_endpoint_production.id }}" value="{{ form.hail_endpoint_production.data or "" }}" />
           {% for error in form.hail_endpoint_production.errors %}
           <small class="text-danger">{{ error }}</small>
@@ -92,22 +92,6 @@
       </div>
       <div class="flex-even formdoc">
         Lorsqu'un moteur de recherche effectue une demande de course à un taxi connecté sur votre application, nous faisons un appel vers cet endpoint pour vous signaler cette demande. Référez-vous à la <a href="{{ url_for('documentation.index') }}">documentation</a> pour plus d'informations.
-      </div>
-    </div>
-
-    <!-- Hails endpoint test -->
-    <div class="d-flex align-items-center">
-      <div class="flex-even">
-        <div class="form-group">
-          <label for="{{ form.hail_endpoint_testing.id }}">Endpoint hails de la plateforme de test</label>
-          <input name="{{ form.hail_endpoint_testing.name }}" type="url" class="form-control{% if form.hail_endpoint_testing.errors %} is-invalid{% endif %}" id="{{ form.hail_endpoint_testing.id }}" value="{{ form.hail_endpoint_testing.data or "" }}" />
-          {% for error in form.hail_endpoint_testing.errors %}
-          <small class="text-danger">{{ error }}</small>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="flex-even formdoc">
-        Concerne la plateforme de test.
       </div>
     </div>
 

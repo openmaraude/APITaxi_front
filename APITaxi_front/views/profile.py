@@ -80,11 +80,6 @@ class ProfileOperatorForm(ProfileForm):
         ValidateURL()
     ])
 
-    hail_endpoint_testing = StringField(validators=[
-        validators.Optional(),
-        ValidateURL()
-    ])
-
     operator_header_name = StringField(validators=[
         validators.Optional(),
     ])
