@@ -1,0 +1,5 @@
+{% macro csrf_error(form)%}
+{% if form.csrf_token.errors %}
+<p class="text-danger">Vous avez mis trop de temps pour valider le formulaire. Veuillez soumettre de nouveau.</p>
+{% endif %}
+{% endmacro %}

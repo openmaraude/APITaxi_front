@@ -4,6 +4,7 @@ import re
 
 from flask import (
     Blueprint,
+    flash,
     redirect,
     render_template,
     request,
@@ -115,6 +116,7 @@ def edit():
         form.populate_obj(current_user)
 
         db.session.commit()
+        flash("Paramètres modifiés avec succès.", 'primary')
         return redirect(url_for('profile.edit'))
 
     return render_template('profile.html', user=current_user, form=form)

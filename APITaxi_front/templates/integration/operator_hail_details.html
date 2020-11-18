@@ -1,4 +1,5 @@
 {% extends "integration/base.html" %}
+{% import "/macros/csrf.html" as csrf %}
 
 {% block main %}
 
@@ -46,6 +47,8 @@
 <h3>Changer le statut de la course</h3>
 
 <p class="alert alert-warning">La mise à jour du statut n'est pas immédiate. Rafraichissez la page pour avoir le dernier statut à jour.</p>
+
+{{ csrf.csrf_error(status_form) }}
 
 {% if hail.status == 'received_by_operator' %}
 <p>La demande de course a été reçue par le serveur d'API de l'opérateur. La demande est en attente d'être reçue par l'application du chauffeur.</p>

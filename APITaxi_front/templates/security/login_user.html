@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "/macros/csrf.html" as csrf %}
 
 {% block title %}Authentification{% endblock %}
 
@@ -9,6 +10,8 @@
   <p>
     L'accès à l'intranet nécessite d'être authentifié. Veuillez renseigner vos identifiants. En cas d'oubli, contactez notre support client.
   </p>
+
+  {{ csrf.csrf_error(login_user_form) }}
 
   <form method="POST" novalidate>
     <div class="form-group">

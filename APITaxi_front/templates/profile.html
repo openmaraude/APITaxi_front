@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "/macros/csrf.html" as csrf %}
 
 {% block title %}Mon compte{% endblock %}
 
@@ -23,7 +24,12 @@
 
   <form method="POST" novalidate autocomplete="off">
     {% if form.errors %}
-      <p class="text-danger">Formulaire invalide. Veuillez corriger les erreurs ci-dessous.</p>
+      {# Don't display both error messages #}
+      {% if form.csrf_token.errors %}
+        {{ csrf.csrf_error(form) }}
+      {% else %}
+        <p class="text-danger">Formulaire invalide. Veuillez corriger les erreurs ci-dessous.</p>
+      {% endif %}
     {% endif %}
 
     <h6>Général</h6>
