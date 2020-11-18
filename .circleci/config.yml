@@ -16,8 +16,44 @@ jobs:
           command: |
             tox
 
+  build:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build docker image
+          command: |
+            docker build -t openmaraude/api_taxi_front:${CIRCLE_TAG} .
+            docker tag openmaraude/api_taxi_front:${CIRCLE_TAG} openmaraude/api_taxi_front:latest
+      - run:
+          name: Publish docker Image to hub.docker.com
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push openmaraude/api_taxi_front:${CIRCLE_TAG}
+            docker push openmaraude/api_taxi_front:latest
+
 workflows:
   version: 2
+
   test:
     jobs:
       - test
+
+  # Build artifacts, ignore all branches, only run for all tags.
+  artifacts:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
+
+      - build:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /.*/
