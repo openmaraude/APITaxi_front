@@ -1,4 +1,5 @@
 {% extends "integration/base.html" %}
+{% import "/macros/csrf.html" as csrf %}
 
 {% block main %}
 
@@ -23,6 +24,7 @@
 
 <p>Si le taxi est disponible, vous pouvez effectuer une demande de course. Vous pouvez modifier les paramètres par défaut.</p>
 
+{{ csrf.csrf_error(create_hail_form) }}
 
 <div class="page-form container">
   <form method="POST" novalidate autocomplete="off">

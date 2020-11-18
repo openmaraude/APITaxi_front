@@ -116,7 +116,7 @@ def hails_by_user():
         try:
             date = datetime.strptime(request.args.get('date'), '%Y-%m-%d')
         except ValueError:
-            flash("Argument date invalide. Affichage des courses d'aujourd'hui.")
+            flash("Argument date invalide. Affichage des courses d'aujourd'hui.", 'danger')
 
     start = date.date()
     end = start + dateutil.relativedelta.relativedelta(days=+1)

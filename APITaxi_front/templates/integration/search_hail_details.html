@@ -1,4 +1,5 @@
 {% extends "integration/base.html" %}
+{% import "/macros/csrf.html" as csrf %}
 
 {% block main %}
 <h3>Taxi <a href="{{ url_for('integration.search_taxi_details', taxi_id=hail.taxi_id) }}">{{ hail.taxi_id }}</a> > Hail {{ hail.id }}</h3>
@@ -49,6 +50,8 @@
 {% if hail.status == 'received_by_taxi' %}
 <p>La demande de course a été transmise au taxi qui ne l'a pas encore acceptée. Vous devez attendre que celui-ci l'accepte pour pouvoir confirmer la demande. Vous pouvez néanmoins déclarer un incident pour annuler la course.</p>
 
+{{ csrf.csrf_error(status_form) }}
+
 <div class="d-flex justify-content-between">
   <div>
     <form method="POST">
@@ -63,6 +66,8 @@
 <p>La course a actuellement le statut <strong>{{ hail.status }}</strong> : le taxi a vu et accepté la course. Le client doit confirmer qu'il souhaite effectuer la course ou l'annuler. Si la confirmation n'est pas envoyée avant 2 minutes, la course sera annulée automatiquement.</p>
 
 <p>Vous pouvez à tout moment déclarer un incident pour terminer la demande de course.</p>
+
+{{ csrf.csrf_error(status_form) }}
 
 <div class="d-flex justify-content-between">
   <div>
