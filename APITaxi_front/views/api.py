@@ -193,6 +193,9 @@ def hails(length, start, draw, columns=None):
     )
     records_total = query.count()
 
+    hail_id_filter = get_datatables_filter('id', columns)
+    if hail_id_filter:
+        query = query.filter(func.lower(Hail.id).startswith(hail_id_filter.lower()))
     taxi_id_filter = get_datatables_filter('taxi_id', columns)
     if taxi_id_filter:
         query = query.filter(func.lower(Hail.taxi_id).startswith(taxi_id_filter.lower()))

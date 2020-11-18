@@ -15,8 +15,12 @@
   <h5>Filtres</h5>
   <form class="d-flex flex-wrap" autocomplete="off">
     <div class="form-group">
-      <label for="search_taxi_id">Taxi Id</label>
-      <input data-filter-col="taxi_id" id="search_taxi_id" type="text" class="form-control" placeholder="Taxi id" />
+      <label for="search_taxi_id">Id taxi</label>
+      <input data-filter-col="taxi_id" id="search_taxi_id" type="text" class="form-control" placeholder="Id taxi">
+    </div>
+    <div class="form-group">
+      <label for="search_hail_id">Id course</label>
+      <input data-filter-col="id" id="search_hail_id" type="text" class="form-control" placeholder="Id course">
     </div>
   </form>
 </div>
@@ -119,6 +123,7 @@ var table = $('#table').DataTable({
   // Mapping between API response and columns.
   columns: [
     {
+      name: 'id',
       data: 'id',
       render: function (data, type, row) {
         var url = "{{ url_for('dashboards.hails_details', hail_id='HAIL_ID') }}".replace('HAIL_ID', data);
