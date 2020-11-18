@@ -9,6 +9,7 @@ import pkgutil
 from flask import Flask
 from flask_redis import FlaskRedis
 from flask_security import Security, SQLAlchemyUserDatastore
+from flask_wtf import FlaskForm
 
 from APITaxi_models2 import db, Role, User
 
@@ -78,5 +79,10 @@ def create_app():
         if blueprint:
             if not blueprint_enabled or blueprint_enabled(app):
                 app.register_blueprint(blueprint)
+
+    # We need an empty logout form on every page, providing CSRF validation
+    @app.context_processor
+    def logout_form():
+        return {'logout_form': FlaskForm()}
 
     return app

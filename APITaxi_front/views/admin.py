@@ -52,7 +52,7 @@ def logas():
     )
 
 
-@blueprint.route('/logas/logout')
+@blueprint.route('/logas/logout', methods=['POST'])
 def logas_logout():
     """Logout user. This endpoint should be called instead of
     flask_security.views.logout.
@@ -60,10 +60,16 @@ def logas_logout():
     If the user is logged with the "logas" feature, we attempt to reconnect the
     user back to his previous session.
 
-    XXX: for security purpose, this should be a POST endpoint. Since it is a
-    GET endpoint, there is no CSRF validation and an attacker can redirect a
-    logged-in user to force him to logout.
+    For security purpose, this must be a POST endpoint.
+    Without CSRF validation, an attacker can redirect a logged-in user to force him to logout.
     """
+    # CSRF Validation
+    form = FlaskForm()
+    if not form.validate_on_submit():
+        # On invalid token, don't do anything
+        # redirect to home as we don't have a logout landing page
+        return redirect(url_for('home.home'))
+
     logas_api_key = request.cookies.get('logas_real_api_key')
 
     if logas_api_key:
