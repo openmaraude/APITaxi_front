@@ -13,14 +13,16 @@
 
 <div class="search-panel">
   <h5>Filtres</h5>
-  <form class="d-flex flex-wrap" autocomplete="off">
-    <div class="form-group">
-      <label for="search_taxi_id">Id taxi</label>
-      <input data-filter-col="taxi_id" id="search_taxi_id" type="text" class="form-control" placeholder="Id taxi">
-    </div>
-    <div class="form-group">
-      <label for="search_hail_id">Id course</label>
-      <input data-filter-col="id" id="search_hail_id" type="text" class="form-control" placeholder="Id course">
+  <form autocomplete="off">
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="search_hail_id">Id course</label>
+        <input data-filter-col="id" id="search_hail_id" type="text" class="form-control">
+      </div>
+      <div class="form-group col-md-6">
+        <label for="search_taxi_id">Id taxi</label>
+        <input data-filter-col="taxi_id" id="search_taxi_id" type="text" class="form-control">
+      </div>
     </div>
   </form>
 </div>
