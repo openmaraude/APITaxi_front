@@ -21,6 +21,7 @@ DEPENDENCIES = [
     'faker',
     'requests',
     'dataclasses',  # for Python3.6
+    'sentry-sdk[flask]',
 ]
 
 TEST_DEPENDENCIES = [

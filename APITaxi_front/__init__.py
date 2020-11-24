@@ -11,6 +11,9 @@ from flask_redis import FlaskRedis
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_wtf import FlaskForm
 
+import sentry_sdk
+from sentry_sdk.integrations.redis import RedisIntegration
+
 from APITaxi_models2 import db, Role, User
 
 from . import views
@@ -51,6 +54,17 @@ def create_app():
     if 'APITAXI_CONFIG_FILE' not in os.environ:
         raise RuntimeError('APITAXI_CONFIG_FILE environment variable required')
     app.config.from_envvar('APITAXI_CONFIG_FILE')
+
+    sentry_dsn = app.config.get('SENTRY_DSN')
+    if sentry_dsn:
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+            # FlaskIntegration and Sqlalchemyintegration are enabled by default.
+            integrations=[
+                RedisIntegration(),
+            ],
+            traces_sample_rate=1.0
+        )
 
     app.template_filter('json')(jinja2_json_filter)
     app.template_filter('str_to_datetime')(jinja2_str_to_datetime_filter)
