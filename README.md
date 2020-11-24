@@ -15,7 +15,7 @@ Use [APITaxi_devel](https://github.com/openmaraude/APITaxi_devel) to run the pro
 On push, tests are automatically run by cirleci. To run tests locally, assuming you are using APITaxi_devel:
 
 ```bash
-$> docker exec -ti api_taxi bash
+$> docker-compose exec front bash
 api@f4fd953d0667:/git/APITaxi: pytest -v -x -s
 ```
 
