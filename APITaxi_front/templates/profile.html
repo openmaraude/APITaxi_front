@@ -25,7 +25,7 @@
   <form method="POST" novalidate autocomplete="off">
     {% if form.errors %}
       {# Don't display both error messages #}
-      {% if form.csrf_token.errors %}
+      {% if form.csrf_token is defined and form.csrf_token.errors %}
         {{ csrf.csrf_error(form) }}
       {% else %}
         <p class="text-danger">Formulaire invalide. Veuillez corriger les erreurs ci-dessous.</p>

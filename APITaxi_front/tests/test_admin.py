@@ -28,11 +28,11 @@ def test_logas_feature(admin, moteur, operateur):
     assert resp.status_code == 302
 
     # Try to logout
-    resp = admin.client.get('/logas/logout')
+    resp = admin.client.post('/logas/logout')
     assert resp.status_code == 302
     assert current_user.id == admin.user.id
 
     # Try to logout again from the origin account
-    resp = admin.client.get('/logas/logout')
+    resp = admin.client.post('/logas/logout')
     assert resp.status_code == 302
     assert current_user.is_anonymous
