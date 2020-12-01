@@ -251,13 +251,9 @@ def taxis(length, start, draw, columns=None):
         owner = get_integration_user(User.id)
 
     query = Taxi.query.options(
-        joinedload(Taxi.vehicle)
-    ).options(
-        joinedload(Taxi.driver)
-    ).options(
-        joinedload(Taxi.ads)
-        .joinedload(ADS.zupc)
-    ).options(
+        joinedload(Taxi.vehicle),
+        joinedload(Taxi.driver),
+        joinedload(Taxi.ads).joinedload(ADS.zupc),
         joinedload(Taxi.added_by)
     ).join(Vehicle).filter(
         Taxi.added_by_id == owner.id

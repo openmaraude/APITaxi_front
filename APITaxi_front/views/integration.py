@@ -225,12 +225,8 @@ def _get_taxi_details(taxi_id):
 
     try:
         taxi = Taxi.query.options(
-            joinedload(Taxi.vehicle)
-            .joinedload(Vehicle.descriptions)
-            .joinedload(VehicleDescription.added_by)
-        ).options(
-            joinedload(Taxi.ads)
-            .joinedload(ADS.zupc)
+            joinedload(Taxi.vehicle).joinedload(Vehicle.descriptions).joinedload(VehicleDescription.added_by),
+            joinedload(Taxi.ads).joinedload(ADS.zupc)
         ).filter(
             Taxi.id == taxi_id,
             or_(Taxi.added_by_id == integration_user.id, Taxi.added_by_id == current_user.id)
