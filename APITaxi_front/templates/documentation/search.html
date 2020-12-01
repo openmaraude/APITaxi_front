@@ -99,7 +99,23 @@ $> curl 'https://dev.api.taxi/hails/' \
   <li>L'adresse <i>customer_address</i> sera montée au taxi une fois la course acceptée par celui-ci.</li>
   <li>Vous <strong>devez</strong> vérifier la validité du <i>customer_phone_number</i>, que ce soit par un SMS de confirmation ou par un appel.</li>
   <li><i>customer_id</i> est votre identifiant pour ce client. Il doit être unique pour chaque client.</li>
+  <li>Vous recevez un <i>session_id</i> de type UUID4 dans la ressource renvoyée en réponse, voir ci-dessous.</li>
 </ul>
+
+<div class="jumbotron">
+    <p class="lead">Nouveau&nbsp;: <code>session_id</code></p>
+    <p>L'API considère maintenant les créations de course d'un même client comme faisant partie de la même session
+        utilisateur quand elles sont assez proches dans le temps (moins de 5 minutes entre deux requêtes).</p>
+    <p>La première requête se fait sans <code>session_id</code> et initie la session utilisateur. C'est l'API qui assigne
+        le <code>session_id</code> en le fournissant dans la réponse. L'application fournit ensuite ce <code>session_id</code>
+        dans les requêtes suivantes de la même session utilisateur. l'API vérifiera que cet ID existe et correspond bien à ce
+        client, mais il est à la discrétion de l'application de déterminer la durée de validité de cette session.</p>
+    <p>Il suffit de faire une requête sans <code>session_id</code> pour initier une nouvelle session.
+        L'API détecte automatiquement les requêtes espacées de moins de 5 minutes pour les assigner automatiquement à la
+        même session, mais ce champ pourrait être rendu obligatoire dans une future version de l'API.</p>
+    <p>Exemple de champ <code>session_id</code> dans la requête ou la réponse&nbps;:</p>
+    <pre>"session_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"<pre>
+</div>
 
 
 <h2 id="trip">Déroulement de la course</h2>
