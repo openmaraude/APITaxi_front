@@ -1,63 +1,64 @@
 {% extends "dashboards/base.html" %}
 
-{% block style %}
-  {% for status in success_status %}
-  .thumbnail.{{ status }} .thumbnail-title {
-    background-color: rgba(0, 150, 0, 0.4);
-  }
-  {% endfor %}
-{% endblock %}
-
 {% block main %}
-<h3>Courses par utilisateur du {{ start.strftime('%d/%m/%Y') }} au {{ end.strftime('%d/%m/%Y') }}</h3>
+<h3>Courses par utilisateur jusqu'au {{ start.strftime('%d/%m/%Y') }}</h3>
 
-<p>Cette page est uniquement accessible pour les administrateurs, et liste les courses effectuées par chaque utilisateur (numéro de téléphone).</p>
+<p>Cette page est uniquement accessible pour les administrateurs, et liste les courses effectuées par chaque utilisateur.</p>
 
 <div class="search-panel">
-  <h5>Filtres</h5>
-  <form method="get">
-    <label>Afficher les requêtes du <input type="date" name="date" value="{{ start.strftime('%Y-%m-%d') }}" /></label>
-    <input type="submit" />
-  </form>
+    <h5>Filtres</h5>
+    <form method="get">
+        <label>Afficher les requêtes jusqu'au <input type="date" name="date" value="{{ start.strftime('%Y-%m-%d') }}"> inclus</label>
+        <input type="submit" />
+    </form>
 </div>
 
 {% for group in customers_requests | groupby('data.date') | reverse %}
-  {% for req in group.list %}
-  <div class="thumbnails-group">
-    <div class="thumbnails-group-title">{{ req.data.phone }}</div>
-
-    <div class="thumbnails-list thumbnails-group-{{ 'success' if req.success else 'failure' }}">
-      {% for hail in req.data.hails %}
-      <div class="thumbnail {{ hail.status }}">
-        <div class="thumbnail-title">
-          {{ (hail.added_at | str_to_datetime).strftime('%H:%M:%S') }}
-          <br />
-          Opérateur: {{ hail.operator.commercial_name }}
-          <br />
-          Course par: {{ hail.added.commercial_name or hail.added.email }}
-          <br />
-          {{ hail.status }}
+<div class="card mt-3">
+    <h3 class="card-header">{{ group.grouper.strftime('%d/%m/%Y') }}</h3>
+    <div class="card-body">
+        {% for req in group.list %}
+        <div class="card mt-1 border-{{ 'success' if req.success else 'danger' }}">
+            <div class="card-header text-{{ 'success' if req.success else 'danger' }}">
+                Client&nbsp;: {{ req.data.customer_id }}
+                &mdash;
+                Course par&nbsp;: {{ req.added.commercial_name or req.added.email }}
+            </div>
+            <div class="card-body">
+                <div class="card-columns">
+                    {% for hail in req.data.hails %}
+                    <div class="card">
+                        <div class="card-header card-status-{{ 'success' if req.success else 'danger' }}">
+                            {{ (hail.added_at | str_to_datetime).strftime('%H:%M:%S') }}
+                            <br>
+                            Opérateur&nbsp;: {{ hail.operator.commercial_name }}
+                            <br>
+                            {{ hail.status }}
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><strong>Taxi:</strong> {{ hail.taxi_id }}</li>
+                            <li class="list-group-item">
+                                <a data-toggle="collapse" href="#hail-{{ hail.id }}" role="button">...</a>
+                                <div id="hail-{{ hail.id }}" class="collapse card-content-details">
+                                    <dl>
+                                        {% for key, value in hail.items() %}
+                                        <dt>{{ key }}:</dt>
+                                        <dd>{{ value }}</dd>
+                                        {% endfor %}
+                                    </dl>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
-        <div class="thumbnail-content">
-          <ul class="list-unstyled">
-            <li><strong>Taxi:</strong> {{ hail.taxi_id }}</li>
-            <li>
-              <a data-toggle="collapse" href="#hail-{{ hail.id }}" role="button">...</a>
-              <div id="hail-{{ hail.id }}" class="collapse thumbnail-content-details">
-                <ul class="list-unstyled">
-                {% for key, value in hail.items() %}
-                  <li><strong>{{ key }}:</strong> {{ value }}</li>
-                {% endfor %}
-                </ul>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-      {% endfor %}
+        {% endfor %}
     </div>
-  </div>
-  {% endfor %}
+</div>
 {% endfor %}
+
+<p><em>Note&nbsp;: seules les cinquante dernières courses sont affichées.</em></p>
 
 {% endblock %}

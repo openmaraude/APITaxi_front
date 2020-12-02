@@ -116,15 +116,16 @@ def hails_by_user():
         try:
             date = datetime.strptime(request.args.get('date'), '%Y-%m-%d')
         except ValueError:
-            flash("Argument date invalide. Affichage des courses d'aujourd'hui.", 'danger')
+            flash("Argument date invalide. Affichage des courses jusqu'à aujourd'hui.", 'danger')
 
     start = date.date()
     end = start + dateutil.relativedelta.relativedelta(days=+1)
 
-    # For each client (== phone number) and day, get all the hails
+    # For each client session and day, get all the hails
     query = Hail.query.with_entities(
         cast(Hail.added_at, Date).label('date'),
-        Hail.customer_phone_number.label('phone'),
+        Hail.customer_id,
+        Hail.added_by_id,
         func.JSON_AGG(
             aggregate_order_by(
                 literal_column('"' + Hail.__tablename__ + '"'),
@@ -132,14 +133,15 @@ def hails_by_user():
             )
         ).label('hails')
     ).filter(
-        cast(Hail.added_at, Date) >= start,
         cast(Hail.added_at, Date) < end,
     ).group_by(
-        Hail.customer_phone_number,
+        Hail.customer_id,
+        Hail.added_by_id,
+        Hail.session_id,
         cast(Hail.added_at, Date)
     ).order_by(
         cast(Hail.added_at, Date).desc()
-    )
+    )[:50]
 
     # Hails with this status are considered successful
     SUCCESS_STATUS = (
@@ -158,18 +160,19 @@ def hails_by_user():
         # expensive as it could appear.
         for idx, hail in enumerate(row.hails):
             hail['operator'] = User.query.get(hail['operateur_id'])
-            hail['added'] = User.query.get(hail['added_by'])
 
         customers_requests.append({
             'success': success,
             'data': row,
+            # See comment above
+            'added': User.query.get(row.added_by_id),
         })
 
     return render_template(
         'dashboards/hails_by_user.html',
         success_status=SUCCESS_STATUS,
         customers_requests=customers_requests,
-        start=start, end=end
+        start=start
     )
 
 

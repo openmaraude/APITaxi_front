@@ -147,50 +147,14 @@ footer img:hover {
 }
 
 /*
- * Thumbnails groups
+ * Card groups
  */
-.thumbnails-group {
-  display: flex;
-  align-items: center;
+.card-status-success {
+    background-color: rgba(0, 150, 0, 0.4);
 }
 
-.thumbnails-group-title, .thumbnails-list {
-  margin: 10px;
-  padding: 10px;
-}
-
-.thumbnails-group-title {
-  min-width: 170px;
-  font-weight: bold;
-}
-
-.thumbnails-group-failure {
-  border-left: 5px solid rgba(255, 0, 0, 0.4);
-}
-
-.thumbnails-group-success {
-  border-left: 5px solid rgba(0, 150, 0, 0.4);
-}
-
-.thumbnails-list {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.thumbnail {
-  border: 1px solid #aaa;
-  margin: 5px;
-}
-
-.thumbnail-title {
-  background-color: rgba(255, 0, 0, 0.4);
-  font-weight: bold;
-  padding: 10px;
-  text-align: center;
-}
-
-.thumbnail-content {
-  padding: 10px;
+.card-status-danger {
+    background-color: rgba(255, 0, 0, 0.4);
 }
 
 /*
