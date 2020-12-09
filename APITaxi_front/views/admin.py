@@ -59,9 +59,6 @@ def logas_logout():
 
     If the user is logged with the "logas" feature, we attempt to reconnect the
     user back to his previous session.
-
-    For security purpose, this must be a POST endpoint.
-    Without CSRF validation, an attacker can redirect a logged-in user to force him to logout.
     """
     # CSRF Validation
     form = FlaskForm()
