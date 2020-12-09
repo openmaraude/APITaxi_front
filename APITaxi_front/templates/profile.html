@@ -20,6 +20,14 @@
 
   <hr />
 
+  {% if manager %}
+  <h3>Gestionnaire de compte</h3>
+
+  <p>Votre compte est géré par <strong>{{ manager.commercial_name or manager.email }}</strong> qui peut accéder à votre profil, votre clé d'API, et effectuer des requêtes pour vous. S'il vous pensez qu'il s'agit d'une erreur, contactez-nous sur <i>equipe@le.taxi</i>.</p>
+
+  <hr />
+  {% endif %}
+
   <h3>Mes paramètres </h3>
 
   <form method="POST" novalidate autocomplete="off">
