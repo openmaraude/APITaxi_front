@@ -1,0 +1,11 @@
+{% macro display_exc(api_exc) %}
+<p class="alert alert-danger">
+  {% if api_exc.response is none %}
+    L'API n'a pas répondu. Veuillez réessayer la requête. Si le problème persiste, vous pouvez contacter nos équipes techniques.
+  {% else %}
+    La requête <strong>{{ api_exc.request.method }} {{api_exc.request.path_url }}</strong> à l'API qui a retourné une erreur <strong>HTTP/{{ api_exc.response.status_code }}</strong> avec la réponse ci-dessous. Si le problème persiste malgré un rechargement de la page, vous pouvez contacter nos équipes techniques.
+
+    <pre class="alert alert-danger">{{ api_exc.response.text | json }}</pre>
+  {% endif %}
+</p>
+{% endmacro %}

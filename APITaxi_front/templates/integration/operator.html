@@ -1,4 +1,5 @@
 {% extends "integration/base.html" %}
+{% import "/macros/api_error.html" as api_error %}
 
 {% block main %}
 <h3>Aide pour l'intégration — opérateur</h3>
@@ -25,6 +26,8 @@
 <hr />
 
 <p>Cliquez sur le bouton ci-dessous pour créer un nouveau taxi de test.</p>
+
+{% if api_exc %}{{ api_error.display_exc(api_exc) }}{% endif %}
 
 <form method="post" novalidate autocomplete="off">
   {% if taxi_create_form.errors %}

@@ -7,6 +7,7 @@ import time
 from urllib.parse import urljoin
 
 import requests
+from requests.exceptions import RequestException
 
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
@@ -116,44 +117,53 @@ def operator():
 
     api = APITaxiIntegrationClient()
 
-    driver = api.post('/drivers', {
-        'first_name': faker.first_name(),
-        'last_name': faker.last_name(),
-        'birth_date': faker.date(end_datetime=datetime(2000, 1, 1)),
-        'professional_licence': 'fake-' + str(int(random.random() * 10**9)),
-        'departement': {
-            'nom': 'Paris'
-        }
-    })
+    try:
+        driver = api.post('/drivers', {
+            'first_name': faker.first_name(),
+            'last_name': faker.last_name(),
+            'birth_date': faker.date(end_datetime=datetime(2000, 1, 1)),
+            'professional_licence': 'fake-' + str(int(random.random() * 10**9)),
+            'departement': {
+                'nom': 'Paris'
+            }
+        })
 
-    vehicle = api.post('/vehicles', {
-        'color': faker.safe_color_name(),
-        'licence_plate': faker.license_plate()
-    })
+        vehicle = api.post('/vehicles', {
+            'color': faker.safe_color_name(),
+            'licence_plate': faker.license_plate()
+        })
 
-    ads = api.post('/ads', {
-        'vehicle_id': vehicle['id'],
-        'category': '',
-        'insee': '75101',
-        'numero': str(random.randrange(1, 10**6)),
-        'owner_type': 'company',
-        'owner_name': 'le.taxi',
-        'doublage': False
-    })
-
-    api.post('/taxis', {
-        'ads': {
+        ads = api.post('/ads', {
+            'vehicle_id': vehicle['id'],
+            'category': '',
             'insee': '75101',
-            'numero': ads['numero']
-        },
-        'driver': {
-            'departement': '75',
-            'professional_licence': driver['professional_licence'],
-        },
-        'vehicle': {
-            'licence_plate': vehicle['licence_plate']
-        }
-    })
+            'numero': str(random.randrange(1, 10**6)),
+            'owner_type': 'company',
+            'owner_name': 'le.taxi',
+            'doublage': False
+        })
+
+        api.post('/taxis', {
+            'ads': {
+                'insee': '75101',
+                'numero': ads['numero']
+            },
+            'driver': {
+                'departement': '75',
+                'professional_licence': driver['professional_licence'],
+            },
+            'vehicle': {
+                'licence_plate': vehicle['licence_plate']
+            }
+        })
+    except RequestException as exc:
+        print(exc.response)
+        return render_template(
+            'integration/operator.html',
+            taxi_create_form=taxi_create_form,
+            api_exc=exc
+        )
+
     return redirect(url_for('integration.operator'))
 
 
@@ -263,11 +273,18 @@ def operator_taxi_details(taxi_id):
     update the status and the location."""
     integration_user, taxi, last_locations = _get_taxi_details(taxi_id)
 
+    set_status_api_exc = None
+    set_location_api_exc = None
+
     status_form = TaxiStatusForm()
     if status_form.submit_taxi_status.data and status_form.validate_on_submit():
         api = APITaxiIntegrationClient()
-        api.put('/taxis/%s' % taxi.id, {'status': status_form.status.data})
-        return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
+        try:
+            api.put('/taxis/%s' % taxi.id, {'status': status_form.status.data})
+        except requests.exceptions.HTTPError as exc:
+            set_status_api_exc = exc
+        else:
+            return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
 
     location_form = TaxiLocationForm()
     if location_form.submit_taxi_location.data and location_form.validate_on_submit():
@@ -279,9 +296,12 @@ def operator_taxi_details(taxi_id):
         )
 
         api = APITaxiIntegrationClient()
-        api.put('/taxis/%s' % taxi.id, {'status': 'free'})
-
-        return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
+        try:
+            api.put('/taxis/%s' % taxi.id, {'status': 'free'})
+        except requests.exceptions.HTTPError as exc:
+            set_location_api_exc = exc
+        else:
+            return redirect(url_for('integration.operator_taxi_details', taxi_id=taxi_id))
 
     return render_template(
         'integration/operator_taxi_details.html',
@@ -289,7 +309,9 @@ def operator_taxi_details(taxi_id):
         status_form=status_form,
         location_form=location_form,
         last_locations=last_locations,
-        integration_user=integration_user
+        integration_user=integration_user,
+        set_status_api_exc=set_status_api_exc,
+        set_location_api_exc=set_location_api_exc
     )
 
 
@@ -300,13 +322,17 @@ def search():
     """Page to call api.taxi to list taxis around a location."""
     location_form = TaxiLocationForm()
 
+    api_exc = None
     taxis = None
 
     if location_form.validate_on_submit():
         api = APITaxiIntegrationClient()
-        taxis = api.get('/taxis', lon=location_form.lon.data, lat=location_form.lat.data)
+        try:
+            taxis = api.get('/taxis', lon=location_form.lon.data, lat=location_form.lat.data)
+        except RequestException as exc:
+            api_exc = exc
 
-    return render_template('integration/search.html', location_form=location_form, taxis=taxis)
+    return render_template('integration/search.html', location_form=location_form, taxis=taxis, api_exc=api_exc)
 
 
 class CreateHailForm(FlaskForm):
@@ -333,7 +359,7 @@ def search_taxi_details(taxi_id):
         for vehicle_description in taxi.vehicle.descriptions
     ]
 
-    api_error_msg = None
+    api_exc = None
 
     if create_hail_form.validate_on_submit():
         api = APITaxiIntegrationClient(user=integration_user)
@@ -349,14 +375,14 @@ def search_taxi_details(taxi_id):
             })
             return redirect(url_for('integration.search_hail_details', hail_id=resp['id']))
         except requests.exceptions.HTTPError as exc:
-            api_error_msg = json.dumps(exc.response.json(), indent=2)
+            api_exc = exc
 
     return render_template(
         'integration/search_taxi_details.html',
         taxi=taxi,
         last_locations=last_locations,
         create_hail_form=create_hail_form,
-        api_error_msg=api_error_msg
+        api_exc=api_exc
     )
 
 
@@ -416,7 +442,12 @@ def search_hail_details(hail_id):
         # one.
         if status_form.status.data == 'accepted_by_taxi':
             payload['taxi_phone_number'] = '+33600000000'
-        api.put('/hails/%s' % hail_id, payload)
+
+        try:
+            api.put('/hails/%s' % hail_id, payload)
+        except RequestException as exc:
+            return render_template(template, hail=hail, api_exc=exc)
+
         return redirect(url_for(request.endpoint, hail_id=hail_id))
 
     return render_template(template, hail=hail, status_form=status_form)

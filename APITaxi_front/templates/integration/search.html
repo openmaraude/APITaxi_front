@@ -1,5 +1,6 @@
 {% extends "integration/base.html" %}
 {% import "/macros/csrf.html" as csrf %}
+{% import "/macros/api_error.html" as api_error %}
 
 {% block main %}
 <h3>Aide pour l'intégration — moteur de recherche</h3>
@@ -13,6 +14,8 @@
 <p>Renseignez des coordonnées pour lister les taxis autour de ce point.</p>
 
 {{ csrf.csrf_error(location_form) }}
+
+{% if api_exc %}{{ api_error.display_exc(api_exc) }}{% endif %}
 
 <form class="mb-3" method="POST" novalidate autocomplete="off">
   <div class="form-row">

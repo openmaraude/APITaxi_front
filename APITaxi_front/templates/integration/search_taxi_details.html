@@ -1,5 +1,6 @@
 {% extends "integration/base.html" %}
 {% import "/macros/csrf.html" as csrf %}
+{% import "/macros/api_error.html" as api_error %}
 
 {% block main %}
 
@@ -15,12 +16,7 @@
 
 <h5>Course</h5>
 
-{% if api_error_msg %}
-<p class="alert alert-danger">
-    L'API a retourné l'erreur suivante :
-    <pre class="alert alert-danger">{{ api_error_msg }}</pre>
-</p>
-{% endif %}
+{% if api_exc %}{{ api_error.display_exc(api_exc) }}{% endif %}
 
 <p>Si le taxi est disponible, vous pouvez effectuer une demande de course. Vous pouvez modifier les paramètres par défaut.</p>
 

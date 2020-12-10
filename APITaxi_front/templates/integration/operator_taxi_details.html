@@ -1,5 +1,6 @@
 {% extends "integration/base.html" %}
 {% import "/macros/csrf.html" as csrf %}
+{% import "/macros/api_error.html" as api_error %}
 
 {% block main %}
 <h3>Détails du taxi de test {{ taxi.id }}</h3>
@@ -11,6 +12,8 @@
 <p>Vous pouvez changer le statut du taxi avec l'opérateur <i>{{ integration_user.commercial_name or integration_user.email }}</i>. Seuls les taxis avec le statut <i>free</i> dont la géolocalisation a été mise à jour il y a moins de deux minutes sont visibles sur la carte et peuvent recevoir des courses.</p>
 
 {{ csrf.csrf_error(status_form) }}
+
+{% if set_status_api_exc %}{{ api_error.display_exc(set_status_api_exc) }}{% endif %}
 
 <form class="mb-3" method="POST" novalidate autocomplete="off">
   <div class="form-row">
@@ -41,6 +44,8 @@
 <p>Renseignez les coordonnées vers lesquelles vous souhaitez déplacer le taxi avec l'opérateur <i>{{ integration_user.commercial_name or integration_user.email }}</i>. Une fois la modification effectuée, le taxi sera considéré comme libre et vous pourrez le voir sur la carte.</p>
 
 {{ csrf.csrf_error(location_form) }}
+
+{% if set_location_api_exc %}{{ api_error.display_exc(set_location_api_exc) }}{% endif %}
 
 <form class="mb-3" method="POST" novalidate autocomplete="off">
   <div class="form-row">
