@@ -55,7 +55,7 @@
             </li>
 
             <li class="nav-item">
-              <form action="{{ url_for('admin.logas_logout') }}" method="POST" class="form-inline">
+              <form action="{{ url_for('logout.logout') }}" method="POST" class="form-inline">
                 <button type="submit" class="btn btn-link nav-link">Déconnexion</button>
                 {{ logout_form.hidden_tag() }}
               </form>
