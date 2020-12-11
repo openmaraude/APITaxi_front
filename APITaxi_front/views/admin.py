@@ -4,7 +4,6 @@ from flask import Blueprint, redirect, request, url_for
 from flask_login import login_user
 import flask_security
 from flask_security import login_required, roles_accepted
-from flask_wtf import FlaskForm
 from wtforms import IntegerField
 
 from APITaxi_models2 import User
@@ -20,10 +19,6 @@ blueprint = Blueprint('admin', __name__)
 @roles_accepted('admin')
 def index():
     return redirect(url_for('admin.logas'))
-
-
-class LogAsForm(FlaskForm):
-    user_id = IntegerField()
 
 
 class AdminLogAs(LogAsView):
