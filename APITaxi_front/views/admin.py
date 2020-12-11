@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from flask import Blueprint, redirect, url_for
 from flask_security import login_required, roles_accepted
 

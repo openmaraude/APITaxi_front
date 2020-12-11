@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """This module gathers JSON endpoints, used by AJAX calls.
 """
 
