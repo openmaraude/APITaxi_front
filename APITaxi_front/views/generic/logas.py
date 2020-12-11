@@ -15,29 +15,32 @@ class LogAsForm(FlaskForm):
     user_id = IntegerField()
 
 
-def set_logas_cookie(response, logas_api_keys):
-    if not logas_api_keys:
-        response.delete_cookie('logas_real_api_key')
-    else:
-        response.set_cookie('logas_real_api_key', json.dumps(logas_api_keys))
+class LogAsCookieMixin:
+
+    cookie_name = 'logas_real_api_key'
+
+    def set_logas_cookie(self, response, logas_api_keys):
+        if not logas_api_keys:
+            response.delete_cookie(self.cookie_name)
+        else:
+            response.set_cookie(self.cookie_name, json.dumps(logas_api_keys))
+
+    def load_logas_cookie(self):
+        value = request.cookies.get(self.cookie_name)
+        if not value:
+            return []
+        try:
+            keys = json.loads(value)
+        except json.decoder.JSONDecodeError:
+            return []
+
+        if not isinstance(keys, list):
+            return []
+
+        return keys
 
 
-def load_logas_cookie(cookies):
-    value = cookies.get('logas_real_api_key')
-    if not value:
-        return []
-    try:
-        keys = json.loads(value)
-    except json.decoder.JSONDecodeError:
-        return []
-
-    if not isinstance(keys, list):
-        return []
-
-    return keys
-
-
-class LogAsView(View):
+class LogAsView(View, LogAsCookieMixin):
 
     user_model = None
     template_name = None
@@ -63,7 +66,6 @@ class LogAsView(View):
         return query.filter_by(id=user_id).one_or_none()
 
     def dispatch_request(self):
-
         form = LogAsForm()
 
         if form.validate_on_submit():
@@ -74,7 +76,7 @@ class LogAsView(View):
                 abort(Response('Invalid user', status=404))
 
             response = redirect(self.get_redirect_on_success())
-            set_logas_cookie(response, [current_user.apikey] + load_logas_cookie(request.cookies))
+            self.set_logas_cookie(response, [current_user.apikey] + self.load_logas_cookie())
 
             login_user(user)
             return response
@@ -82,7 +84,7 @@ class LogAsView(View):
         return render_template(self.get_template_name(), logas_form=form)
 
 
-class LogoutAsView(View):
+class LogoutAsView(View, LogAsCookieMixin):
 
     redirect_on_success = '/'
     user_model = None
@@ -100,7 +102,7 @@ class LogoutAsView(View):
         if not form.validate_on_submit():
             return redirect('/')
 
-        logas_api_keys = load_logas_cookie(request.cookies)
+        logas_api_keys = self.load_logas_cookie()
         if not logas_api_keys:
             return flask_security.views.logout()
 
@@ -112,6 +114,6 @@ class LogoutAsView(View):
             login_user(user)
 
         logas_api_keys.pop(0)
-        set_logas_cookie(response, logas_api_keys)
+        self.set_logas_cookie(response, logas_api_keys)
 
         return response
