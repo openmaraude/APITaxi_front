@@ -51,10 +51,6 @@ class LogAsView(View):
             raise NotImplementedError('You should override template_name or get_template_name()')
         return self.template_name
 
-    def get_users_model(self):
-        """SQLAlchemy User model."""
-        return self.user_model
-
     def get_users_query(self):
         """Override to specify the query to limit the users possible to log as."""
         if not self.user_model:
