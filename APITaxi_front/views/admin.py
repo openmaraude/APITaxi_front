@@ -9,7 +9,7 @@ from wtforms import IntegerField
 
 from APITaxi_models2 import User
 
-from .generic.logas import LogAsView, load_logas_cookie, set_logas_cookie
+from .generic.logas import LogAsView, LogoutAsView
 
 
 blueprint = Blueprint('admin', __name__)
@@ -49,34 +49,16 @@ blueprint.add_url_rule(
 )
 
 
-@blueprint.route('/logas/logout', methods=['POST'])
-def logas_logout():
-    """Logout user. This endpoint should be called instead of
-    flask_security.views.logout.
+class Logout(LogoutAsView):
 
-    If the user is logged with the "logas" feature, we attempt to reconnect the
-    user back to his previous session.
-    """
-    # CSRF Validation
-    form = FlaskForm()
-    if not form.validate_on_submit():
-        # On invalid token, don't do anything
-        # redirect to home as we don't have a logout landing page
-        return redirect(url_for('home.home'))
+    user_model = User
 
-    logas_api_keys = load_logas_cookie(request.cookies)
+    def get_redirect_on_success(self):
+        return url_for('home.home')
 
-    if logas_api_keys:
-        user = User.query.filter(User.apikey == logas_api_keys[0]).first()
-        if not user:  # bad API key
-            response = flask_security.views.logout()
-        else:
-            response = redirect(url_for('admin.logas'))
-            login_user(user)
 
-        logas_api_keys.pop(0)
-        set_logas_cookie(response, logas_api_keys)
-
-        return response
-
-    return flask_security.views.logout()
+blueprint.add_url_rule(
+    '/logas/logout',
+    view_func=Logout.as_view('logas_logout'),
+    methods=['POST']
+)
