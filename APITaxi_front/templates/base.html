@@ -17,7 +17,7 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <a class="navbar-brand" href="{{ url_for('home.home') }}">Registre des taxis</a>
-      {% if request.cookies.logas_real_api_key %}
+      {% if request.cookies.logas_secrets %}
       <small class="text-danger">(Connecté en tant que {{ current_user.commercial_name or "" }} / {{ current_user.email or "" }})</small>
       {% endif %}
 

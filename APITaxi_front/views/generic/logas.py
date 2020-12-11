@@ -17,13 +17,13 @@ class LogAsForm(FlaskForm):
 
 class LogAsCookieMixin:
 
-    cookie_name = 'logas_real_api_key'
+    cookie_name = 'logas_secrets'
 
-    def set_logas_cookie(self, response, logas_api_keys):
-        if not logas_api_keys:
+    def set_logas_cookie(self, response, logas_secrets):
+        if not logas_secrets:
             response.delete_cookie(self.cookie_name)
         else:
-            response.set_cookie(self.cookie_name, json.dumps(logas_api_keys))
+            response.set_cookie(self.cookie_name, json.dumps(logas_secrets))
 
     def load_logas_cookie(self):
         value = request.cookies.get(self.cookie_name)
@@ -101,11 +101,11 @@ class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixi
         if not form.validate_on_submit():
             return redirect('/')
 
-        logas_api_keys = self.load_logas_cookie()
-        if not logas_api_keys:
+        logas_secrets = self.load_logas_cookie()
+        if not logas_secrets:
             return flask_security.views.logout()
 
-        user_filter = {self.user_secret_attr: logas_api_keys[0]}
+        user_filter = {self.user_secret_attr: logas_secrets[0]}
         user = self.get_users_query().filter_by(**user_filter).first()
         if not user:  # bad API key
             response = flask_security.views.logout()
@@ -113,7 +113,7 @@ class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixi
             response = redirect(self.get_redirect_on_success())
             login_user(user)
 
-        logas_api_keys.pop(0)
-        self.set_logas_cookie(response, logas_api_keys)
+        logas_secrets.pop(0)
+        self.set_logas_cookie(response, logas_secrets)
 
         return response

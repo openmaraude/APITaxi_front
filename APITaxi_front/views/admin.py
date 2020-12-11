@@ -48,9 +48,8 @@ blueprint.add_url_rule(
 
 
 class Logout(LogoutAsView):
-
-    redirect_on_success = 'home.home'
     user_model = User
+    redirect_on_success = 'home.home'
 
 
 blueprint.add_url_rule(
