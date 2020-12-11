@@ -50,10 +50,11 @@ class LogAsRedirectMixin:
         return '/'
 
 
-class LogAsView(View, LogAsCookieMixin, LogAsRedirectMixin):
+class LogAsSQLAUserMixin:
 
     user_model = None
-    template_name = None
+    user_id_attr = 'id'
+    user_secret_attr = 'apikey'
 
     def get_users_query(self):
         """Override to specify the query to limit the users possible to log as."""
@@ -63,7 +64,13 @@ class LogAsView(View, LogAsCookieMixin, LogAsRedirectMixin):
 
     def get_user(self, query, user_id):
         """Given a query on the user model, get the user instance."""
-        return query.filter_by(id=user_id).one_or_none()
+        filters = {self.user_id_attr: user_id}
+        return query.filter_by(**filters).one_or_none()
+
+
+class LogAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixin):
+
+    template_name = None
 
     def dispatch_request(self):
         form = LogAsForm()
@@ -76,7 +83,10 @@ class LogAsView(View, LogAsCookieMixin, LogAsRedirectMixin):
                 abort(Response('Invalid user', status=404))
 
             response = redirect(self.get_redirect_on_success())
-            self.set_logas_cookie(response, [current_user.apikey] + self.load_logas_cookie())
+            self.set_logas_cookie(
+                response,
+                [getattr(current_user, self.user_secret_attr)] + self.load_logas_cookie()
+            )
 
             login_user(user)
             return response
@@ -84,14 +94,7 @@ class LogAsView(View, LogAsCookieMixin, LogAsRedirectMixin):
         return render_template(self.template_name, logas_form=form)
 
 
-class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin):
-
-    user_model = None
-
-    def get_user_model(self):
-        if not self.user_model:
-            raise NotImplementedError('You should override user_model or get_user_model()')
-        return self.user_model
+class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixin):
 
     def dispatch_request(self):
         form = FlaskForm()
@@ -102,7 +105,8 @@ class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin):
         if not logas_api_keys:
             return flask_security.views.logout()
 
-        user = self.get_user_model().query.filter_by(apikey=logas_api_keys[0]).first()
+        user_filter = {self.user_secret_attr: logas_api_keys[0]}
+        user = self.get_users_query().filter_by(**user_filter).first()
         if not user:  # bad API key
             response = flask_security.views.logout()
         else:
