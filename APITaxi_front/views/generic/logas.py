@@ -131,7 +131,9 @@ class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixi
         if not logas_secrets:
             return flask_security.views.logout()
 
-        user_filter = {self.user_secret_attr: logas_secrets[0]}
+        secret = logas_secrets.pop(0)
+
+        user_filter = {self.user_secret_attr: secret}
         user = self.get_users_query().filter_by(**user_filter).first()
         if not user:
             response = flask_security.views.logout()
@@ -139,7 +141,5 @@ class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixi
             response = redirect(self.get_redirect_on_success())
             login_user(user)
 
-        logas_secrets.pop(0)
         self.set_logas_cookie(response, logas_secrets)
-
         return response
