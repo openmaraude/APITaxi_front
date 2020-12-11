@@ -37,6 +37,12 @@
             <li class="nav-item">
                 <a class="nav-link{% if url_for('dashboards.index') in request.path %} active{% endif %}" href="{{ url_for('dashboards.index') }}">Tableaux de bord</a>
             </li>
+
+            {% if current_user.managed %}
+                <li class="nav-item">
+                    <a class="nav-link{% if url_for('manager.index') in request.path %} active{% endif %}" href="{{ url_for('manager.index') }}">Gestion des opérateurs</a>
+                </li>
+            {% endif %}
             {% endif %}
 
             <li class="nav-item">
