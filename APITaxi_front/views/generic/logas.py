@@ -49,12 +49,6 @@ class LogAsView(View, LogAsCookieMixin):
     def get_redirect_on_success(self):
         return self.redirect_on_success
 
-    def get_template_name(self):
-        """Template to render."""
-        if not self.template_name:
-            raise NotImplementedError('You should override template_name or get_template_name()')
-        return self.template_name
-
     def get_users_query(self):
         """Override to specify the query to limit the users possible to log as."""
         if not self.user_model:
@@ -81,7 +75,7 @@ class LogAsView(View, LogAsCookieMixin):
             login_user(user)
             return response
 
-        return render_template(self.get_template_name(), logas_form=form)
+        return render_template(self.template_name, logas_form=form)
 
 
 class LogoutAsView(View, LogAsCookieMixin):
