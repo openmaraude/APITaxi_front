@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from flask import abort, Blueprint, redirect, render_template, request, Response, url_for
+from flask import Blueprint, redirect, request, url_for
 from flask_login import login_user
 import flask_security
-from flask_security import current_user, login_required, roles_accepted
+from flask_security import login_required, roles_accepted
 from flask_wtf import FlaskForm
 from wtforms import IntegerField
 
 from APITaxi_models2 import User
+
+from .generic.logas import LogAsView
 
 
 blueprint = Blueprint('admin', __name__)
@@ -24,32 +26,27 @@ class LogAsForm(FlaskForm):
     user_id = IntegerField()
 
 
-@blueprint.route('/admin/logas', methods=['GET', 'POST'])
-@login_required
-@roles_accepted('admin')
-def logas():
-    """List users. If POST and user_id is submitted, save the current API key
-    in cookie and login as the user.
-
-    View is calling the endpoint /api/users to display data.
+class AdminLogAs(LogAsView):
+    """Logas view for administrators. We allow to login as any user, so there
+    is no filter on the users_model.
     """
-    form = LogAsForm()
+    decorators = [
+        login_required,
+        roles_accepted('admin')
+    ]
 
-    if form.validate_on_submit():
-        user = User.query.get(form.user_id.data)
-        if not user:
-            abort(Response('Invalid user', status=404))
+    template_name = 'admin/logas.html'
+    user_model = User
 
-        response = redirect(url_for('home.home'))
-        response.set_cookie('logas_real_api_key', current_user.apikey)
+    def get_redirect_on_success(self):
+        return url_for('home.home')
 
-        login_user(user)
-        return response
 
-    return render_template(
-        'admin/logas.html',
-        logas_form=form
-    )
+blueprint.add_url_rule(
+    '/admin/logas',
+    view_func=AdminLogAs.as_view('logas'),
+    methods=['GET', 'POST']
+)
 
 
 @blueprint.route('/logas/logout', methods=['POST'])
