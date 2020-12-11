@@ -2,7 +2,7 @@
 
 import json
 
-from flask import abort, redirect, render_template, request, Response
+from flask import abort, redirect, render_template, request, Response, url_for
 from flask_login import login_user
 import flask_security
 from flask_security import current_user
@@ -40,14 +40,20 @@ class LogAsCookieMixin:
         return keys
 
 
-class LogAsView(View, LogAsCookieMixin):
+class LogAsRedirectMixin:
+
+    redirect_on_success = None
+
+    def get_redirect_on_success(self):
+        if self.redirect_on_success:
+            return url_for(self.redirect_on_success)
+        return '/'
+
+
+class LogAsView(View, LogAsCookieMixin, LogAsRedirectMixin):
 
     user_model = None
     template_name = None
-    redirect_on_success = '/'
-
-    def get_redirect_on_success(self):
-        return self.redirect_on_success
 
     def get_users_query(self):
         """Override to specify the query to limit the users possible to log as."""
@@ -78,13 +84,9 @@ class LogAsView(View, LogAsCookieMixin):
         return render_template(self.template_name, logas_form=form)
 
 
-class LogoutAsView(View, LogAsCookieMixin):
+class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin):
 
-    redirect_on_success = '/'
     user_model = None
-
-    def get_redirect_on_success(self):
-        return self.redirect_on_success
 
     def get_user_model(self):
         if not self.user_model:

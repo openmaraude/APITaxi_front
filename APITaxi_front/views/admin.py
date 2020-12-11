@@ -37,9 +37,7 @@ class AdminLogAs(LogAsView):
 
     template_name = 'admin/logas.html'
     user_model = User
-
-    def get_redirect_on_success(self):
-        return url_for('home.home')
+    redirect_on_success = 'home.home'
 
 
 blueprint.add_url_rule(
@@ -51,10 +49,8 @@ blueprint.add_url_rule(
 
 class Logout(LogoutAsView):
 
+    redirect_on_success = 'home.home'
     user_model = User
-
-    def get_redirect_on_success(self):
-        return url_for('home.home')
 
 
 blueprint.add_url_rule(
