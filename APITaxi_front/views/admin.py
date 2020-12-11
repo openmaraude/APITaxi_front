@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from flask import Blueprint, redirect, request, url_for
-from flask_login import login_user
-import flask_security
+from flask import Blueprint, redirect, url_for
 from flask_security import login_required, roles_accepted
-from wtforms import IntegerField
 
 from APITaxi_models2 import User
 
-from .generic.logas import LogAsView, LogoutAsView
+from .generic.logas import LogAsView
 
 
 blueprint = Blueprint('admin', __name__)
