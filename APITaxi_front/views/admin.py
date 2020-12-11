@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import json
+
 from flask import Blueprint, redirect, request, url_for
 from flask_login import login_user
 import flask_security
@@ -9,7 +11,7 @@ from wtforms import IntegerField
 
 from APITaxi_models2 import User
 
-from .generic.logas import LogAsView
+from .generic.logas import LogAsView, load_logas_cookie
 
 
 blueprint = Blueprint('admin', __name__)
@@ -64,17 +66,25 @@ def logas_logout():
         # redirect to home as we don't have a logout landing page
         return redirect(url_for('home.home'))
 
-    logas_api_key = request.cookies.get('logas_real_api_key')
+    logas_api_keys = load_logas_cookie(request.cookies)
 
-    if logas_api_key:
-        user = User.query.filter(User.apikey == logas_api_key).first()
+    if logas_api_keys:
+        user = User.query.filter(User.apikey == logas_api_keys[0]).first()
         if not user:  # bad API key
             response = flask_security.views.logout()
         else:
             response = redirect(url_for('admin.logas'))
             login_user(user)
 
-        response.delete_cookie('logas_real_api_key')
+        logas_api_keys.pop(0)
+        if not logas_api_keys:
+            response.delete_cookie('logas_real_api_key')
+        else:
+            response.set_cookie(
+                'logas_real_api_key',
+                json.dumps(logas_api_keys)
+            )
+
         return response
 
     return flask_security.views.logout()

@@ -1,6 +1,8 @@
 """Generic views for the LogAs feature."""
 
-from flask import abort, redirect, render_template, Response
+import json
+
+from flask import abort, redirect, render_template, request, Response
 from flask_login import login_user
 from flask_security import current_user
 from flask.views import View
@@ -10,6 +12,21 @@ from wtforms import IntegerField
 
 class LogAsForm(FlaskForm):
     user_id = IntegerField()
+
+
+def load_logas_cookie(cookies):
+    value = cookies.get('logas_real_api_key')
+    if not value:
+        return []
+    try:
+        keys = json.loads(value)
+    except json.decoder.JSONDecodeError:
+        return []
+
+    if not isinstance(keys, list):
+        return []
+
+    return keys
 
 
 class LogAsView(View):
@@ -42,6 +59,7 @@ class LogAsView(View):
         return query.filter_by(id=user_id).one_or_none()
 
     def dispatch_request(self):
+
         form = LogAsForm()
 
         if form.validate_on_submit():
@@ -52,7 +70,11 @@ class LogAsView(View):
                 abort(Response('Invalid user', status=404))
 
             response = redirect(self.get_redirect_on_success())
-            response.set_cookie('logas_real_api_key', current_user.apikey)
+
+            response.set_cookie(
+                'logas_real_api_key',
+                json.dumps([current_user.apikey] + load_logas_cookie(request.cookies))
+            )
 
             login_user(user)
             return response
