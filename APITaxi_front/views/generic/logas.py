@@ -64,7 +64,7 @@ class LogAsRedirectMixin:
 class LogAsSQLAUserMixin:
     user_model = None
     user_id_attr = 'id'
-    user_secret_attr = 'apikey'
+    user_secret_attr = 'password'
 
     def get_users_query(self):
         """List users. Returns <user_model>.query by default, which returns all
