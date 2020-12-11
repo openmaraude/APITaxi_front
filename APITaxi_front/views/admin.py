@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
-
 from flask import Blueprint, redirect, request, url_for
 from flask_login import login_user
 import flask_security
@@ -11,7 +9,7 @@ from wtforms import IntegerField
 
 from APITaxi_models2 import User
 
-from .generic.logas import LogAsView, load_logas_cookie
+from .generic.logas import LogAsView, load_logas_cookie, set_logas_cookie
 
 
 blueprint = Blueprint('admin', __name__)
@@ -77,13 +75,7 @@ def logas_logout():
             login_user(user)
 
         logas_api_keys.pop(0)
-        if not logas_api_keys:
-            response.delete_cookie('logas_real_api_key')
-        else:
-            response.set_cookie(
-                'logas_real_api_key',
-                json.dumps(logas_api_keys)
-            )
+        set_logas_cookie(response, logas_api_keys)
 
         return response
 

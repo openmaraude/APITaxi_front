@@ -29,6 +29,13 @@ def load_logas_cookie(cookies):
     return keys
 
 
+def set_logas_cookie(response, logas_api_keys):
+    if not logas_api_keys:
+        response.delete_cookie('logas_real_api_key')
+    else:
+        response.set_cookie('logas_real_api_key', json.dumps(logas_api_keys))
+
+
 class LogAsView(View):
 
     user_model = None
@@ -70,11 +77,7 @@ class LogAsView(View):
                 abort(Response('Invalid user', status=404))
 
             response = redirect(self.get_redirect_on_success())
-
-            response.set_cookie(
-                'logas_real_api_key',
-                json.dumps([current_user.apikey] + load_logas_cookie(request.cookies))
-            )
+            set_logas_cookie(response, [current_user.apikey] + load_logas_cookie(request.cookies))
 
             login_user(user)
             return response
