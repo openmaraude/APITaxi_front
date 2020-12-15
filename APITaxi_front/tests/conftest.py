@@ -77,7 +77,7 @@ def _create_client(app, roles):
 
 @pytest.fixture
 def anonymous(app):
-    yield from _create_client(app, [])
+    yield from _create_client(app, None)
 
 
 @pytest.fixture
