@@ -56,7 +56,7 @@ class LogAsCookieMixin:
     def get_current_session(self):
         """Get the value of flask_login remember_token. On logas, this value is
         saved. On logout, we use
-        flask_login.login_maanger._load_user_from_remember_cookie() to login.
+        flask_login.login_manager._load_user_from_remember_cookie() to login.
         """
         remember_cookie_name = current_app.config.get(
             'REMEMBER_COOKIE_NAME', flask_login.COOKIE_NAME
