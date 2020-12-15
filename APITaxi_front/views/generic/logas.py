@@ -145,7 +145,7 @@ class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixi
         except itsdangerous.exc.BadSignature:
             response = flask_security.views.logout()
             self.store_logas_sessions(response, [])
-            return response
+            return response, 400
 
         user = self.get_user(self.get_users_query(), last_logas_session['_user_id'])
         # Cookie is valid, but user has been deleted. Remove all logas sessions
