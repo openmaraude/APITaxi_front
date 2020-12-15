@@ -77,7 +77,6 @@ class LogAsRedirectMixin:
 
 class LogAsSQLAUserMixin:
     user_model = None
-    user_id_attr = 'id'
 
     def get_users_query(self):
         """List users. Returns <user_model>.query by default, which returns all
@@ -90,8 +89,7 @@ class LogAsSQLAUserMixin:
 
     def get_user(self, query, user_id):
         """Given a query on the user model, get the user instance."""
-        filters = {self.user_id_attr: user_id}
-        return query.filter_by(**filters).one_or_none()
+        return query.filter_by(id=user_id).one_or_none()
 
 
 class LogAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixin):
