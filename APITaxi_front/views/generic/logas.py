@@ -2,13 +2,13 @@
 
 import json
 
+import flask
 from flask import abort, current_app, redirect, render_template, request, Response, url_for
-import flask_login
 from flask_login import login_user
 import flask_security
-from flask_security import current_user
 from flask.views import View
 from flask_wtf import FlaskForm
+import itsdangerous
 from wtforms import IntegerField
 
 
@@ -52,17 +52,6 @@ class LogAsCookieMixin:
             return []
 
         return logas_sessions
-
-    def get_current_session(self):
-        """Get the value of flask_login remember_token. On logas, this value is
-        saved. On logout, we use
-        flask_login.login_manager._load_user_from_remember_cookie() to login.
-        """
-        remember_cookie_name = current_app.config.get(
-            'REMEMBER_COOKIE_NAME', flask_login.COOKIE_NAME
-        )
-        ret = request.cookies.get(remember_cookie_name)
-        return ret
 
 
 class LogAsRedirectMixin:
@@ -116,13 +105,14 @@ class LogAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixin):
 
             response = redirect(self.get_redirect_on_success())
 
-            # Prepend current remember_token in the list of logas_sessions.
+            # Prepend current session in the list of logas_sessions.
             logas_sessions = self.get_logas_sessions()
-            current_session = self.get_current_session()
-            self.store_logas_sessions(response, [current_session] + logas_sessions)
+            signed_session = current_app.session_interface.get_signing_serializer(current_app).dumps(
+                dict(flask.session)
+            )
+            self.store_logas_sessions(response, [signed_session] + logas_sessions)
 
-            # Login as the new user, and update the response cookie.
-            login_user(user, remember=True)
+            login_user(user)
 
             return response
 
@@ -145,17 +135,30 @@ class LogoutAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixi
         if not logas_sessions:
             return flask_security.views.logout()
 
-        last_logas_session = logas_sessions.pop(0)
-        user = current_app.login_manager._load_user_from_remember_cookie(last_logas_session)
+        signed_last_logas_session = logas_sessions.pop(0)
 
+        try:
+            last_logas_session = current_app.session_interface.get_signing_serializer(
+                current_app
+            ).loads(signed_last_logas_session)
+        # Cookie has been tampered. Remove all logas sessions, and logout user.
+        except itsdangerous.exc.BadSignature:
+            response = flask_security.views.logout()
+            self.store_logas_sessions(response, [])
+            return response
+
+        user = self.get_user(self.get_users_query(), last_logas_session['_user_id'])
+        # Cookie is valid, but user has been deleted. Remove all logas sessions
+        # and logout user.
         if not user:
             response = flask_security.views.logout()
-        else:
-            response = redirect(self.get_redirect_on_success())
-            login_user(user)
+            self.store_logas_sessions(response, [])
+            return response
 
-        # last_logas_session has been poped from logas_sessions. Save the
-        # cookie in response.
+        response = redirect(self.get_redirect_on_success())
+        # Remove last_logas_session from list of saved sessions.
         self.store_logas_sessions(response, logas_sessions)
+
+        login_user(user)
 
         return response
