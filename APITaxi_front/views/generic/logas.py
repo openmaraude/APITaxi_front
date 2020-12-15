@@ -124,8 +124,7 @@ class LogAsView(View, LogAsCookieMixin, LogAsRedirectMixin, LogAsSQLAUserMixin):
             self.store_logas_sessions(response, [current_session] + logas_sessions)
 
             # Login as the new user, and update the response cookie.
-            login_user(user)
-            current_app.login_manager._set_cookie(response)
+            login_user(user, remember=True)
 
             return response
 
