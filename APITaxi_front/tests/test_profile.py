@@ -1,7 +1,9 @@
 from flask_security.utils import verify_password
 
+from APITaxi_models2 import db
 
-def test_profile(operateur):
+
+def test_profile(operateur, moteur):
     resp = operateur.client.get('/profile')
     assert resp.status_code == 200
 
@@ -37,3 +39,12 @@ def test_profile(operateur):
     assert operateur.user.hail_endpoint_production == 'http://xxx'
     assert operateur.user.operator_header_name == 'X-Header'
     assert operateur.user.operator_api_key == 'MyApiKey'
+
+    # Operateur doesn't have an account manager.
+    assert 'Gestionnaire de compte' not in resp.data.decode('utf8')
+
+    # If we set an account manager, it should be displayed on the profile page.
+    operateur.user.manager_id = moteur.user.id
+    db.session.commit()
+    resp = operateur.client.get('/profile')
+    assert 'Gestionnaire de compte' in resp.data.decode('utf8')

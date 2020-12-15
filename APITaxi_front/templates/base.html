@@ -17,7 +17,7 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <a class="navbar-brand" href="{{ url_for('home.home') }}">Registre des taxis</a>
-      {% if request.cookies.logas_real_api_key %}
+      {% if request.cookies.logas_sessions %}
       <small class="text-danger">(Connecté en tant que {{ current_user.commercial_name or "" }} / {{ current_user.email or "" }})</small>
       {% endif %}
 
@@ -37,6 +37,12 @@
             <li class="nav-item">
                 <a class="nav-link{% if url_for('dashboards.index') in request.path %} active{% endif %}" href="{{ url_for('dashboards.index') }}">Tableaux de bord</a>
             </li>
+
+            {% if current_user.managed %}
+                <li class="nav-item">
+                    <a class="nav-link{% if url_for('manager.index') in request.path %} active{% endif %}" href="{{ url_for('manager.index') }}">Gestion des opérateurs</a>
+                </li>
+            {% endif %}
             {% endif %}
 
             <li class="nav-item">
@@ -55,7 +61,7 @@
             </li>
 
             <li class="nav-item">
-              <form action="{{ url_for('admin.logas_logout') }}" method="POST" class="form-inline">
+              <form action="{{ url_for('logout.logout') }}" method="POST" class="form-inline">
                 <button type="submit" class="btn btn-link nav-link">Déconnexion</button>
                 {{ logout_form.hidden_tag() }}
               </form>

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """This module gathers JSON endpoints, used by AJAX calls.
 """
 
@@ -134,11 +133,26 @@ def check_datatables_arguments(func):
 
 @blueprint.route('/api/users', methods=['GET'])
 @login_required
-@roles_accepted('admin')
 @check_datatables_arguments
 def users(length, start, draw, columns=None):
-    """Administration endpoint to list users."""
-    query = User.query.order_by(User.id)
+    """List users.
+
+    This endpoint doesn't call @roles_accepted, but requires the user to be
+    either an administrator or a manager:
+
+    - if user manages other accounts and ?manager is set in querystring, only
+    return the list of managed users
+    - if user is administrator, returns all users
+
+    Otherwise, returns an empty list.
+    """
+    if 'manager' in request.args and current_user.managed:
+        query = User.query.filter(User.id.in_([user.id for user in current_user.managed])).order_by(User.id)
+    elif current_user.has_role('admin'):
+        query = User.query.order_by(User.id)
+    else:
+        query = User.query.filter(False)
+
     records_total = query.count()
 
     commercial_name_filter = get_datatables_filter('commercial_name', columns)

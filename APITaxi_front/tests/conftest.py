@@ -77,6 +77,12 @@ def _create_client(app, roles):
 
 @pytest.fixture
 def anonymous(app):
+    yield from _create_client(app, None)
+
+
+@pytest.fixture
+def no_roles(app):
+    """Authenticated user without any roles."""
     yield from _create_client(app, [])
 
 

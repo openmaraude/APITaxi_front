@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import dateutil.parser
 import os
 import importlib
@@ -10,6 +8,7 @@ from flask import Flask
 from flask_redis import FlaskRedis
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_wtf import FlaskForm
+from sqlalchemy.orm import joinedload
 
 import sentry_sdk
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -98,5 +97,15 @@ def create_app():
     @app.context_processor
     def logout_form():
         return {'logout_form': FlaskForm()}
+
+    @app.login_manager.user_loader
+    def load_user(user_id):
+        """Like most of relationships, User.managed has the flag lazy='raise'
+        because most of the API code doesn't need to read the attribute.
+
+        The front, however, needs to read it to display the menu, so let's
+        joinedload it to make the current_user.managed attribute available.
+        """
+        return User.query.options(joinedload(User.managed)).get(user_id)
 
     return app

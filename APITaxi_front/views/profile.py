@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import re
 
 from flask import (
@@ -16,7 +14,7 @@ from flask_security.utils import hash_password
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, ValidationError, validators
 
-from APITaxi_models2 import db
+from APITaxi_models2 import db, User
 
 
 blueprint = Blueprint('profile', __name__)
@@ -119,4 +117,8 @@ def edit():
         flash("Paramètres modifiés avec succès.", 'primary')
         return redirect(url_for('profile.edit'))
 
-    return render_template('profile.html', user=current_user, form=form)
+    manager = None
+    if current_user.manager_id:
+        manager = User.query.filter_by(id=current_user.manager_id).one()
+
+    return render_template('profile.html', user=current_user, form=form, manager=manager)

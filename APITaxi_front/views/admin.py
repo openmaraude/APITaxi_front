@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
-
-from flask import abort, Blueprint, redirect, render_template, request, Response, url_for
-from flask_login import login_user
-import flask_security
-from flask_security import current_user, login_required, roles_accepted
-from flask_wtf import FlaskForm
-from wtforms import IntegerField
+from flask import Blueprint, redirect, url_for
+from flask_security import login_required, roles_accepted
 
 from APITaxi_models2 import User
+
+from .generic.logas import LogAsView
 
 
 blueprint = Blueprint('admin', __name__)
@@ -20,67 +16,22 @@ def index():
     return redirect(url_for('admin.logas'))
 
 
-class LogAsForm(FlaskForm):
-    user_id = IntegerField()
-
-
-@blueprint.route('/admin/logas', methods=['GET', 'POST'])
-@login_required
-@roles_accepted('admin')
-def logas():
-    """List users. If POST and user_id is submitted, save the current API key
-    in cookie and login as the user.
-
-    View is calling the endpoint /api/users to display data.
+class AdminLogAs(LogAsView):
+    """Logas view for administrators. We allow to login as any user, so there
+    is no filter on the users_model.
     """
-    form = LogAsForm()
+    decorators = [
+        login_required,
+        roles_accepted('admin')
+    ]
 
-    if form.validate_on_submit():
-        user = User.query.get(form.user_id.data)
-        if not user:
-            abort(Response('Invalid user', status=404))
-
-        response = redirect(url_for('home.home'))
-        response.set_cookie('logas_real_api_key', current_user.apikey)
-
-        login_user(user)
-        return response
-
-    return render_template(
-        'admin/logas.html',
-        logas_form=form
-    )
+    template_name = 'admin/logas.html'
+    user_model = User
+    redirect_on_success = 'home.home'
 
 
-@blueprint.route('/logas/logout', methods=['POST'])
-def logas_logout():
-    """Logout user. This endpoint should be called instead of
-    flask_security.views.logout.
-
-    If the user is logged with the "logas" feature, we attempt to reconnect the
-    user back to his previous session.
-
-    For security purpose, this must be a POST endpoint.
-    Without CSRF validation, an attacker can redirect a logged-in user to force him to logout.
-    """
-    # CSRF Validation
-    form = FlaskForm()
-    if not form.validate_on_submit():
-        # On invalid token, don't do anything
-        # redirect to home as we don't have a logout landing page
-        return redirect(url_for('home.home'))
-
-    logas_api_key = request.cookies.get('logas_real_api_key')
-
-    if logas_api_key:
-        user = User.query.filter(User.apikey == logas_api_key).first()
-        if not user:  # bad API key
-            response = flask_security.views.logout()
-        else:
-            response = redirect(url_for('admin.logas'))
-            login_user(user)
-
-        response.delete_cookie('logas_real_api_key')
-        return response
-
-    return flask_security.views.logout()
+blueprint.add_url_rule(
+    '/admin/logas',
+    view_func=AdminLogAs.as_view('logas'),
+    methods=['GET', 'POST']
+)

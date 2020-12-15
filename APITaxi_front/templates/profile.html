@@ -20,6 +20,14 @@
 
   <hr />
 
+  {% if manager %}
+  <h3>Gestionnaire de compte</h3>
+
+  <p>Votre compte est géré par <strong>{{ manager.commercial_name or manager.email }}</strong> qui peut accéder à votre profil, votre clé d'API, et effectuer des requêtes pour vous. S'il vous pensez qu'il s'agit d'une erreur, contactez-nous sur <i>equipe@le.taxi</i>.</p>
+
+  <hr />
+  {% endif %}
+
   <h3>Mes paramètres </h3>
 
   <form method="POST" novalidate autocomplete="off">
@@ -33,6 +41,19 @@
     {% endif %}
 
     <h6>Général</h6>
+
+    <!-- Email -->
+    <div class="d-flex align-items-center">
+      <div class="flex-even">
+        <div class="form-group">
+          <label>Identifiant</label>
+          <div>{{ user.email }}</div>
+        </div>
+      </div>
+      <div class="flex-even formdoc">
+          Identifiant utilisé pour vous connecter. Vous ne pouvez pas en changer.
+      </div>
+    </div>
 
     <!-- Commercial name -->
     <div class="d-flex align-items-center">
