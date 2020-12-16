@@ -40,7 +40,7 @@
 
             {% if current_user.managed %}
                 <li class="nav-item">
-                    <a class="nav-link{% if url_for('manager.index') in request.path %} active{% endif %}" href="{{ url_for('manager.index') }}">Gestion des opérateurs</a>
+                    <a class="nav-link{% if url_for('manager.index') in request.path %} active{% endif %}" href="{{ url_for('manager.index') }}">Comptes en gestion</a>
                 </li>
             {% endif %}
             {% endif %}
