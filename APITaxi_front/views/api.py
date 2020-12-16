@@ -25,7 +25,7 @@ blueprint = Blueprint('api', __name__)
 
 
 class DataTablesSchema(Schema):
-    """Validate parameters for /api/users."""
+    """Validate DataTables parameters."""
 
     class Meta:
         """Do not raise an error nor return extra fields when calling schema.load().
