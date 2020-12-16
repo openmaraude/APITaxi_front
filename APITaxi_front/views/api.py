@@ -147,9 +147,11 @@ def users(length, start, draw, columns=None):
     Otherwise, returns an empty list.
     """
     if 'manager' in request.args and current_user.managed:
-        query = User.query.filter(User.id.in_([user.id for user in current_user.managed])).order_by(User.id)
+        query = User.query.options(joinedload(User.manager)).filter(
+            User.id.in_([user.id for user in current_user.managed])
+        ).order_by(User.id)
     elif current_user.has_role('admin'):
-        query = User.query.order_by(User.id)
+        query = User.query.options(joinedload(User.manager)).order_by(User.id)
     else:
         query = User.query.filter(False)
 
@@ -175,6 +177,11 @@ def users(length, start, draw, columns=None):
             'id': user.id,
             'email': user.email,
             'commercial_name': user.commercial_name,
+            'manager': {
+                'id': user.manager.id,
+                'email': user.manager.email,
+                'commercial_name': user.manager.commercial_name,
+            } if user.manager else None
         } for user in users]
     })
 

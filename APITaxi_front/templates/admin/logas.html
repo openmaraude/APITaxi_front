@@ -25,6 +25,7 @@
       <th>Id</th>
       <th>Email</th>
       <th>Nom commercial</th>
+      <th>Manager</th>
       <th>Action</th>
     </tr>
   </thead>
@@ -62,6 +63,22 @@ var table = $('#table').DataTable({
     {data: 'id'},
     {name: 'email', data: 'email'},
     {name: 'commercial_name', data: 'commercial_name'},
+    {
+      data: 'manager',
+      fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
+        if (!sData) {
+          return ;
+        }
+        $(nTd).html(`
+          {{ csrf.csrf_error(logas_form) }}
+          <form method="POST" action="{{ url_for('admin.logas') }}">
+            {{ logas_form.hidden_tag() }}
+            <input type="hidden" name="{{ logas_form.user_id.name }}" value="` + sData.id + `" />
+            <button type="submit" class="btn btn-primary">` + (sData.commercial_name || sData.email) + `</button>
+          </form>
+        `)
+      }
+    },
     {
       data: null,
       fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
