@@ -52,11 +52,19 @@
   <p class="alert alert-warning">La mise à jour du statut n'est pas immédiate. Rafraichissez la page pour avoir le dernier statut à jour.</p>
 
   {% if hail.status == 'received_by_taxi' %}
-  <p>La demande de course a été transmise au taxi qui ne l'a pas encore acceptée. Vous devez attendre que celui-ci l'accepte pour pouvoir confirmer la demande. Vous pouvez néanmoins déclarer un incident pour annuler la course.</p>
+  <p>La demande de course a été transmise au taxi qui ne l'a pas encore acceptée. Vous devez attendre que celui-ci l'accepte pour pouvoir confirmer la demande. Vous pouvez néanmoins décliner la demande, ou déclarer un incident pour annuler la course.</p>
 
   {{ csrf.csrf_error(status_form) }}
 
   <div class="d-flex justify-content-between">
+    <div>
+      <form method="POST">
+        <input type="hidden" name="{{ status_form.status.name }}" value="declined_by_customer" />
+        {{ status_form.hidden_tag() }}
+        <button type="submit" class="btn btn-primary {% if status_form.status.data == 'declined_by_customer' and status_form.errors %}btn-danger{% else %}btn-dark{% endif %}" value="submit">Refuser la course</button>
+      </form>
+    </div>
+
     <div>
       <form method="POST">
         <input type="hidden" name="{{ status_form.status.name }}" value="incident_customer" />
