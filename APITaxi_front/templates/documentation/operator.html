@@ -381,9 +381,11 @@ $> curl 'https://dev.api.taxi/hails/:hail_id/' \
 }'
 </pre>
 
-<h6>Changements de statut automatiques</h6>
+<h6>Déroulé de la course</h6>
 
-<p>Une fois la course acceptée, si le statut du taxi change pour <i>occupied</i> en utilisant l'endpoint <i>PUT /taxis/:taxi_id</i>, le statut de la course passe automatiquement à <i>customer_on_board</i>. Si le taxi passe ensuite en <i>free</i> ou <i>off</i>, la course est considérée terminée et passe donc automatiquement en <i>finished</i>.
+<p>Une fois la course acceptée par le taxi, le moteur change le statut de la course en <i>accepted_by_customer</i> et le taxi peut se diriger vers le client.</p>
+
+<p>Pour un déroulé normal de course, vous devez déclarer le client à bord en changeant le statut à <i>customer_on_board</i>, puis la course terminée avec le statut <i>finished</i>.</p>
 
 <p class="text-center"><img src="{{ url_for('static', filename='images/documentation/trip-status-operator-accepted.png') }}" /></p>
 
