@@ -168,12 +168,9 @@ def users(length, start, draw, columns=None):
     records_filtered = query.count()
     users = query.offset(start).limit(length).all()
 
-    # The format below is expected by datatables.
-    return jsonify({
-        'draw': draw,
-        'recordsTotal': records_total,
-        'recordsFiltered': records_filtered,
-        'data': [{
+    users_data = []
+    for user in users:
+        data = {
             'id': user.id,
             'email': user.email,
             'commercial_name': user.commercial_name,
@@ -182,7 +179,19 @@ def users(length, start, draw, columns=None):
                 'email': user.manager.email,
                 'commercial_name': user.manager.commercial_name,
             } if user.manager else None
-        } for user in users]
+        }
+        if current_user.has_role('admin'):
+            data['roles'] = [{
+                'name': role.name
+            } for role in user.roles]
+        users_data.append(data)
+
+    # The format below is expected by datatables.
+    return jsonify({
+        'draw': draw,
+        'recordsTotal': records_total,
+        'recordsFiltered': records_filtered,
+        'data': users_data
     })
 
 

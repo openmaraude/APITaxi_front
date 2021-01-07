@@ -25,6 +25,7 @@
       <th>Id</th>
       <th>Email</th>
       <th>Nom commercial</th>
+      <th>Roles</th>
       <th>Manager</th>
       <th>Action</th>
     </tr>
@@ -63,6 +64,11 @@ var table = $('#table').DataTable({
     {data: 'id'},
     {name: 'email', data: 'email'},
     {name: 'commercial_name', data: 'commercial_name'},
+    {name: 'roles',
+     render: (
+        (data, type, row) => row.roles.map(e => e.name).join(', ')
+     )
+    },
     {
       data: 'manager',
       fnCreatedCell: function (nTd, sData, oData, iRow, iCol) {
