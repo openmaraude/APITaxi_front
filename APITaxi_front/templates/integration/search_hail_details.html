@@ -75,7 +75,7 @@
   </div>
 
   {% elif hail.status == 'accepted_by_taxi' %}
-  <p>La course a actuellement le statut <strong>{{ hail.status }}</strong> : le taxi a vu et accepté la course. Le client doit confirmer qu'il souhaite effectuer la course ou l'annuler. Si la confirmation n'est pas envoyée avant 2 minutes, la course sera annulée automatiquement.</p>
+  <p>La course a actuellement le statut <strong>{{ hail.status }}</strong> : le taxi a vu et accepté la course. Le client doit confirmer qu'il souhaite effectuer la course ou l'annuler. Si la confirmation n'est pas envoyée avant 30 secondes, la course sera annulée automatiquement.</p>
 
   <p>Vous pouvez à tout moment déclarer un incident pour terminer la demande de course.</p>
 
