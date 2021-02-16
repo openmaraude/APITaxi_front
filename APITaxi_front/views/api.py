@@ -16,7 +16,7 @@ from marshmallow.validate import Range
 
 from geopy.distance import geodesic
 
-from APITaxi_models2 import ADS, Hail, Taxi, User, Vehicle
+from APITaxi_models2 import db, Hail, Taxi, Town, User, Vehicle
 
 from .integration import get_integration_user
 
@@ -283,7 +283,7 @@ def taxis(length, start, draw, columns=None):
     query = Taxi.query.options(
         joinedload(Taxi.vehicle),
         joinedload(Taxi.driver),
-        joinedload(Taxi.ads).joinedload(ADS.zupc),
+        joinedload(Taxi.ads),
         joinedload(Taxi.added_by)
     ).join(Vehicle).filter(
         Taxi.added_by_id == owner.id
@@ -305,6 +305,10 @@ def taxis(length, start, draw, columns=None):
 
     taxis = query.offset(start).limit(length).all()
 
+    town_names = dict(db.session.query(Town.insee, Town.name).filter(
+        Town.insee.in_(t.ads.insee for t in taxis))
+    )
+
     # The format below is expected by datatables.
     return jsonify({
         'draw': draw,
@@ -320,8 +324,9 @@ def taxis(length, start, draw, columns=None):
                 'fullname': '%s %s' % (taxi.driver.first_name, taxi.driver.last_name)
             },
             'ads': {
-                'zupc': {
-                    'name': taxi.ads.zupc.nom,
+                'town': {
+                    'insee': taxi.ads.insee,
+                    'name': town_names.get(taxi.ads.insee, taxi.ads.insee),
                 }
             },
             'operator': {
