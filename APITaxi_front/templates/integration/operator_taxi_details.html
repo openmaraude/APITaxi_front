@@ -68,7 +68,13 @@
   {{ location_form.hidden_tag() }}
 </form>
 
-<p class="text-info"><strong>Attention !</strong> L'autorisation de stationnement de ce taxi est limitée à la ZUPC de <strong>{{ taxi.ads.zupc.nom }}</strong>. Si vous déplacez le taxi en dehors de cette zone, il ne sera pas visible sur la carte.</p>
+{% if zupc %}
+<p class="text-info"><strong>Attention !</strong> L'autorisation de stationnement de ce taxi est limitée à la ZUPC de
+<strong>{{ zupc.nom }}</strong>. Si vous déplacez le taxi en dehors de cette zone, il ne sera pas visible sur la carte.</p>
+{% else %}
+<p class="text-info"><strong>Attention !</strong> L'autorisation de stationnement de ce taxi est limitée à la ville de
+<strong>{{ town.name }}</strong>. Si vous déplacez le taxi en dehors de cette zone, il ne sera pas visible sur la carte.</p>
+{% endif %}
 
 <h5>Liste des courses du taxi</h5>
 

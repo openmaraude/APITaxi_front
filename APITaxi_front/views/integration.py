@@ -21,7 +21,7 @@ from wtforms import SelectField, StringField, SubmitField, ValidationError, vali
 
 from faker import Faker
 
-from APITaxi_models2 import ADS, Hail, Taxi, User, Vehicle, VehicleDescription
+from APITaxi_models2 import Hail, Taxi, Town, User, Vehicle, VehicleDescription, ZUPC
 
 
 blueprint = Blueprint('integration', __name__)
@@ -46,6 +46,7 @@ def get_integration_user(*fields):
 
 class APITaxiIntegrationClient:
     """Wrapper to call APITaxi using credentials from settings."""
+
     def __init__(self, user=None):
         self.api_url = current_app.config['API_TAXI_URL']
         if user:
@@ -136,7 +137,7 @@ def operator():
         ads = api.post('/ads', {
             'vehicle_id': vehicle['id'],
             'category': '',
-            'insee': '75101',
+            'insee': '75056',
             'numero': str(random.randrange(1, 10**6)),
             'owner_type': 'company',
             'owner_name': 'le.taxi',
@@ -145,7 +146,7 @@ def operator():
 
         api.post('/taxis', {
             'ads': {
-                'insee': '75101',
+                'insee': '75056',
                 'numero': ads['numero']
             },
             'driver': {
@@ -169,6 +170,7 @@ def operator():
 
 class ValidateFloat:
     """FlaskForm validator to check a longitude or latitude."""
+
     def __call__(self, form, field):
         try:
             float(field.data)
@@ -236,7 +238,7 @@ def _get_taxi_details(taxi_id):
     try:
         taxi = Taxi.query.options(
             joinedload(Taxi.vehicle).joinedload(Vehicle.descriptions).joinedload(VehicleDescription.added_by),
-            joinedload(Taxi.ads).joinedload(ADS.zupc)
+            joinedload(Taxi.ads)
         ).filter(
             Taxi.id == taxi_id,
             or_(Taxi.added_by_id == integration_user.id, Taxi.added_by_id == current_user.id)
@@ -265,6 +267,12 @@ def _get_taxi_details(taxi_id):
     return integration_user, taxi, last_locations
 
 
+def _get_taxi_zones(taxi):
+    town = Town.query.filter(Town.insee == taxi.ads.insee).one()
+    zupc = ZUPC.query.filter(ZUPC.allowed.contains(town)).first()
+    return town, zupc
+
+
 @blueprint.route('/integration/operator/taxis/<string:taxi_id>', methods=['GET', 'POST'])
 @login_required
 @roles_accepted('admin', 'moteur', 'operateur')
@@ -272,6 +280,7 @@ def operator_taxi_details(taxi_id):
     """Display taxi details: status, location and list of hails. Allows to
     update the status and the location."""
     integration_user, taxi, last_locations = _get_taxi_details(taxi_id)
+    town, zupc = _get_taxi_zones(taxi)
 
     set_status_api_exc = None
     set_location_api_exc = None
@@ -306,6 +315,8 @@ def operator_taxi_details(taxi_id):
     return render_template(
         'integration/operator_taxi_details.html',
         taxi=taxi,
+        town=town,
+        zupc=zupc,
         status_form=status_form,
         location_form=location_form,
         last_locations=last_locations,
